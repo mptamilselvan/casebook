@@ -1,1 +1,21 @@
 Install
+-------
+
+APK release:
+============
+
+flutter pub get
+flutter build apk --release
+
+
+
+Production release:
+-------------------
+# Set API_URL and SITE_URL in mobile_flutter/.env first.
+# change version here: /pubspec.yaml
+
+flutter clean
+flutter pub get
+flutter build appbundle --release
+
+adb devices

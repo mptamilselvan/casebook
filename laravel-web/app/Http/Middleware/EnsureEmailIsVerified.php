@@ -17,6 +17,12 @@ class EnsureEmailIsVerified
             return $next($request);
         }
 
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json([
+                'message' => 'Verify your email before opening Case Book.',
+            ], 403);
+        }
+
         Auth::logout();
         $request->session()->regenerate();
 

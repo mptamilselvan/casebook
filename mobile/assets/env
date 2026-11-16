@@ -1,0 +1,3 @@
+# Flutter cannot load a file named ".env" as an asset.
+# Edit assets/env and keep this file matching if you use it as a local note.
+API_BASE_URL=http://127.0.0.1:8000/api
