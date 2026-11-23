@@ -15,7 +15,7 @@ laravel-web/.vscode
 laravel-web/.zed
 laravel-web/auth.json
 laravel-web/node_modules
-laravel-web/public/build
+#laravel-web/public/build
 laravel-web/public/fonts-manifest.dev.json
 laravel-web/public/hot
 laravel-web/public/storage
