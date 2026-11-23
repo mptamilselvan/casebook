@@ -32,6 +32,7 @@ Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(functio
     Route::get('/events/{event}/file', [CaseEventController::class, 'file']);
 
     Route::post('/cases/{case}/documents', [DocumentController::class, 'store']);
+    Route::delete('/cases/{case}/documents/{document}', [DocumentController::class, 'destroy']);
     Route::get('/documents/{document}/file', [DocumentController::class, 'file']);
 
     Route::get('/templates', [TemplateController::class, 'index']);

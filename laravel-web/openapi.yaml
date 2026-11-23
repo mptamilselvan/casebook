@@ -1,0 +1,909 @@
+openapi: 3.0.3
+info:
+  title: Case Book API
+  version: 1.0.0
+  description: |
+    JSON API used by the Case Book mobile app. Paths are relative to `/api`.
+    Authenticated routes expect `Authorization: Bearer {token}` from login or email verification.
+servers:
+  - url: http://localhost:8000/api
+    description: Local
+tags:
+  - name: Auth
+  - name: Cases
+  - name: Events
+  - name: Documents
+  - name: Templates
+paths:
+  /login:
+    post:
+      tags: [Auth]
+      summary: Sign in with email
+      description: Verified addresses receive a token. New or unverified addresses are sent a verification link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  example: advocate@firm.test
+      responses:
+        '200':
+          description: Token, or a notice that a verification email was sent
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AuthToken'
+                  - $ref: '#/components/schemas/VerificationSent'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /email/verify:
+    post:
+      tags: [Auth]
+      summary: Exchange a verification link for a token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+                  description: The full signed URL from the verification email
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '403':
+          $ref: '#/components/responses/Message'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Signed-in user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unverified'
+  /logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current token
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: logged_out
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+  /casebook:
+    get:
+      tags: [Cases]
+      summary: Case list, counts, and the open case
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: ['All Cases', "Today's Hearings", Upcoming, Starred]
+            default: All Cases
+        - name: case
+          in: query
+          description: Case id to open. Defaults to the latest pinned case.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Workspace payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Unverified'
+  /cases:
+    post:
+      tags: [Cases]
+      summary: Create a case
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseCreate'
+      responses:
+        '201':
+          description: Created case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /cases/{case}:
+    get:
+      tags: [Cases]
+      summary: Case detail
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: Case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '404':
+          description: Case not found
+    put:
+      tags: [Cases]
+      summary: Update title, court, and status
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, court]
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                court:
+                  type: string
+                  maxLength: 255
+                status:
+                  type: string
+                  nullable: true
+                  maxLength: 50
+      responses:
+        '200':
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Cases]
+      summary: Delete a case and its stored files
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deleted'
+  /cases/{case}/pin:
+    post:
+      tags: [Cases]
+      summary: Star or unstar a case
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+  /cases/{case}/hearing:
+    put:
+      tags: [Cases]
+      summary: Set the next hearing date
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                next_hearing:
+                  type: string
+                  format: date
+                  nullable: true
+      responses:
+        '200':
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /cases/{case}/tasks:
+    put:
+      tags: [Cases]
+      summary: Save task notes
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tasks:
+                  type: string
+                  nullable: true
+                  maxLength: 20000
+      responses:
+        '200':
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /cases/{case}/parties:
+    put:
+      tags: [Cases]
+      summary: Replace both sides of parties
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [party1_role, party2_role]
+              properties:
+                party1_role:
+                  type: string
+                  enum: [Petitioner, Plaintiff, Appellant, Applicant]
+                party2_role:
+                  type: string
+                  enum: [Respondent, Defendant, Opposite Party]
+                side1:
+                  type: array
+                  items:
+                    type: string
+                    maxLength: 255
+                side2:
+                  type: array
+                  items:
+                    type: string
+                    maxLength: 255
+                add_side:
+                  description: Append a blank name on this side
+                  type: string
+                  enum: ['1', '2']
+      responses:
+        '200':
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /cases/{case}/events:
+    post:
+      tags: [Events]
+      summary: Add a timeline event
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EventForm'
+      responses:
+        '201':
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /cases/{case}/events/{event}:
+    put:
+      tags: [Events]
+      summary: Update a timeline event
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EventForm'
+      responses:
+        '200':
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event is not on this case
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Events]
+      summary: Delete a timeline event and its file
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '404':
+          description: Event is not on this case
+  /events/{event}/file:
+    get:
+      tags: [Events]
+      summary: Download an event attachment
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: File bytes
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No file stored
+  /cases/{case}/documents:
+    post:
+      tags: [Documents]
+      summary: Upload a document
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [folder]
+              properties:
+                folder:
+                  type: string
+                  enum: [Pleadings, Court Orders, Exhibits]
+                name:
+                  type: string
+                  maxLength: 255
+                file:
+                  type: string
+                  format: binary
+                  description: pdf, doc, docx, jpg, jpeg, png, txt, or rtf. Max 20 MB.
+      responses:
+        '201':
+          description: Created document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /cases/{case}/documents/{document}:
+    delete:
+      tags: [Documents]
+      summary: Delete a document and its file
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deleted'
+        '404':
+          description: Document is not on this case
+  /documents/{document}/file:
+    get:
+      tags: [Documents]
+      summary: Download a document
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: File bytes
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No file stored
+  /templates:
+    get:
+      tags: [Templates]
+      summary: List templates
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Template'
+    post:
+      tags: [Templates]
+      summary: Create a template
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+      responses:
+        '201':
+          description: Created template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /templates/{template}:
+    put:
+      tags: [Templates]
+      summary: Update template title or content
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                content:
+                  type: string
+                  nullable: true
+                  maxLength: 200000
+      responses:
+        '200':
+          description: Updated template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /templates/{template}/export:
+    get:
+      tags: [Templates]
+      summary: Download the template as a Word file
+      security: [{bearerAuth: []}]
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        '200':
+          description: Word document
+          content:
+            application/msword:
+              schema:
+                type: string
+                format: binary
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    CaseId:
+      name: case
+      in: path
+      required: true
+      schema:
+        type: integer
+    EventId:
+      name: event
+      in: path
+      required: true
+      schema:
+        type: integer
+    DocumentId:
+      name: document
+      in: path
+      required: true
+      schema:
+        type: integer
+    TemplateId:
+      name: template
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    Unauthenticated:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    Unverified:
+      description: Email is not verified
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+          example:
+            message: Verify your email before opening Case Book.
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+    Message:
+      description: Error message
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+  schemas:
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+    Deleted:
+      type: object
+      properties:
+        status:
+          type: string
+          example: deleted
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+    AuthToken:
+      type: object
+      properties:
+        status:
+          type: string
+          example: authenticated
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    VerificationSent:
+      type: object
+      properties:
+        status:
+          type: string
+          example: verification_sent
+        message:
+          type: string
+        email:
+          type: string
+          format: email
+    CaseSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+          nullable: true
+        title:
+          type: string
+        parties_label:
+          type: string
+        state:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        court:
+          type: string
+        case_number:
+          type: string
+          nullable: true
+        case_year:
+          type: string
+          nullable: true
+        type:
+          type: string
+        status:
+          type: string
+        next_hearing:
+          type: string
+          format: date
+          nullable: true
+        judge:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+        is_pinned:
+          type: boolean
+        party1_role:
+          type: string
+        party2_role:
+          type: string
+    Party:
+      type: object
+      properties:
+        id:
+          type: integer
+        side:
+          type: integer
+          enum: [1, 2]
+        name:
+          type: string
+        sort_order:
+          type: integer
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        case_id:
+          type: integer
+        event_date:
+          type: string
+          format: date
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        is_hearing:
+          type: boolean
+        file_name:
+          type: string
+          nullable: true
+        file_size:
+          type: string
+          nullable: true
+        file_url:
+          type: string
+          nullable: true
+          description: Path under `/api`, or null when no file is attached
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+        case_id:
+          type: integer
+        name:
+          type: string
+        folder:
+          type: string
+        size:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date
+          nullable: true
+        file_url:
+          type: string
+          nullable: true
+          description: Path under `/api`, or null when no file is attached
+    CaseDetail:
+      allOf:
+        - $ref: '#/components/schemas/CaseSummary'
+        - type: object
+          properties:
+            tasks:
+              type: string
+            parties:
+              type: array
+              items:
+                $ref: '#/components/schemas/Party'
+            events:
+              type: array
+              items:
+                $ref: '#/components/schemas/Event'
+            documents:
+              type: array
+              items:
+                $ref: '#/components/schemas/Document'
+    CaseCreate:
+      type: object
+      required: [court, party1_role, party2_role]
+      properties:
+        state:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        court:
+          type: string
+          maxLength: 255
+        case_number:
+          type: string
+          maxLength: 100
+        case_year:
+          type: string
+          maxLength: 10
+        party1_role:
+          type: string
+          enum: [Petitioner, Plaintiff, Appellant, Applicant]
+        party2_role:
+          type: string
+          enum: [Respondent, Defendant, Opposite Party]
+        petitioners:
+          type: array
+          items:
+            type: string
+        respondents:
+          type: array
+          items:
+            type: string
+    EventForm:
+      type: object
+      required: [event_date, title]
+      properties:
+        event_date:
+          type: string
+          format: date
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          maxLength: 5000
+        is_hearing:
+          type: boolean
+          description: Send 1 or 0 in multipart form data
+        file:
+          type: string
+          format: binary
+          description: pdf, doc, docx, jpg, jpeg, png, txt, or rtf. Max 20 MB.
+    Template:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        export_url:
+          type: string
+          description: Path under `/api`
+    Workspace:
+      type: object
+      properties:
+        filter:
+          type: string
+        today:
+          type: string
+          format: date
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+        filters:
+          type: array
+          items:
+            type: string
+        tabs:
+          type: array
+          items:
+            type: string
+        party1_roles:
+          type: object
+          additionalProperties:
+            type: string
+        party2_roles:
+          type: object
+          additionalProperties:
+            type: string
+        folders:
+          type: array
+          items:
+            type: string
+        cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseSummary'
+        case:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/CaseDetail'
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'

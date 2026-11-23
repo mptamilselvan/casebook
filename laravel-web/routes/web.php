@@ -10,6 +10,14 @@ use App\Http\Controllers\TemplateController;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/openapi.yaml', function () {
+    return response()->file(base_path('openapi.yaml'), [
+        'Content-Type' => 'application/yaml',
+    ]);
+});
+
+Route::view('/docs', 'api-docs');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:10,1')->name('login.store');

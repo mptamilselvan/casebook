@@ -4,13 +4,25 @@ namespace Database\Seeders;
 
 use App\Models\CourtCase;
 use App\Models\Template;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class CasebookSeeder extends Seeder
 {
+    private User $owner;
+
     public function run(): void
     {
         mt_srand(20261110);
+
+        $this->owner = User::query()->firstOrCreate(
+            ['email' => 'advocate@casebook.test'],
+            [
+                'name' => 'Advocate',
+                'password' => 'password',
+                'email_verified_at' => now(),
+            ],
+        );
 
         Template::query()->create([
             'title' => 'Main Petition Format',
@@ -134,7 +146,10 @@ TEXT,
 
     private function createCase(array $attributes, array $petitioners, array $respondents): CourtCase
     {
-        $case = CourtCase::query()->create($attributes);
+        $case = CourtCase::query()->create([
+            'user_id' => $this->owner->id,
+            ...$attributes,
+        ]);
 
         foreach ($petitioners as $index => $name) {
             $case->caseParties()->create(['side' => 1, 'name' => $name, 'sort_order' => $index]);

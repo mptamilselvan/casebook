@@ -78,6 +78,7 @@ class CaseController extends Controller
         $title = trim($number.'/'.$year, '/');
 
         $case = CourtCase::query()->create([
+            'user_id' => $request->user()->id,
             'title' => $title !== '' ? $title : 'Untitled Case',
             'state' => $data['state'] ?? null,
             'district' => $data['district'] ?? null,
@@ -107,9 +108,14 @@ class CaseController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'court' => ['required', 'string', 'max:255'],
+            'status' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $case->update($data);
+        $case->update([
+            'title' => $data['title'],
+            'court' => $data['court'],
+            'status' => filled($data['status'] ?? null) ? $data['status'] : $case->status,
+        ]);
 
         return response()->json(CasebookData::caseDetail($case));
     }

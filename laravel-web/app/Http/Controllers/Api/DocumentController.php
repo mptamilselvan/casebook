@@ -9,7 +9,6 @@ use App\Support\Casebook;
 use App\Support\CasebookData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
@@ -32,7 +31,7 @@ class DocumentController extends Controller
             'name' => $name,
             'folder' => $data['folder'],
             'size' => $uploaded ? Casebook::sizeLabel($uploaded->getSize() ?: 0) : null,
-            'file_path' => $uploaded?->store('documents', 'public'),
+            'file_path' => $uploaded?->store('documents', Casebook::FILE_DISK),
         ]);
 
         return response()->json(CasebookData::document($document), 201);
@@ -40,8 +39,21 @@ class DocumentController extends Controller
 
     public function file(Document $document): StreamedResponse
     {
-        abort_unless($document->file_path && Storage::disk('public')->exists($document->file_path), 404);
+        abort_unless($document->file_path && Casebook::files()->exists($document->file_path), 404);
 
-        return Storage::disk('public')->response($document->file_path, $document->name);
+        return Casebook::files()->response($document->file_path, $document->name);
+    }
+
+    public function destroy(CourtCase $case, Document $document): JsonResponse
+    {
+        abort_unless($document->case_id === $case->id, 404);
+
+        if ($document->file_path && Casebook::files()->exists($document->file_path)) {
+            Casebook::files()->delete($document->file_path);
+        }
+
+        $document->delete();
+
+        return response()->json(['status' => 'deleted']);
     }
 }

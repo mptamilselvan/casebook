@@ -164,38 +164,6 @@
     </form>
 </div>
 
-<div x-show="docOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <form method="POST" action="{{ route('documents.store', $active) }}" enctype="multipart/form-data" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-sm shadow-2xl" @click.stop>
-        @csrf
-        @include('casebook.partials.return-fields')
-        <div class="flex justify-between p-5 border-b border-gray-200 dark:border-[#262833]">
-            <h2 class="text-lg font-bold">Upload Document</h2>
-            <button type="button" @click="docOpen = false" class="text-gray-500 dark:text-gray-400"><x-icon name="x" class="w-5 h-5" /></button>
-        </div>
-        <div class="p-6 space-y-4">
-            @if (session('modal') === 'document' && $errors->any())
-                <p class="text-sm text-red-500">{{ $errors->first() }}</p>
-            @endif
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Folder</label>
-                <select name="folder" x-model="docFolder" class="{{ $inputClass }}">
-                    @foreach ($folders as $folder)
-                        <option>{{ $folder }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Document Name</label>
-                <input type="text" name="name" x-model="docName" placeholder="e.g., Affidavit.pdf" class="{{ $inputClass }}">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">File</label>
-                <input type="file" name="file" class="block w-full text-sm text-gray-500 dark:text-gray-400">
-            </div>
-            <button type="submit" class="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold">Save Document</button>
-        </div>
-    </form>
-</div>
 @endif
 
 <div x-show="templateOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

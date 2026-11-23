@@ -2,8 +2,13 @@
 
 namespace App\Support;
 
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Storage;
+
 class Casebook
 {
+    public const FILE_DISK = 'hf';
+
     public const FILTERS = ['All Cases', "Today's Hearings", 'Upcoming', 'Starred'];
 
     public const TABS = ['Timeline', 'Documents', 'Templates', 'Parties', 'Tasks'];
@@ -24,6 +29,14 @@ class Casebook
     public const FOLDERS = ['Pleadings', 'Court Orders', 'Exhibits'];
 
     public const FILE_RULE = ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,jpg,jpeg,png,txt,rtf'];
+
+    public static function files(): FilesystemAdapter
+    {
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk(self::FILE_DISK);
+
+        return $disk;
+    }
 
     public static function filter(mixed $value): string
     {

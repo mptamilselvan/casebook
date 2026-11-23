@@ -1,3 +1,4 @@
-# Flutter cannot load a file named ".env" as an asset.
-# Edit assets/env and keep this file matching if you use it as a local note.
-API_BASE_URL=http://127.0.0.1:8000/api
+# Flutter packages this file, not mobile/.env.
+# Phone and Mac must be on the same Wi-Fi. 127.0.0.1 is the phone itself.
+# Android emulator: http://10.0.2.2:8000/api
+API_BASE_URL=http://192.168.1.2:8000/api

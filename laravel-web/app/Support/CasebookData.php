@@ -34,6 +34,7 @@ class CasebookData
     {
         return [
             'id' => $case->id,
+            'user_id' => $case->user_id,
             'title' => $case->title,
             'parties_label' => $case->parties_label,
             'state' => $case->state,
@@ -93,6 +94,7 @@ class CasebookData
             'name' => $document->name,
             'folder' => $document->folder,
             'size' => $document->size,
+            'created_at' => $document->created_at?->toDateString(),
             'file_url' => $document->file_path ? 'documents/'.$document->id.'/file' : null,
         ];
     }

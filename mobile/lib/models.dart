@@ -28,6 +28,9 @@ class CaseSummary {
     this.caseYear,
     this.party1Role,
     this.party2Role,
+    this.status,
+    this.type,
+    this.userId,
   });
 
   final int id;
@@ -42,6 +45,9 @@ class CaseSummary {
   final String? caseYear;
   final String? party1Role;
   final String? party2Role;
+  final String? status;
+  final String? type;
+  final int? userId;
 
   factory CaseSummary.fromJson(Map<String, dynamic> json) {
     return CaseSummary(
@@ -57,6 +63,9 @@ class CaseSummary {
       caseYear: json['case_year'] as String?,
       party1Role: json['party1_role'] as String?,
       party2Role: json['party2_role'] as String?,
+      status: json['status'] as String?,
+      type: json['type'] as String?,
+      userId: json['user_id'] as int?,
     );
   }
 
@@ -115,13 +124,21 @@ class CaseEvent {
 }
 
 class CaseDocument {
-  CaseDocument({required this.id, required this.name, required this.folder, this.size, this.fileUrl});
+  CaseDocument({
+    required this.id,
+    required this.name,
+    required this.folder,
+    this.size,
+    this.fileUrl,
+    this.createdAt,
+  });
 
   final int id;
   final String name;
   final String folder;
   final String? size;
   final String? fileUrl;
+  final String? createdAt;
 
   factory CaseDocument.fromJson(Map<String, dynamic> json) {
     return CaseDocument(
@@ -130,6 +147,7 @@ class CaseDocument {
       folder: json['folder'] as String? ?? '',
       size: json['size'] as String?,
       fileUrl: json['file_url'] as String?,
+      createdAt: json['created_at'] as String?,
     );
   }
 }
@@ -148,6 +166,9 @@ class CaseDetail extends CaseSummary {
     super.caseYear,
     super.party1Role,
     super.party2Role,
+    super.status,
+    super.type,
+    super.userId,
     required this.tasks,
     required this.parties,
     required this.events,
@@ -174,16 +195,30 @@ class CaseDetail extends CaseSummary {
       caseYear: summary.caseYear,
       party1Role: summary.party1Role,
       party2Role: summary.party2Role,
+      status: summary.status,
+      type: summary.type,
+      userId: summary.userId,
       tasks: json['tasks'] as String? ?? '',
-      parties: (json['parties'] as List? ?? []).map((item) => Party.fromJson(item as Map<String, dynamic>)).toList(),
-      events: (json['events'] as List? ?? []).map((item) => CaseEvent.fromJson(item as Map<String, dynamic>)).toList(),
-      documents: (json['documents'] as List? ?? []).map((item) => CaseDocument.fromJson(item as Map<String, dynamic>)).toList(),
+      parties: (json['parties'] as List? ?? [])
+          .map((item) => Party.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      events: (json['events'] as List? ?? [])
+          .map((item) => CaseEvent.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      documents: (json['documents'] as List? ?? [])
+          .map((item) => CaseDocument.fromJson(item as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
 
 class CaseTemplate {
-  CaseTemplate({required this.id, required this.title, required this.content, required this.exportUrl});
+  CaseTemplate({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.exportUrl,
+  });
 
   final int id;
   final String title;
@@ -231,15 +266,33 @@ class Workspace {
     return Workspace(
       filter: json['filter'] as String? ?? 'All Cases',
       today: json['today'] as String? ?? '',
-      counts: (json['counts'] as Map? ?? {}).map((key, value) => MapEntry(key.toString(), (value as num).toInt())),
-      filters: (json['filters'] as List? ?? []).map((item) => item.toString()).toList(),
-      tabs: (json['tabs'] as List? ?? []).map((item) => item.toString()).toList(),
-      party1Roles: (json['party1_roles'] as Map? ?? {}).map((key, value) => MapEntry(key.toString(), value.toString())),
-      party2Roles: (json['party2_roles'] as Map? ?? {}).map((key, value) => MapEntry(key.toString(), value.toString())),
-      folders: (json['folders'] as List? ?? []).map((item) => item.toString()).toList(),
-      cases: (json['cases'] as List? ?? []).map((item) => CaseSummary.fromJson(item as Map<String, dynamic>)).toList(),
-      templates: (json['templates'] as List? ?? []).map((item) => CaseTemplate.fromJson(item as Map<String, dynamic>)).toList(),
-      active: json['case'] == null ? null : CaseDetail.fromJson(json['case'] as Map<String, dynamic>),
+      counts: (json['counts'] as Map? ?? {}).map(
+        (key, value) => MapEntry(key.toString(), (value as num).toInt()),
+      ),
+      filters: (json['filters'] as List? ?? [])
+          .map((item) => item.toString())
+          .toList(),
+      tabs: (json['tabs'] as List? ?? [])
+          .map((item) => item.toString())
+          .toList(),
+      party1Roles: (json['party1_roles'] as Map? ?? {}).map(
+        (key, value) => MapEntry(key.toString(), value.toString()),
+      ),
+      party2Roles: (json['party2_roles'] as Map? ?? {}).map(
+        (key, value) => MapEntry(key.toString(), value.toString()),
+      ),
+      folders: (json['folders'] as List? ?? [])
+          .map((item) => item.toString())
+          .toList(),
+      cases: (json['cases'] as List? ?? [])
+          .map((item) => CaseSummary.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      templates: (json['templates'] as List? ?? [])
+          .map((item) => CaseTemplate.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      active: json['case'] == null
+          ? null
+          : CaseDetail.fromJson(json['case'] as Map<String, dynamic>),
     );
   }
 }

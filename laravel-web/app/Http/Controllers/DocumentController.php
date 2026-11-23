@@ -7,7 +7,6 @@ use App\Models\CourtCase;
 use App\Models\Document;
 use App\Support\Casebook;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class DocumentController extends Controller
@@ -26,7 +25,7 @@ class DocumentController extends Controller
             return $this->redirectToCase($request, $case)
                 ->withErrors($validator)
                 ->withInput()
-                ->with('modal', 'document');
+                ->with('modal', 'add-document');
         }
 
         $data = $validator->validated();
@@ -40,7 +39,7 @@ class DocumentController extends Controller
             'name' => $name,
             'folder' => $data['folder'],
             'size' => $uploaded ? Casebook::sizeLabel($uploaded->getSize() ?: 0) : null,
-            'file_path' => $uploaded?->store('documents', 'public'),
+            'file_path' => $uploaded?->store('documents', Casebook::FILE_DISK),
         ]);
 
         return $this->redirectToCase($request, $case, ['tab' => 'Documents'])->with('status', 'Document saved.');
@@ -48,10 +47,10 @@ class DocumentController extends Controller
 
     public function file(Request $request, Document $document)
     {
-        abort_unless($document->file_path && Storage::disk('public')->exists($document->file_path), 404);
+        abort_unless($document->file_path && Casebook::files()->exists($document->file_path), 404);
 
         return $request->boolean('download')
-            ? Storage::disk('public')->download($document->file_path, $document->name)
-            : Storage::disk('public')->response($document->file_path, $document->name);
+            ? Casebook::files()->download($document->file_path, $document->name)
+            : Casebook::files()->response($document->file_path, $document->name);
     }
 }

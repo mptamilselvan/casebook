@@ -34,7 +34,9 @@ class AppState extends ChangeNotifier {
     }
     api.token = saved;
     try {
-      user = UserAccount.fromJson(await api.getJson('me') as Map<String, dynamic>);
+      user = UserAccount.fromJson(
+        await api.getJson('me') as Map<String, dynamic>,
+      );
       await load();
       return true;
     } catch (_) {
@@ -44,7 +46,9 @@ class AppState extends ChangeNotifier {
   }
 
   Future<String> login(String email) async {
-    final body = await api.postJson('login', {'email': email.trim()}) as Map<String, dynamic>;
+    final body = await api.postJson('login', {
+      'email': email.trim(),
+    }) as Map<String, dynamic>;
     if (body['status'] == 'authenticated') {
       await _storeSession(body);
       await load();
@@ -53,18 +57,24 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> verify(String url) async {
-    final body = await api.postJson('email/verify', {'url': url.trim()}) as Map<String, dynamic>;
+    final body = await api.postJson('email/verify', {
+      'url': url.trim(),
+    }) as Map<String, dynamic>;
     await _storeSession(body);
     await load();
   }
 
   Future<void> load({int? caseId, bool keepSelection = true}) async {
     final id = caseId ?? (keepSelection ? workspace?.active?.id : null);
-    final query = StringBuffer('casebook?filter=${Uri.encodeQueryComponent(filter)}');
+    final query = StringBuffer(
+      'casebook?filter=${Uri.encodeQueryComponent(filter)}',
+    );
     if (id != null) {
       query.write('&case=$id');
     }
-    workspace = Workspace.fromJson(await api.getJson(query.toString()) as Map<String, dynamic>);
+    workspace = Workspace.fromJson(
+      await api.getJson(query.toString()) as Map<String, dynamic>,
+    );
     filter = workspace!.filter;
     notifyListeners();
   }
@@ -81,13 +91,24 @@ class AppState extends ChangeNotifier {
   }
 
   Future<CaseDetail> createCase(Map<String, dynamic> payload) async {
-    final created = CaseDetail.fromJson(await api.postJson('cases', payload) as Map<String, dynamic>);
+    final created = CaseDetail.fromJson(
+      await api.postJson('cases', payload) as Map<String, dynamic>,
+    );
     await load(caseId: created.id);
     return created;
   }
 
-  Future<void> updateCase(int id, String title, String court) async {
-    await api.putJson('cases/$id', {'title': title, 'court': court});
+  Future<void> updateCase(
+    int id,
+    String title,
+    String court, {
+    String? status,
+  }) async {
+    await api.putJson('cases/$id', {
+      'title': title,
+      'court': court,
+      'status': ?status,
+    });
     await load(caseId: id);
   }
 
@@ -117,8 +138,16 @@ class AppState extends ChangeNotifier {
     await load(caseId: id);
   }
 
-  Future<void> saveEvent(int caseId, Map<String, String> fields, {int? eventId, List<int>? bytes, String? filename}) async {
-    final path = eventId == null ? 'cases/$caseId/events' : 'cases/$caseId/events/$eventId';
+  Future<void> saveEvent(
+    int caseId,
+    Map<String, String> fields, {
+    int? eventId,
+    List<int>? bytes,
+    String? filename,
+  }) async {
+    final path = eventId == null
+        ? 'cases/$caseId/events'
+        : 'cases/$caseId/events/$eventId';
     final method = eventId == null ? 'POST' : 'PUT';
     await api.upload(method, path, fields, bytes: bytes, filename: filename);
     await load(caseId: caseId);
@@ -129,13 +158,32 @@ class AppState extends ChangeNotifier {
     await load(caseId: caseId);
   }
 
-  Future<void> saveDocument(int caseId, String folder, String name, {List<int>? bytes, String? filename}) async {
-    await api.upload('POST', 'cases/$caseId/documents', {'folder': folder, 'name': name}, bytes: bytes, filename: filename);
+  Future<void> saveDocument(
+    int caseId,
+    String folder,
+    String name, {
+    List<int>? bytes,
+    String? filename,
+  }) async {
+    await api.upload(
+      'POST',
+      'cases/$caseId/documents',
+      {'folder': folder, 'name': name},
+      bytes: bytes,
+      filename: filename,
+    );
+    await load(caseId: caseId);
+  }
+
+  Future<void> deleteDocument(int caseId, int documentId) async {
+    await api.deleteJson('cases/$caseId/documents/$documentId');
     await load(caseId: caseId);
   }
 
   Future<CaseTemplate> createTemplate(String title) async {
-    final created = CaseTemplate.fromJson(await api.postJson('templates', {'title': title}) as Map<String, dynamic>);
+    final created = CaseTemplate.fromJson(
+      await api.postJson('templates', {'title': title}) as Map<String, dynamic>,
+    );
     await load();
     return created;
   }

@@ -9,7 +9,6 @@ use App\Support\Casebook;
 use App\Support\CasebookData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CaseEventController extends Controller
@@ -31,7 +30,7 @@ class CaseEventController extends Controller
         abort_unless($event->case_id === $case->id, 404);
 
         if ($event->file_path) {
-            Storage::disk('public')->delete($event->file_path);
+            Casebook::files()->delete($event->file_path);
         }
 
         $event->delete();
@@ -41,11 +40,11 @@ class CaseEventController extends Controller
 
     public function file(CaseEvent $event): StreamedResponse
     {
-        abort_unless($event->file_path && Storage::disk('public')->exists($event->file_path), 404);
+        abort_unless($event->file_path && Casebook::files()->exists($event->file_path), 404);
 
         $name = $event->file_name ?: basename($event->file_path);
 
-        return Storage::disk('public')->response($event->file_path, $name);
+        return Casebook::files()->response($event->file_path, $name);
     }
 
     private function save(Request $request, CourtCase $case, CaseEvent $event): array
@@ -66,11 +65,11 @@ class CaseEventController extends Controller
 
         if ($request->hasFile('file')) {
             if ($event->exists && $event->file_path) {
-                Storage::disk('public')->delete($event->file_path);
+                Casebook::files()->delete($event->file_path);
             }
 
             $file = $request->file('file');
-            $payload['file_path'] = $file->store('event-files', 'public');
+            $payload['file_path'] = $file->store('event-files', Casebook::FILE_DISK);
             $payload['file_name'] = $file->getClientOriginalName();
             $payload['file_size'] = Casebook::sizeLabel($file->getSize() ?: 0);
         }

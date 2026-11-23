@@ -1,5 +1,20 @@
 <?php
 
+$hfBucket = trim((string) env('HF_S3_BUCKET', ''), '/');
+$hfEndpoint = rtrim((string) env('HF_S3_ENDPOINT', ''), '/');
+
+// Hugging Face identifies a bucket as "namespace/name", while S3 clients
+// need the namespace in the endpoint and the bare name as the bucket.
+if (str_contains($hfBucket, '/')) {
+    [$hfNamespace, $hfBucket] = explode('/', $hfBucket, 2);
+    $hfBucket = trim($hfBucket, '/');
+    $endpointHost = strtolower((string) parse_url($hfEndpoint, PHP_URL_HOST));
+
+    if ($hfEndpoint === '' || $endpointHost === 's3.hf.co') {
+        $hfEndpoint = 'https://'.strtolower($hfNamespace).'.s3.hf.co';
+    }
+}
+
 return [
 
     /*
@@ -57,6 +72,23 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
+            'report' => false,
+        ],
+
+        // Case documents and hearing attachments. Credentials come from HF_S3_*.
+        'hf' => [
+            'driver' => 's3',
+            'key' => env('HF_S3_ACCESS_KEY'),
+            'secret' => env('HF_S3_SECRET_KEY'),
+            'region' => env('HF_S3_REGION', 'us-east-1'),
+            'bucket' => $hfBucket,
+            'endpoint' => $hfEndpoint !== '' ? $hfEndpoint : 'https://s3.hf.co',
+            'use_path_style_endpoint' => true,
+            'visibility' => 'private',
+            // Recent AWS SDKs send trailing CRC32 checksums the HF gateway rejects.
+            'request_checksum_calculation' => 'when_required',
+            'response_checksum_validation' => 'when_required',
+            'throw' => true,
             'report' => false,
         ],
 

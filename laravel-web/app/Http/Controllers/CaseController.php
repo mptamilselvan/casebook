@@ -86,6 +86,7 @@ class CaseController extends Controller
         $title = trim($number.'/'.$year, '/');
 
         $case = CourtCase::query()->create([
+            'user_id' => $request->user()->id,
             'title' => $title !== '' ? $title : 'Untitled Case',
             'state' => $data['state'] ?? null,
             'district' => $data['district'] ?? null,

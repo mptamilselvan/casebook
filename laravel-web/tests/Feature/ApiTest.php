@@ -97,7 +97,37 @@ class ApiTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonPath('title', 'O.S. 10/2026')
-            ->assertJsonPath('parties_label', 'Ramesh Kumar vs. State of TN');
+            ->assertJsonPath('parties_label', 'Ramesh Kumar vs. State of TN')
+            ->assertJsonPath('user_id', $user->id);
+
+        $this->withToken($token)
+            ->getJson('/api/casebook')
+            ->assertOk()
+            ->assertJsonPath('cases.0.user_id', $user->id)
+            ->assertJsonCount(1, 'cases');
+    }
+
+    public function test_an_advocate_cannot_open_another_advocates_case(): void
+    {
+        $owner = User::factory()->create();
+        $case = CourtCase::query()->create([
+            'user_id' => $owner->id,
+            'title' => 'O.S. 1/2026',
+            'court' => 'Madras High Court',
+        ]);
+
+        $other = User::factory()->create();
+        $token = $other->createToken('mobile')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/cases/'.$case->id)
+            ->assertNotFound();
+
+        $this->withToken($token)
+            ->getJson('/api/casebook')
+            ->assertOk()
+            ->assertJsonCount(0, 'cases')
+            ->assertJsonPath('case', null);
     }
 
     public function test_tampered_verification_link_is_rejected(): void
@@ -120,6 +150,7 @@ class ApiTest extends TestCase
     {
         $user = User::factory()->create();
         $case = CourtCase::query()->create([
+            'user_id' => $user->id,
             'title' => 'O.S. 1/2026',
             'court' => 'Madras High Court',
             'parties_label' => 'A vs. B',

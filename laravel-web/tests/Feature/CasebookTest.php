@@ -4,18 +4,25 @@ namespace Tests\Feature;
 
 use App\Models\CourtCase;
 use App\Models\User;
+use App\Support\Casebook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class CasebookTest extends TestCase
 {
     use RefreshDatabase;
 
+    private User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->withoutVite();
-        $this->actingAs(User::factory()->create());
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
     }
 
     public function test_casebook_page_loads(): void
@@ -54,5 +61,49 @@ class CasebookTest extends TestCase
             'state' => 'Tamil Nadu',
         ]);
         $this->assertDatabaseCount('case_parties', 2);
+    }
+
+    public function test_web_and_api_uploads_are_stored_on_the_hugging_face_disk(): void
+    {
+        Storage::fake(Casebook::FILE_DISK);
+
+        $case = CourtCase::query()->create([
+            'title' => 'O.S. 1/2026',
+            'court' => 'Madras High Court',
+        ]);
+
+        $this->post(route('documents.store', $case), [
+            'folder' => 'Pleadings',
+            'name' => 'Plaint',
+            'file' => UploadedFile::fake()->create('plaint.pdf', 12, 'application/pdf'),
+        ])->assertRedirect();
+
+        $document = $case->documents()->first();
+        $this->assertNotNull($document?->file_path);
+        Storage::disk(Casebook::FILE_DISK)->assertExists($document->file_path);
+        $this->get(route('documents.file', $document))->assertOk();
+
+        $this->post(route('events.store', $case), [
+            'event_date' => '2026-11-23',
+            'title' => 'Hearing',
+            'file' => UploadedFile::fake()->image('order.jpg'),
+        ])->assertRedirect();
+
+        $event = $case->events()->first();
+        $this->assertNotNull($event?->file_path);
+        Storage::disk(Casebook::FILE_DISK)->assertExists($event->file_path);
+
+        Sanctum::actingAs($this->user);
+
+        $this->post('/api/cases/'.$case->id.'/documents', [
+            'folder' => 'Exhibits',
+            'name' => 'Photo',
+            'file' => UploadedFile::fake()->image('exhibit.png'),
+        ])->assertCreated();
+
+        $apiDocument = $case->documents()->where('folder', 'Exhibits')->first();
+        $this->assertNotNull($apiDocument?->file_path);
+        Storage::disk(Casebook::FILE_DISK)->assertExists($apiDocument->file_path);
+        $this->get('/api/documents/'.$apiDocument->id.'/file')->assertOk();
     }
 }

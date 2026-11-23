@@ -70,10 +70,10 @@
                             <button type="button" @click="tab = '{{ $item }}'; draftFullscreen = false" class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" :class="tab === '{{ $item }}' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-blue-400'">{{ $item }}</button>
                         @endforeach
                     </div>
-                    <button type="button" x-show="tab === 'Timeline'" @click="openEvent()" class="mb-2 flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 px-3 py-1.5 rounded-md text-xs font-semibold">
+                    <button type="button" x-show="tab === 'Timeline'" @click="focusAddEvent()" class="mb-2 flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 px-3 py-1.5 rounded-md text-xs font-semibold">
                         <x-icon name="plus" class="w-3.5 h-3.5" /> Add Event
                     </button>
-                    <button type="button" x-show="tab === 'Documents'" x-cloak @click="docOpen = true" class="mb-2 flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 px-3 py-1.5 rounded-md text-xs font-semibold">
+                    <button type="button" x-show="tab === 'Documents'" x-cloak @click="focusUploadDocument()" class="mb-2 flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 px-3 py-1.5 rounded-md text-xs font-semibold">
                         <x-icon name="plus" class="w-3.5 h-3.5" /> Upload Document
                     </button>
                     <button type="button" x-show="tab === 'Templates'" x-cloak @click="templateOpen = true" class="mb-2 flex items-center gap-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 px-3 py-1.5 rounded-md text-xs font-semibold">
@@ -154,6 +154,42 @@
                     @empty
                     @endforelse
                     <div x-show="!hasVisible(eventHaystacks)" class="ml-6 text-gray-500 dark:text-gray-400 py-10 italic">No events match your search, or none logged yet.</div>
+                    @php
+                        $addingEvent = session('modal') === 'add-event';
+                    @endphp
+                    <form id="add-event-form" method="POST" action="{{ route('events.store', $active) }}" enctype="multipart/form-data" class="ml-6 mt-2 bg-white border border-gray-200 rounded-xl p-5">
+                        @csrf
+                        @include('casebook.partials.return-fields')
+                        <h3 class="font-bold mb-4">Add Event</h3>
+                        @if ($addingEvent && $errors->any())
+                            <p class="text-sm text-red-500 mb-3">{{ $errors->first() }}</p>
+                        @endif
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="add-event-date" class="block text-xs font-semibold text-gray-500 mb-1">Date</label>
+                                <input id="add-event-date" type="date" name="event_date" value="{{ $addingEvent ? old('event_date', $today) : $today }}" class="{{ $inputClass }}">
+                            </div>
+                            <div class="flex items-end pb-3">
+                                <label class="flex items-center gap-3 text-sm">
+                                    <input type="checkbox" name="is_hearing" value="1" @checked($addingEvent && old('is_hearing')) class="w-4 h-4">
+                                    This is a Hearing Date
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="add-event-title" class="block text-xs font-semibold text-gray-500 mb-1">Title</label>
+                            <input id="add-event-title" type="text" name="title" value="{{ $addingEvent ? old('title') : '' }}" placeholder="e.g., Counter Filed" class="{{ $inputClass }}">
+                        </div>
+                        <div class="mt-4">
+                            <label for="add-event-notes" class="block text-xs font-semibold text-gray-500 mb-1">Notes</label>
+                            <textarea id="add-event-notes" name="description" rows="2" placeholder="Event details..." class="{{ $inputClass }} resize-none">{{ $addingEvent ? old('description') : '' }}</textarea>
+                        </div>
+                        <div class="mt-4">
+                            <label for="add-event-file" class="block text-xs font-semibold text-gray-500 mb-1">Attach File</label>
+                            <input id="add-event-file" type="file" name="file" class="block w-full text-sm text-gray-500">
+                        </div>
+                        <button type="submit" class="mt-4 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold">Save Event</button>
+                    </form>
                 </div>
 
                 <div x-show="tab === 'Documents'" @if ($tab !== 'Documents') x-cloak @endif>
@@ -176,7 +212,35 @@
                             </div>
                         @endforeach
                     </div>
-                    <p x-show="!hasVisible(documentHaystacks)" class="text-gray-500 dark:text-gray-400 py-10 text-center italic">No documents uploaded to this case file. Click "Upload Document" above.</p>
+                    <p x-show="!hasVisible(documentHaystacks)" class="text-gray-500 dark:text-gray-400 py-10 text-center italic">No documents match your search, or none uploaded yet.</p>
+                    @php
+                        $addingDocument = session('modal') === 'add-document';
+                    @endphp
+                    <form id="upload-document-form" method="POST" action="{{ route('documents.store', $active) }}" enctype="multipart/form-data" class="mt-6 max-w-lg bg-white border border-gray-200 rounded-xl p-5">
+                        @csrf
+                        @include('casebook.partials.return-fields')
+                        <h3 class="font-bold mb-4">Upload Document</h3>
+                        @if ($addingDocument && $errors->any())
+                            <p class="text-sm text-red-500 mb-3">{{ $errors->first() }}</p>
+                        @endif
+                        <div>
+                            <label for="upload-document-folder" class="block text-xs font-semibold text-gray-500 mb-1">Folder</label>
+                            <select id="upload-document-folder" name="folder" class="{{ $inputClass }}">
+                                @foreach ($folders as $folder)
+                                    <option @selected($addingDocument ? old('folder') === $folder : $folder === 'Pleadings')>{{ $folder }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mt-4">
+                            <label for="upload-document-name" class="block text-xs font-semibold text-gray-500 mb-1">Document Name</label>
+                            <input id="upload-document-name" type="text" name="name" value="{{ $addingDocument ? old('name') : '' }}" placeholder="e.g., Affidavit.pdf" class="{{ $inputClass }}">
+                        </div>
+                        <div class="mt-4">
+                            <label for="upload-document-file" class="block text-xs font-semibold text-gray-500 mb-1">File</label>
+                            <input id="upload-document-file" type="file" name="file" class="block w-full text-sm text-gray-500">
+                        </div>
+                        <button type="submit" class="mt-4 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold">Save Document</button>
+                    </form>
                 </div>
 
                 <div x-show="tab === 'Parties'" @if ($tab !== 'Parties') x-cloak @endif>

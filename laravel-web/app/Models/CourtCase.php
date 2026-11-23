@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Support\Casebook;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class CourtCase extends Model
 {
     protected $table = 'cases';
 
     protected $fillable = [
+        'user_id',
         'title',
         'parties_label',
         'state',
@@ -35,6 +38,29 @@ class CourtCase extends Model
             'next_hearing' => 'date',
             'is_pinned' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('owner', function (Builder $builder) {
+            $userId = auth()->id();
+            if ($userId === null) {
+                return;
+            }
+
+            $builder->where($builder->qualifyColumn('user_id'), $userId);
+        });
+
+        static::creating(function (CourtCase $case) {
+            if ($userId = auth()->id()) {
+                $case->user_id = $userId;
+            }
+        });
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function caseParties(): HasMany
@@ -67,7 +93,7 @@ class CourtCase extends Model
 
     public function deleteStoredFiles(): void
     {
-        $disk = Storage::disk('public');
+        $disk = Casebook::files();
 
         foreach ($this->documents as $document) {
             if ($document->file_path) {

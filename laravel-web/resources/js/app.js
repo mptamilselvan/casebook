@@ -36,7 +36,7 @@ window.casebookPage = function (config) {
             isHearing: false,
             fileLabel: 'No file',
         },
-        docOpen: config.modal === 'document',
+        docOpen: false,
         docName: old.doc_name || '',
         docFolder: old.doc_folder || 'Pleadings',
         templateOpen: config.modal === 'template',
@@ -49,6 +49,28 @@ window.casebookPage = function (config) {
         documentHaystacks: config.documentHaystacks || [],
         init() {
             this.applyTheme();
+            if (config.modal === 'add-event') {
+                this.tab = 'Timeline';
+                this.$nextTick(() => this.focusAddEvent());
+            }
+            if (config.modal === 'add-document') {
+                this.tab = 'Documents';
+                this.$nextTick(() => this.focusUploadDocument());
+            }
+        },
+        focusAddEvent() {
+            this.tab = 'Timeline';
+            this.$nextTick(() => {
+                document.getElementById('add-event-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('add-event-title')?.focus();
+            });
+        },
+        focusUploadDocument() {
+            this.tab = 'Documents';
+            this.$nextTick(() => {
+                document.getElementById('upload-document-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('upload-document-name')?.focus();
+            });
         },
         applyTheme() {
             this.theme = 'light';
