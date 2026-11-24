@@ -19,3 +19,4 @@ flutter pub get
 flutter build appbundle --release
 
 adb devices
+

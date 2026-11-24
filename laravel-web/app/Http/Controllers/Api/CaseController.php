@@ -8,6 +8,8 @@ use App\Models\Template;
 use App\Support\Casebook;
 use App\Support\CasebookData;
 use App\Support\IndiaLocations;
+use App\Support\Usage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,6 +53,8 @@ class CaseController extends Controller
             'cases' => $cases->map(fn (CourtCase $case) => CasebookData::caseSummary($case))->values(),
             'case' => $active ? CasebookData::caseDetail($active) : null,
             'templates' => $templates->map(fn (Template $template) => CasebookData::template($template))->values(),
+            'usage' => Usage::summary($request->user()),
+            'notifications' => CasebookData::notifications(),
         ]);
     }
 
@@ -75,6 +79,11 @@ class CaseController extends Controller
             'respondents.*' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if ($reason = Usage::caseBlockReason($request->user())) {
+            throw ValidationException::withMessages(['case' => $reason]);
+        }
+
+        IndiaLocations::rememberCourt($data['state'], $data['district'], $data['court']);
         $number = trim((string) ($data['case_number'] ?? ''));
         $year = trim((string) ($data['case_year'] ?? ''));
         $title = trim($number.'/'.$year, '/');

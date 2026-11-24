@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../app_state.dart';
+import '../models.dart';
 import '../theme.dart';
 
 String avatarLetter(AppState state) {
@@ -48,6 +49,7 @@ class CasebookTopBar extends StatelessWidget {
     this.onStartSearch,
     this.onCloseSearch,
     this.onSearchChanged,
+    this.notifications = const [],
   });
 
   final String title;
@@ -60,6 +62,7 @@ class CasebookTopBar extends StatelessWidget {
   final VoidCallback? onStartSearch;
   final VoidCallback? onCloseSearch;
   final ValueChanged<String>? onSearchChanged;
+  final List<AppNotification> notifications;
 
   @override
   Widget build(BuildContext context) {
@@ -134,23 +137,139 @@ class CasebookTopBar extends StatelessWidget {
                 onPressed: onStartSearch,
                 icon: const Icon(Icons.search, size: 22, color: casebookText),
               ),
-            if (onAvatar != null)
-              GestureDetector(
-                onTap: onAvatar,
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: casebookPurple,
-                  child: Text(
-                    avatarLetter,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
+          ],
+          _NotificationButton(items: notifications),
+          if (onAvatar != null)
+            GestureDetector(
+              onTap: onAvatar,
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: casebookPurple,
+                child: Text(
+                  avatarLetter,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
               ),
-          ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationButton extends StatelessWidget {
+  const _NotificationButton({required this.items});
+
+  final List<AppNotification> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = items.length;
+
+    return IconButton(
+      tooltip: 'Notifications',
+      onPressed: () {
+        showModalBottomSheet<void>(
+          context: context,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          builder: (context) => _NotificationSheet(items: items),
+        );
+      },
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(Icons.notifications_none, size: 22, color: casebookText),
+          if (count > 0)
+            Positioned(
+              right: -6,
+              top: -4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  count > 99 ? '99+' : '$count',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationSheet extends StatelessWidget {
+  const _NotificationSheet({required this.items});
+
+  final List<AppNotification> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Text(
+              'Notifications',
+              style: TextStyle(
+                color: casebookText,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          if (items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: Text(
+                'No notifications',
+                style: TextStyle(color: casebookMuted),
+              ),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: items.length,
+                separatorBuilder: (context, index) =>
+                    const Divider(height: 1, color: casebookLine),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return ListTile(
+                    title: Text(
+                      item.title,
+                      style: const TextStyle(
+                        color: casebookText,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      item.date,
+                      style: const TextStyle(color: casebookMuted),
+                    ),
+                  );
+                },
+              ),
+            ),
         ],
       ),
     );

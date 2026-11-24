@@ -74,6 +74,22 @@ class _CasePageState extends State<CasePage> {
     }
   }
 
+  Future<void> _setHearing(CaseDetail item) async {
+    final initial = DateTime.tryParse(item.nextHearing ?? '') ?? DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      initialDate: initial,
+    );
+    if (picked == null) {
+      return;
+    }
+    final formatted =
+        '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+    await _run(widget.state.updateHearing(item.id, formatted));
+  }
+
   void _goTo(int index) {
     setState(() => tab = index);
     page.animateToPage(
@@ -96,6 +112,7 @@ class _CasePageState extends State<CasePage> {
             onMenu: widget.onMenu,
             onAvatar: widget.onAccount,
             avatarLetter: avatarLetter(widget.state),
+            notifications: widget.state.workspace?.notifications ?? const [],
             searching: searching,
             searchController: searchBox,
             searchHint: 'Search in ${tabs[tab]}...',
@@ -109,6 +126,7 @@ class _CasePageState extends State<CasePage> {
             }),
             onSearchChanged: (value) => setState(() => query = value),
           ),
+          _AccountLine(user: widget.state.user),
           if (item == null)
             const Expanded(
               child: Center(
@@ -121,6 +139,7 @@ class _CasePageState extends State<CasePage> {
           else ...[
             _CaseHeader(
               item: item,
+              onSetHearing: () => _setHearing(item),
               onEdit: () async {
                 await editCase(context, widget.state, item);
                 widget.onChanged();
@@ -166,14 +185,90 @@ class _CasePageState extends State<CasePage> {
   }
 }
 
+String? _storageLine(UserAccount? user) {
+  final used = user?.storageLabel?.trim() ?? '';
+  if (used.isEmpty) {
+    return null;
+  }
+  final limit = user?.storageLimitLabel?.trim() ?? '';
+  if (limit.isEmpty) {
+    return used;
+  }
+  return '$used of $limit';
+}
+
+String? _casesLine(UserAccount? user) {
+  final count = user?.casesCount;
+  if (count == null) {
+    return null;
+  }
+  final limit = user?.casesLimit;
+  if (limit == null) {
+    return '$count cases';
+  }
+  return '$count of $limit cases';
+}
+
+class _AccountLine extends StatelessWidget {
+  const _AccountLine({required this.user});
+
+  final UserAccount? user;
+
+  @override
+  Widget build(BuildContext context) {
+    final email = user?.email.trim() ?? '';
+    final plan = user?.planName?.trim() ?? '';
+    final storage = _storageLine(user);
+    final cases = _casesLine(user);
+    if (email.isEmpty && plan.isEmpty && storage == null && cases == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (email.isNotEmpty)
+            Text(
+              email,
+              style: const TextStyle(color: casebookMuted, fontSize: 12),
+            ),
+          if (plan.isNotEmpty)
+            Text(
+              plan,
+              style: const TextStyle(
+                color: casebookText,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          if (storage != null)
+            Text(
+              storage,
+              style: const TextStyle(color: casebookMuted, fontSize: 12),
+            ),
+          if (cases != null)
+            Text(
+              cases,
+              style: const TextStyle(color: casebookMuted, fontSize: 12),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CaseHeader extends StatelessWidget {
   const _CaseHeader({
     required this.item,
+    required this.onSetHearing,
     required this.onEdit,
     required this.onDelete,
   });
 
   final CaseDetail item;
+  final VoidCallback onSetHearing;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -229,25 +324,64 @@ class _CaseHeader extends StatelessWidget {
                   ),
                 ),
               ),
-              PopupMenuButton<String>(
-                color: Colors.white,
-                icon: const Icon(Icons.more_vert, color: casebookMuted),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                  } else if (value == 'delete') {
-                    onDelete();
-                  }
-                },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Edit Case')),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text(
-                      'Delete Case',
-                      style: TextStyle(color: casebookDanger),
-                    ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                        onPressed: onSetHearing,
+                        style: TextButton.styleFrom(
+                          foregroundColor: casebookPurple,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        child: const Text('Set Hearing date'),
+                      ),
+                      PopupMenuButton<String>(
+                        color: Colors.white,
+                        icon: const Icon(Icons.more_vert, color: casebookMuted),
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            onEdit();
+                          } else if (value == 'delete') {
+                            onDelete();
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text('Edit Case'),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(
+                              'Delete Case',
+                              style: TextStyle(color: casebookDanger),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
+                  if (item.nextHearing != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12, bottom: 4),
+                      child: Text(
+                        formatDay(item.nextHearing),
+                        style: const TextStyle(
+                          color: casebookBlue,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ],
@@ -396,7 +530,6 @@ class _TimelineState extends State<_Timeline> {
   final _title = TextEditingController();
   final _notes = TextEditingController();
   DateTime _date = DateTime.now();
-  bool _hearing = false;
   List<int>? _bytes;
   String? _filename;
   bool _busy = false;
@@ -463,7 +596,7 @@ class _TimelineState extends State<_Timeline> {
           'event_date': formatted,
           'title': name,
           'description': _notes.text,
-          'is_hearing': _hearing ? '1' : '0',
+          'is_hearing': '0',
         },
         bytes: _bytes,
         filename: _filename,
@@ -474,7 +607,6 @@ class _TimelineState extends State<_Timeline> {
       _title.clear();
       _notes.clear();
       setState(() {
-        _hearing = false;
         _bytes = null;
         _filename = null;
         _date = DateTime.now();
@@ -790,20 +922,6 @@ class _TimelineState extends State<_Timeline> {
                   decoration: const InputDecoration(
                     hintText: 'Event details...',
                   ),
-                ),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Hearing date',
-                        style: TextStyle(color: casebookText),
-                      ),
-                    ),
-                    Switch(
-                      value: _hearing,
-                      onChanged: (value) => setState(() => _hearing = value),
-                    ),
-                  ],
                 ),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _pickFile,

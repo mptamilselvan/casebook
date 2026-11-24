@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "219978232792",
+    "project_id": "casebook-8af13",
+    "storage_bucket": "casebook-8af13.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219978232792:android:6bdcb7d258e6ccebe478ad",
+        "android_client_info": {
+          "package_name": "com.casebook.casebook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXzLIeemigfnQp5_4jMyOJFLxOHfba4GA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

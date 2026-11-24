@@ -6,18 +6,24 @@ use App\Models\CaseEvent;
 use App\Models\CaseParty;
 use App\Models\CourtCase;
 use App\Models\Document;
+use App\Models\HearingReminder;
 use App\Models\Template;
 use App\Models\User;
+use App\Support\Usage;
 
 class CasebookData
 {
     public static function user(User $user): array
     {
+        $user->loadMissing('plan');
+
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
+            'plan_name' => $user->plan?->name ?? $user->plan_name,
+            'usage' => Usage::summary($user),
         ];
     }
 
@@ -107,5 +113,21 @@ class CasebookData
             'content' => $template->content ?? '',
             'export_url' => 'templates/'.$template->id.'/export',
         ];
+    }
+
+    public static function notifications(): array
+    {
+        return HearingReminder::query()
+            ->whereHas('courtCase')
+            ->with('courtCase:id,title')
+            ->orderByDesc('sent_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (HearingReminder $reminder) => [
+                'id' => $reminder->id,
+                'title' => $reminder->title(),
+                'date' => $reminder->sent_at?->format('d M Y') ?? '',
+            ])
+            ->all();
     }
 }

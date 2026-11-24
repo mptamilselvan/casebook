@@ -7,6 +7,8 @@ use App\Models\CaseEvent;
 use App\Models\CourtCase;
 use App\Support\Casebook;
 use App\Support\CasebookData;
+use App\Support\Usage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -64,14 +66,20 @@ class CaseEventController extends Controller
         ];
 
         if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $incoming = (int) ($file->getSize() ?: 0);
+            if ($reason = Usage::storageBlockReason($request->user(), $incoming, (int) ($event->bytes ?? 0))) {
+                throw ValidationException::withMessages(['file' => $reason]);
+            }
+
             if ($event->exists && $event->file_path) {
                 Casebook::files()->delete($event->file_path);
             }
 
-            $file = $request->file('file');
             $payload['file_path'] = $file->store('event-files', Casebook::FILE_DISK);
             $payload['file_name'] = $file->getClientOriginalName();
-            $payload['file_size'] = Casebook::sizeLabel($file->getSize() ?: 0);
+            $payload['file_size'] = Casebook::sizeLabel($incoming);
+            $payload['bytes'] = $incoming;
         }
 
         if ($event->exists) {

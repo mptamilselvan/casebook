@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Casebook;
+use App\Support\Usage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,6 +56,22 @@ class CourtCase extends Model
             if ($userId = auth()->id()) {
                 $case->user_id = $userId;
             }
+        });
+
+        static::created(function (CourtCase $case) {
+            if ($case->user_id) {
+                Usage::change((int) $case->user_id, cases: 1);
+            }
+        });
+
+        static::deleting(function (CourtCase $case) {
+            if (! $case->user_id) {
+                return;
+            }
+
+            $bytes = (int) $case->documents()->withoutGlobalScope('owner')->sum('bytes')
+                + (int) $case->events()->withoutGlobalScope('owner')->sum('bytes');
+            Usage::change((int) $case->user_id, bytes: -$bytes, cases: -1);
         });
     }
 

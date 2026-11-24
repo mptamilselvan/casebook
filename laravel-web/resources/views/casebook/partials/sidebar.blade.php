@@ -13,10 +13,13 @@
             <img src="{{ asset('images/casebook-logo.png') }}" alt="" class="w-9 h-9 object-contain">
             <h1 class="font-bold text-lg leading-tight">Case Book</h1>
         </div>
-        <button type="button" @click.stop="topMenuOpen = !topMenuOpen; sidebarMenu = null; centerMenuOpen = false" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#20222B]">
+        <button type="button" @click.stop="topMenuOpen = !topMenuOpen; sidebarMenu = null; centerMenuOpen = false; notificationsOpen = false" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#20222B]">
             <x-icon name="ellipsis-vertical" class="w-5 h-5" />
         </button>
         <div x-show="topMenuOpen" x-cloak @click.stop class="absolute right-4 top-12 w-40 {{ $menuClass }}">
+            <a href="{{ route('plans.index') }}" class="{{ $menuItemClass }} text-sm">
+                <x-icon name="indian-rupee" class="w-4 h-4" /> Prices
+            </a>
             <button type="button" @click="settingsOpen = true; topMenuOpen = false" class="{{ $menuItemClass }} text-sm">
                 <x-icon name="settings" class="w-4 h-4" /> Settings
             </button>
@@ -25,6 +28,22 @@
                 <button type="submit" class="{{ $menuItemClass }} text-sm">Sign out</button>
             </form>
         </div>
+    </div>
+
+    <div class="px-4 pb-3">
+        @php
+            $usage = \App\Support\Usage::summary(auth()->user());
+            $storageLine = $usage['storage_limit_label']
+                ? $usage['storage_label'].' of '.$usage['storage_limit_label']
+                : $usage['storage_label'];
+            $casesLine = $usage['cases_limit'] === null
+                ? $usage['cases_count'].' cases'
+                : $usage['cases_count'].' of '.$usage['cases_limit'].' cases';
+        @endphp
+        <p class="text-xs text-gray-500 break-all">{{ auth()->user()->email }}</p>
+        <p class="text-sm font-semibold mt-0.5">{{ auth()->user()->plan?->name ?? auth()->user()->plan_name ?? 'Free' }}</p>
+        <p class="text-xs text-gray-500 mt-1">{{ $storageLine }}</p>
+        <p class="text-xs text-gray-500">{{ $casesLine }}</p>
     </div>
 
     <div class="px-4 pb-4 mt-2">
@@ -46,6 +65,10 @@
                     <span class="text-xs opacity-60">{{ $counts[$item['label']] }}</span>
                 </a>
             @endforeach
+            <a href="{{ route('plans.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B] hover:text-gray-800 dark:hover:text-gray-200">
+                <x-icon name="indian-rupee" class="w-4 h-4" />
+                <span class="text-sm">Prices</span>
+            </a>
         </div>
 
         <div class="px-4 mt-6 mb-2 relative">
@@ -83,7 +106,7 @@
                             </div>
                         @endif
 
-                        <button type="button" @click.stop="sidebarMenu = sidebarMenu === {{ $case->id }} ? null : {{ $case->id }}; topMenuOpen = false; centerMenuOpen = false; eventMenu = null"
+                        <button type="button" @click.stop="sidebarMenu = sidebarMenu === {{ $case->id }} ? null : {{ $case->id }}; topMenuOpen = false; centerMenuOpen = false; eventMenu = null; notificationsOpen = false"
                                 class="absolute right-2 top-3 p-1 rounded hover:bg-gray-100 dark:hover:bg-[#20222B] {{ $isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100' }}"
                                 :class="sidebarMenu === {{ $case->id }} ? 'opacity-100' : ''">
                             <x-icon name="ellipsis-vertical" class="w-4 h-4 text-gray-500 dark:text-gray-400" />

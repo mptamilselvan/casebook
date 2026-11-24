@@ -16,6 +16,12 @@ class EmailVerificationController extends Controller
         $user = User::query()->findOrFail($id);
         EmailLogin::markVerified($user, $hash);
 
+        if (! $user->is_enabled) {
+            return redirect()
+                ->route('login')
+                ->withErrors(['email' => 'This account is disabled.']);
+        }
+
         Auth::login($user);
         $request->session()->regenerate();
 

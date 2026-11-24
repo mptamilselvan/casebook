@@ -3,6 +3,7 @@ laravel-web/.DS_Store
 laravel-web/.env
 laravel-web/.env.backup
 laravel-web/.env.production
+laravel-web/*firebase-adminsdk*.json
 mobile/.env
 laravel-web/.phpactor.json
 laravel-web/.phpunit.result.cache

@@ -59,9 +59,7 @@ class _NewCasePageState extends State<NewCasePage> {
       await widget.state.createCase({
         'state': selectedState ?? '',
         'district': selectedDistrict ?? '',
-        'court': selectedCourt == 'Other'
-            ? courtOther.text.trim()
-            : (selectedCourt ?? ''),
+        'court': _courtName(),
         'case_number': number.text,
         'case_year': year.text,
         'party1_role': role1,
@@ -104,15 +102,11 @@ class _NewCasePageState extends State<NewCasePage> {
           if (error != null)
             Text(error!, style: const TextStyle(color: Color(0xFFDC2626))),
           if (step == 1) ...[
-            DropdownButtonFormField<String>(
-              key: ValueKey('state-$selectedState'),
-              initialValue: selectedState,
-              decoration: casebookField('State'),
-              hint: const Text('Select state'),
-              items: [
-                for (final place in places)
-                  DropdownMenuItem(value: place.name, child: Text(place.name)),
-              ],
+            SearchChoice(
+              label: 'State',
+              value: selectedState,
+              hint: 'Search state',
+              options: [for (final place in places) place.name],
               onChanged: (value) {
                 setState(() {
                   selectedState = value;
@@ -123,53 +117,51 @@ class _NewCasePageState extends State<NewCasePage> {
               },
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              key: ValueKey('district-$selectedState'),
-              initialValue: selectedDistrict,
-              decoration: casebookField('District'),
-              hint: const Text('Select district'),
-              items: [
-                for (final place in districts)
-                  DropdownMenuItem(value: place.name, child: Text(place.name)),
-              ],
-              onChanged: selectedState == null
-                  ? null
-                  : (value) {
-                      setState(() {
-                        selectedDistrict = value;
-                        selectedCourt = null;
-                        courtOther.clear();
-                      });
-                    },
+            SearchChoice(
+              label: 'District',
+              value: selectedDistrict,
+              hint: 'Search district',
+              enabled: selectedState != null,
+              options: [for (final place in districts) place.name],
+              onChanged: (value) {
+                setState(() {
+                  selectedDistrict = value;
+                  selectedCourt = null;
+                  courtOther.clear();
+                });
+              },
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              key: ValueKey('court-$selectedState-$selectedDistrict'),
-              initialValue: selectedCourt,
-              decoration: casebookField('Court'),
-              hint: const Text('Select court'),
-              items: [
-                for (final name in courts)
-                  DropdownMenuItem(value: name, child: Text(name)),
-                const DropdownMenuItem(value: 'Other', child: Text('Other')),
-              ],
-              onChanged: selectedDistrict == null
-                  ? null
-                  : (value) => setState(() => selectedCourt = value),
+            SearchChoice(
+              label: 'Court',
+              value: selectedCourt,
+              hint: 'Search court',
+              enabled: selectedDistrict != null,
+              options: courts
+                  .where((name) => name.toLowerCase() != 'other')
+                  .toList(),
+              pinned: 'Other',
+              onChanged: (value) => setState(() {
+                selectedCourt = value;
+                if (value != 'Other') {
+                  courtOther.clear();
+                }
+              }),
             ),
             if (selectedCourt == 'Other') ...[
               const SizedBox(height: 12),
               TextField(
                 controller: courtOther,
-                decoration: casebookField('Court name'),
+                decoration: casebookField(
+                  'New court',
+                  hint: 'Enter the court name',
+                ),
               ),
             ],
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () {
-                final courtName = selectedCourt == 'Other'
-                    ? courtOther.text.trim()
-                    : (selectedCourt ?? '');
+                final courtName = _courtName();
                 if (selectedState == null ||
                     selectedDistrict == null ||
                     courtName.isEmpty) {
@@ -240,6 +232,13 @@ class _NewCasePageState extends State<NewCasePage> {
         ],
       ),
     );
+  }
+
+  String _courtName() {
+    if (selectedCourt == 'Other') {
+      return courtOther.text.trim();
+    }
+    return selectedCourt ?? '';
   }
 
   Widget _dropdown(
@@ -764,35 +763,37 @@ class _PartyFormState extends State<_PartyForm> {
     }
     setState(() => busy = true);
     try {
-      final side1 = widget.item.parties
-          .where((party) => party.side == 1)
-          .map((party) => party.name)
-          .toList();
-      final side2 = widget.item.parties
-          .where((party) => party.side == 2)
-          .map((party) => party.name)
-          .toList();
-      final target = widget.side == 1 ? side1 : side2;
-      if (widget.party == null) {
-        target.add(trimmed);
-      } else {
-        final people = widget.item.parties
-            .where((party) => party.side == widget.side)
-            .toList();
-        final index = people.indexWhere(
-          (party) => party.id == widget.party!.id,
-        );
-        if (index >= 0 && index < target.length) {
-          target[index] = trimmed;
+      final side1 = <String>[];
+      final side2 = <String>[];
+      var included = false;
+      for (final party in widget.item.parties) {
+        final bucket = party.side == 1 ? side1 : side2;
+        if (widget.party != null && party.id == widget.party!.id) {
+          bucket.add(trimmed);
+          included = true;
+          continue;
+        }
+        final existing = party.name.trim();
+        if (existing.isNotEmpty) {
+          bucket.add(existing);
         }
       }
+      if (!included) {
+        (widget.side == 1 ? side1 : side2).add(trimmed);
+      }
+      final roles1 = widget.state.workspace?.party1Roles ?? {};
+      final roles2 = widget.state.workspace?.party2Roles ?? {};
       await widget.state.syncParties(widget.item.id, {
-        'party1_role': widget.side == 1
-            ? role
-            : (widget.item.party1Role ?? 'Petitioner'),
-        'party2_role': widget.side == 2
-            ? role
-            : (widget.item.party2Role ?? 'Respondent'),
+        'party1_role': _knownRole(
+          widget.side == 1 ? role : widget.item.party1Role,
+          roles1,
+          'Petitioner',
+        ),
+        'party2_role': _knownRole(
+          widget.side == 2 ? role : widget.item.party2Role,
+          roles2,
+          'Respondent',
+        ),
         'side1': side1,
         'side2': side2,
       });
@@ -809,6 +810,13 @@ class _PartyFormState extends State<_PartyForm> {
         setState(() => busy = false);
       }
     }
+  }
+
+  String _knownRole(String? value, Map<String, String> roles, String fallback) {
+    if (value != null && roles.containsKey(value)) {
+      return value;
+    }
+    return roles.keys.firstOrNull ?? fallback;
   }
 
   @override
@@ -828,6 +836,9 @@ class _PartyFormState extends State<_PartyForm> {
         formLabel('Party Name'),
         TextField(
           controller: name,
+          autofocus: true,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => save(),
           decoration: const InputDecoration(hintText: 'Enter name'),
         ),
         formLabel('Role / Designation'),
@@ -1015,6 +1026,160 @@ class _UploadButton extends StatelessWidget {
           onPressed: onPressed,
           icon: const Icon(Icons.upload, size: 18),
           label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+      ),
+    );
+  }
+}
+
+class SearchChoice extends StatelessWidget {
+  const SearchChoice({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.hint,
+    required this.options,
+    required this.onChanged,
+    this.enabled = true,
+    this.pinned,
+  });
+
+  final String label;
+  final String? value;
+  final String hint;
+  final List<String> options;
+  final ValueChanged<String> onChanged;
+  final bool enabled;
+  final String? pinned;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: !enabled
+          ? null
+          : () async {
+              final picked = await showModalBottomSheet<String>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.white,
+                builder: (context) => _OptionSearch(
+                  title: label,
+                  options: options,
+                  selected: value,
+                  pinned: pinned,
+                ),
+              );
+              if (picked != null) {
+                onChanged(picked);
+              }
+            },
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: casebookField(label)
+            .copyWith(enabled: enabled, suffixIcon: const Icon(Icons.search)),
+        child: Text(
+          (value == null || value!.isEmpty) ? hint : value!,
+          style: TextStyle(
+            color: value == null || value!.isEmpty
+                ? casebookMuted
+                : casebookText,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionSearch extends StatefulWidget {
+  const _OptionSearch({
+    required this.title,
+    required this.options,
+    required this.selected,
+    this.pinned,
+  });
+
+  final String title;
+  final List<String> options;
+  final String? selected;
+  final String? pinned;
+
+  @override
+  State<_OptionSearch> createState() => _OptionSearchState();
+}
+
+class _OptionSearchState extends State<_OptionSearch> {
+  final query = TextEditingController();
+
+  @override
+  void dispose() {
+    query.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final needle = query.text.trim().toLowerCase();
+    final matches = widget.options
+        .where(
+          (option) =>
+              option != widget.pinned &&
+              (needle.isEmpty || option.toLowerCase().contains(needle)),
+        )
+        .toList();
+    final pinned = widget.pinned;
+    if (pinned != null && pinned.isNotEmpty) {
+      matches.add(pinned);
+    }
+    final height = MediaQuery.sizeOf(context).height * 0.72;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SizedBox(
+        height: height,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: TextField(
+                controller: query,
+                autofocus: true,
+                decoration: casebookField(widget.title, hint: 'Search'),
+                onChanged: (_) => setState(() {}),
+              ),
+            ),
+            Expanded(
+              child: matches.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No matches',
+                        style: TextStyle(color: casebookMuted),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: matches.length,
+                      itemBuilder: (context, index) {
+                        final option = matches[index];
+                        final chosen = option == widget.selected;
+                        return ListTile(
+                          title: Text(
+                            option,
+                            style: TextStyle(
+                              color: casebookText,
+                              fontWeight: chosen
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                          trailing: chosen
+                              ? const Icon(Icons.check, color: casebookPurple)
+                              : null,
+                          onTap: () => Navigator.pop(context, option),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

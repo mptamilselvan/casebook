@@ -6,6 +6,7 @@ import '../theme.dart';
 import 'case_page.dart';
 import 'chrome.dart';
 import 'forms.dart';
+import 'prices_page.dart';
 
 enum _Screen { cases, templates, calendar }
 
@@ -99,6 +100,20 @@ class _CasebookPageState extends State<CasebookPage> {
                     _closeMenu();
                     setState(() => screen = _Screen.templates);
                   },
+                  onPrices: () {
+                    _closeMenu();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => PricesPage(
+                          api: state.api,
+                          onUser: (user) {
+                            state.user = user;
+                            state.notifyListeners();
+                          },
+                        ),
+                      ),
+                    );
+                  },
                   onOpenCase: (item) {
                     _closeMenu();
                     setState(() => screen = _Screen.cases);
@@ -159,6 +174,7 @@ class _Menu extends StatelessWidget {
     required this.onNewCase,
     required this.onFilter,
     required this.onTemplates,
+    required this.onPrices,
     required this.onOpenCase,
   });
 
@@ -168,6 +184,7 @@ class _Menu extends StatelessWidget {
   final VoidCallback onNewCase;
   final ValueChanged<String> onFilter;
   final VoidCallback onTemplates;
+  final VoidCallback onPrices;
   final ValueChanged<CaseSummary> onOpenCase;
 
   @override
@@ -234,6 +251,12 @@ class _Menu extends StatelessWidget {
                   selected: screen == _Screen.templates,
                   accent: const Color(0xFFD97706),
                   onTap: onTemplates,
+                ),
+                _StatRow(
+                  icon: Icons.currency_rupee,
+                  label: 'Prices',
+                  selected: false,
+                  onTap: onPrices,
                 ),
               ],
             ),
@@ -516,6 +539,7 @@ class _TemplatesScreen extends StatelessWidget {
             onMenu: onMenu,
             onAvatar: onAccount,
             avatarLetter: avatarLetter(state),
+            notifications: state.workspace?.notifications ?? const [],
           ),
           Expanded(
             child: ListView(
@@ -689,6 +713,7 @@ class _CalendarScreenState extends State<_CalendarScreen> {
             onMenu: widget.onMenu,
             onAvatar: widget.onAccount,
             avatarLetter: avatarLetter(widget.state),
+            notifications: widget.state.workspace?.notifications ?? const [],
           ),
           Expanded(
             child: ListView(

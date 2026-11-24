@@ -7,6 +7,8 @@ use App\Models\CourtCase;
 use App\Models\Document;
 use App\Support\Casebook;
 use App\Support\CasebookData;
+use App\Support\Usage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -22,6 +24,11 @@ class DocumentController extends Controller
         ]);
 
         $uploaded = $request->file('file');
+        $bytes = (int) ($uploaded?->getSize() ?: 0);
+        if ($reason = Usage::storageBlockReason($request->user(), $bytes)) {
+            throw ValidationException::withMessages(['file' => $reason]);
+        }
+
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
             $name = $uploaded?->getClientOriginalName() ?: 'Untitled.pdf';
@@ -30,7 +37,8 @@ class DocumentController extends Controller
         $document = $case->documents()->create([
             'name' => $name,
             'folder' => $data['folder'],
-            'size' => $uploaded ? Casebook::sizeLabel($uploaded->getSize() ?: 0) : null,
+            'size' => $uploaded ? Casebook::sizeLabel($bytes) : null,
+            'bytes' => $bytes,
             'file_path' => $uploaded?->store('documents', Casebook::FILE_DISK),
         ]);
 

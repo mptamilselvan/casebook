@@ -42,7 +42,7 @@
     ];
 @endphp
 
-<div x-data="casebookPage(@js($alpine))" @click="topMenuOpen = false; centerMenuOpen = false; sidebarMenu = null; eventMenu = null" class="flex h-screen w-full bg-white text-gray-800 font-sans overflow-hidden">
+<div x-data="casebookPage(@js($alpine))" @click="topMenuOpen = false; centerMenuOpen = false; notificationsOpen = false; sidebarMenu = null; eventMenu = null" class="flex h-screen w-full bg-white text-gray-800 font-sans overflow-hidden">
     @include('casebook.partials.sidebar')
     @include('casebook.partials.main')
     @include('casebook.partials.modals')

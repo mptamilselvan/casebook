@@ -10,6 +10,7 @@ servers:
     description: Local
 tags:
   - name: Auth
+  - name: Plans
   - name: Cases
   - name: Events
   - name: Documents
@@ -104,6 +105,97 @@ paths:
                     example: logged_out
         '401':
           $ref: '#/components/responses/Unauthenticated'
+  /plans:
+    get:
+      tags: [Plans]
+      summary: List plans and INR prices
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Free, Basic, and Pro
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currency:
+                    type: string
+                    example: INR
+                  current_plan_id:
+                    type: integer
+                    nullable: true
+                  plans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Plan'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+  /plans/{plan}/checkout:
+    post:
+      tags: [Plans]
+      summary: Apply a plan or start a Razorpay order
+      description: A free plan is applied immediately. A paid plan returns a Razorpay Checkout order. Checkout shows the methods enabled on the Razorpay account, including UPI, cards, and net banking.
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Plan applied, or checkout details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [paid, checkout]
+                  key:
+                    type: string
+                    description: Razorpay key id
+                  order_id:
+                    type: string
+                  amount:
+                    type: integer
+                    description: Amount in paise
+                  currency:
+                    type: string
+                    example: INR
+                  plan_name:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '422':
+          description: The user is already on this plan
+        '503':
+          description: Razorpay is not configured
+  /plans/verify:
+    post:
+      tags: [Plans]
+      summary: Confirm a Razorpay payment and switch the plan
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [razorpay_order_id, razorpay_payment_id, razorpay_signature]
+              properties:
+                razorpay_order_id:
+                  type: string
+                razorpay_payment_id:
+                  type: string
+                razorpay_signature:
+                  type: string
+      responses:
+        '200':
+          description: Payment verified and the user plan updated
+        '422':
+          description: Signature did not match
   /casebook:
     get:
       tags: [Cases]
@@ -637,6 +729,42 @@ components:
         status:
           type: string
           example: deleted
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+          enum: [free, basic, pro]
+        name:
+          type: string
+        space_limit:
+          type: integer
+          description: Storage included with the plan, in GB
+        cases_limit:
+          type: integer
+          nullable: true
+          description: Null means unlimited cases
+        cases_label:
+          type: string
+        space_label:
+          type: string
+        price:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            amount:
+              type: integer
+              description: Price in Indian rupees
+            currency:
+              type: string
+              example: INR
+            label:
+              type: string
+              example: ₹100
     User:
       type: object
       properties:
@@ -651,6 +779,32 @@ components:
           type: string
           format: date-time
           nullable: true
+        plan_name:
+          type: string
+          nullable: true
+        usage:
+          $ref: '#/components/schemas/Usage'
+    Usage:
+      type: object
+      properties:
+        storage_bytes:
+          type: integer
+        storage_label:
+          type: string
+          example: 1.2 MB
+        storage_limit_bytes:
+          type: integer
+          nullable: true
+        storage_limit_label:
+          type: string
+          nullable: true
+          example: 1 GB
+        cases_count:
+          type: integer
+        cases_limit:
+          type: integer
+          nullable: true
+          description: Null means unlimited cases
     AuthToken:
       type: object
       properties:
@@ -907,3 +1061,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Template'
+        notifications:
+          type: array
+          description: Push notifications already sent for the signed-in user's cases
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              title:
+                type: string
+              date:
+                type: string
+                example: 24 Nov 2026

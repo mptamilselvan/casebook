@@ -5,17 +5,23 @@ use App\Http\Controllers\Api\CaseController;
 use App\Http\Controllers\Api\CaseEventController;
 use App\Http\Controllers\Api\CasePartyController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\PlanController;
+use App\Http\Controllers\PlanCheckoutController;
 use App\Http\Controllers\Api\TemplateController;
 use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Http\Middleware\EnsureUserIsEnabled;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/email/verify', [AuthController::class, 'verify'])->middleware('throttle:6,1');
 
-Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class, EnsureUserIsEnabled::class])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::get('/plans', [PlanController::class, 'index']);
+    Route::post('/plans/{plan}/checkout', [PlanCheckoutController::class, 'checkout']);
+    Route::post('/plans/verify', [PlanCheckoutController::class, 'verify']);
     Route::get('/casebook', [CaseController::class, 'index']);
     Route::post('/cases', [CaseController::class, 'store']);
     Route::get('/cases/{case}', [CaseController::class, 'show']);

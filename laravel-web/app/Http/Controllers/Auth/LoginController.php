@@ -24,6 +24,18 @@ class LoginController extends Controller
 
         $result = EmailLogin::resolve($validated['email']);
 
+        if ($result['disabled']) {
+            return back()->withErrors([
+                'email' => 'This account is disabled.',
+            ]);
+        }
+
+        if ($result['user']->isAdmin()) {
+            return back()->withErrors([
+                'email' => 'Admin accounts sign in with a password.',
+            ]);
+        }
+
         if ($result['verified']) {
             Auth::login($result['user']);
             $request->session()->regenerate();

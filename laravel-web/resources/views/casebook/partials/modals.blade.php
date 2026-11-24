@@ -68,40 +68,46 @@
             </div>
             <button type="button" @click="newCaseOpen = false" class="text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-[#16181D] p-1.5 rounded-md"><x-icon name="x" class="w-5 h-5" /></button>
         </div>
-        <div class="p-6 overflow-y-auto">
+        <div class="p-6" :class="(stateMenu || districtMenu || courtMenu) ? 'overflow-visible' : 'overflow-y-auto'">
             @if (session('modal') === 'new-case' && $errors->any())
                 <p class="text-sm text-red-500 mb-4">{{ $errors->first() }}</p>
             @endif
             <div x-show="modalStep === 1" class="space-y-5">
+                <input type="hidden" name="state" :value="state">
+                <input type="hidden" name="district" :value="district">
                 <input type="hidden" name="court" :value="courtValue()">
-                <div>
+                <div class="relative" @click.outside.capture="stateMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) stateMenu = false">
                     <label for="new-case-state" class="block text-xs font-semibold text-gray-500 mb-1">State</label>
-                    <select id="new-case-state" name="state" x-model="state" @change="selectState()" class="{{ $inputClass }}">
-                        <option value="">Select state</option>
-                        <template x-for="item in locations" :key="item.name">
-                            <option :value="item.name" x-text="item.name"></option>
+                    <input id="new-case-state" type="text" x-model="stateQuery" @focus="stateMenu = true; districtMenu = false; courtMenu = false" @input="stateMenu = true; if (stateQuery !== state) { state = ''; selectState(); districtQuery = ''; courtQuery = ''; }" placeholder="Search state" autocomplete="off" class="{{ $inputClass }}">
+                    <div x-show="stateMenu" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <template x-for="item in filteredStates()" :key="item.name">
+                            <button type="button" @click="chooseState(item.name)" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="item.name"></button>
                         </template>
-                    </select>
+                        <p x-show="filteredStates().length === 0" class="px-3 py-2 text-sm text-gray-500">No matches</p>
+                    </div>
                 </div>
-                <div>
+                <div class="relative" @click.outside.capture="districtMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) districtMenu = false">
                     <label for="new-case-district" class="block text-xs font-semibold text-gray-500 mb-1">District</label>
-                    <select id="new-case-district" name="district" x-model="district" @change="selectDistrict()" :disabled="state === ''" class="{{ $inputClass }} disabled:opacity-50">
-                        <option value="">Select district</option>
-                        <template x-for="item in stateDistricts()" :key="item.name">
-                            <option :value="item.name" x-text="item.name"></option>
+                    <input id="new-case-district" type="text" x-model="districtQuery" @focus="if (state !== '') { districtMenu = true; stateMenu = false; courtMenu = false }" @input="districtMenu = true; if (districtQuery !== district) { district = ''; selectDistrict(); courtQuery = ''; }" :disabled="state === ''" placeholder="Search district" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
+                    <div x-show="districtMenu && state !== ''" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <template x-for="item in filteredDistricts()" :key="item.name">
+                            <button type="button" @click="chooseDistrict(item.name)" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="item.name"></button>
                         </template>
-                    </select>
+                        <p x-show="filteredDistricts().length === 0" class="px-3 py-2 text-sm text-gray-500">No matches</p>
+                    </div>
                 </div>
-                <div>
+                <div class="relative" @click.outside.capture="courtMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) courtMenu = false">
                     <label for="new-case-court" class="block text-xs font-semibold text-gray-500 mb-1">Court</label>
-                    <select id="new-case-court" x-model="courtChoice" :disabled="district === ''" class="{{ $inputClass }} disabled:opacity-50">
-                        <option value="">Select court</option>
-                        <template x-for="name in stateCourts()" :key="name">
-                            <option :value="name" x-text="name"></option>
+                    <input id="new-case-court" type="text" x-model="courtQuery" @focus="if (district !== '') { courtMenu = true; stateMenu = false; districtMenu = false }" @input="courtMenu = true; if (courtQuery !== courtChoice) { courtChoice = ''; courtOther = ''; }" :disabled="district === ''" placeholder="Search court" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
+                    <div x-show="courtMenu && district !== ''" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <template x-for="name in filteredCourts()" :key="name">
+                            <button type="button" @click="chooseCourt(name); if (name === 'Other') { $nextTick(() => $refs.newCourt?.focus()) }" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="name"></button>
                         </template>
-                        <option value="Other">Other</option>
-                    </select>
-                    <input x-show="courtChoice === 'Other'" x-cloak type="text" x-model="courtOther" placeholder="Court name" class="{{ $inputClass }} mt-3">
+                    </div>
+                    <div x-show="courtChoice === 'Other'" x-cloak>
+                        <label for="new-case-court-other" class="block text-xs font-semibold text-gray-500 mt-3 mb-1">New court</label>
+                        <input id="new-case-court-other" type="text" x-ref="newCourt" x-model="courtOther" placeholder="Enter the court name" class="{{ $inputClass }}">
+                    </div>
                 </div>
                 <button type="button" @click="modalStep = 2" :disabled="courtValue().trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
             </div>

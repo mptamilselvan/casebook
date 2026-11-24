@@ -8,7 +8,11 @@ import 'models.dart';
 import 'push.dart';
 
 class AppState extends ChangeNotifier {
-  AppState(this.api);
+  AppState(this.api) {
+    CasebookPush.onCaseOpened = (caseId) {
+      load(caseId: caseId);
+    };
+  }
 
   final ApiClient api;
   UserAccount? user;
@@ -39,7 +43,7 @@ class AppState extends ChangeNotifier {
         await api.getJson('me') as Map<String, dynamic>,
       );
       await CasebookPush.login(user!.id);
-      await load();
+      await load(caseId: CasebookPush.takePendingCase());
       return true;
     } catch (_) {
       await clearSession();
@@ -53,7 +57,7 @@ class AppState extends ChangeNotifier {
     }) as Map<String, dynamic>;
     if (body['status'] == 'authenticated') {
       await _storeSession(body);
-      await load();
+      await load(caseId: CasebookPush.takePendingCase());
     }
     return body['status'] as String? ?? '';
   }
@@ -63,7 +67,7 @@ class AppState extends ChangeNotifier {
       'url': url.trim(),
     }) as Map<String, dynamic>;
     await _storeSession(body);
-    await load();
+    await load(caseId: CasebookPush.takePendingCase());
   }
 
   Future<void> load({int? caseId, bool keepSelection = true}) async {
@@ -74,9 +78,12 @@ class AppState extends ChangeNotifier {
     if (id != null) {
       query.write('&case=$id');
     }
-    workspace = Workspace.fromJson(
-      await api.getJson(query.toString()) as Map<String, dynamic>,
-    );
+    final body = await api.getJson(query.toString()) as Map<String, dynamic>;
+    workspace = Workspace.fromJson(body);
+    final usage = body['usage'];
+    if (user != null && usage is Map) {
+      user = user!.withUsage(Map<String, dynamic>.from(usage));
+    }
     filter = workspace!.filter;
     notifyListeners();
   }
@@ -136,7 +143,16 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> syncParties(int id, Map<String, dynamic> payload) async {
-    await api.putJson('cases/$id/parties', payload);
+    final body = await api.putJson('cases/$id/parties', payload);
+    final current = workspace;
+    if (body is Map<String, dynamic> && current != null) {
+      try {
+        workspace = current.withActive(CaseDetail.fromJson(body));
+        notifyListeners();
+      } catch (_) {
+        // The saved case is loaded again below.
+      }
+    }
     await load(caseId: id);
   }
 

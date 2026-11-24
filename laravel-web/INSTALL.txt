@@ -1,3 +1,8 @@
 php artisan serve --host=0.0.0.0 --port=8000
 
 * * * * * cd /Volumes/mac2/projects/tamil/casebook/laravel-web && php artisan schedule:run
+* * * * * cd /home/vjbzhcuh/casebook/laravel-web && php artisan schedule:run
+
+* * * * * cd /Volumes/mac2/projects/tamil/casebook/laravel-web  && php artisan schedule:run
+
+php artisan casebook:hearing-reminders

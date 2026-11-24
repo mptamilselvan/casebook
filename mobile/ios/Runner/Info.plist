@@ -26,6 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>upi</string>
+		<string>tez</string>
+		<string>phonepe</string>
+		<string>gpay</string>
+		<string>paytmmp</string>
+	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Case Book connects to the Case Book server on your Wi-Fi.</string>
 	<key>NSAppTransportSecurity</key>

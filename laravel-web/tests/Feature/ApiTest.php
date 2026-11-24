@@ -173,4 +173,34 @@ class ApiTest extends TestCase
         $this->withToken($token)->postJson('/api/logout')->assertOk()->assertJsonPath('status', 'logged_out');
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
+
+    public function test_adding_a_party_keeps_the_name(): void
+    {
+        $user = User::factory()->create();
+        $case = CourtCase::query()->create([
+            'user_id' => $user->id,
+            'title' => 'O.S. 1/2026',
+            'court' => 'Madras High Court',
+            'party1_role' => 'Petitioner',
+            'party2_role' => 'Respondent',
+        ]);
+        $case->caseParties()->create([
+            'side' => 1,
+            'name' => '',
+            'sort_order' => 0,
+        ]);
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        $this->withToken($token)->putJson('/api/cases/'.$case->id.'/parties', [
+            'party1_role' => 'Petitioner',
+            'party2_role' => 'Respondent',
+            'side1' => ['Suresh'],
+            'side2' => [],
+        ])->assertOk()
+            ->assertJsonPath('parties.0.name', 'Suresh')
+            ->assertJsonPath('parties.0.side', 1);
+
+        $this->assertSame('Suresh', $case->caseParties()->where('side', 1)->value('name'));
+    }
 }

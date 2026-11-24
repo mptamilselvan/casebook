@@ -19,6 +19,18 @@ class AuthController extends Controller
 
         $result = EmailLogin::resolve($validated['email']);
 
+        if ($result['disabled']) {
+            return response()->json([
+                'message' => 'This account is disabled.',
+            ], 403);
+        }
+
+        if ($result['user']->isAdmin()) {
+            return response()->json([
+                'message' => 'Admin accounts sign in with a password.',
+            ], 403);
+        }
+
         if (! $result['verified']) {
             return response()->json([
                 'status' => 'verification_sent',
@@ -48,6 +60,12 @@ class AuthController extends Controller
 
         $user = User::query()->findOrFail($matches[1]);
         EmailLogin::markVerified($user, $matches[2]);
+
+        if (! $user->is_enabled) {
+            return response()->json([
+                'message' => 'This account is disabled.',
+            ], 403);
+        }
 
         return response()->json(CasebookData::token($user));
     }

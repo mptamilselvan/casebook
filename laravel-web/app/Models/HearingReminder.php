@@ -28,4 +28,18 @@ class HearingReminder extends Model
     {
         return $this->belongsTo(CourtCase::class, 'case_id');
     }
+
+    public function title(): string
+    {
+        $when = match ((int) $this->days_before) {
+            7 => '1 week',
+            3 => '3 days',
+            2 => '2 days',
+            1 => '1 day',
+            default => $this->days_before.' days',
+        };
+        $caseTitle = $this->courtCase?->title;
+
+        return $caseTitle ? 'Hearing in '.$when.' · '.$caseTitle : 'Hearing in '.$when;
+    }
 }

@@ -14,15 +14,19 @@ class EmailLogin
     ];
 
     /**
-     * @return array{user: User, verified: bool}
+     * @return array{user: User, verified: bool, disabled: bool}
      */
     public static function resolve(string $email): array
     {
         $email = Str::lower($email);
         $user = User::query()->where('email', $email)->first();
 
+        if ($user && ! $user->is_enabled) {
+            return ['user' => $user, 'verified' => false, 'disabled' => true];
+        }
+
         if ($user?->hasVerifiedEmail()) {
-            return ['user' => $user, 'verified' => true];
+            return ['user' => $user, 'verified' => true, 'disabled' => false];
         }
 
         if (! $user) {
@@ -30,12 +34,13 @@ class EmailLogin
                 'name' => self::nameFromEmail($email),
                 'email' => $email,
                 'password' => Str::password(40),
+                'role' => User::ROLE_USER,
             ]);
         }
 
         $user->sendEmailVerificationNotification();
 
-        return ['user' => $user, 'verified' => false];
+        return ['user' => $user, 'verified' => false, 'disabled' => false];
     }
 
     public static function markVerified(User $user, string $hash): void
@@ -47,6 +52,8 @@ class EmailLogin
         if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
+
+        $user->assignFreePlan();
     }
 
     public static function nameFromEmail(string $email): string

@@ -6,7 +6,9 @@ use App\Http\Controllers\Concerns\RedirectsToCasebook;
 use App\Models\CourtCase;
 use App\Models\Template;
 use App\Support\Casebook;
+use App\Support\CasebookData;
 use App\Support\IndiaLocations;
+use App\Support\Usage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -55,6 +57,7 @@ class CaseController extends Controller
             'party2Roles' => Casebook::PARTY_2,
             'folders' => Casebook::FOLDERS,
             'locations' => IndiaLocations::tree(),
+            'notifications' => CasebookData::notifications(),
         ]);
     }
 
@@ -82,7 +85,16 @@ class CaseController extends Controller
                 ->with('modal_step', $validator->errors()->hasAny(['court', 'state', 'district']) ? 1 : 2);
         }
 
+        if ($reason = Usage::caseBlockReason($request->user())) {
+            return $this->redirectToCase($request)
+                ->withErrors(['case' => $reason])
+                ->withInput()
+                ->with('modal', 'new-case')
+                ->with('modal_step', 2);
+        }
+
         $data = $validator->validated();
+        IndiaLocations::rememberCourt($data['state'], $data['district'], $data['court']);
         $number = trim((string) ($data['case_number'] ?? ''));
         $year = trim((string) ($data['case_year'] ?? ''));
         $title = trim($number.'/'.$year, '/');

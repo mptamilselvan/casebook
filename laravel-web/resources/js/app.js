@@ -8,6 +8,7 @@ window.casebookPage = function (config) {
         topMenuOpen: false,
         settingsOpen: false,
         centerMenuOpen: false,
+        notificationsOpen: false,
         sidebarMenu: null,
         eventMenu: null,
         draftFullscreen: false,
@@ -19,6 +20,12 @@ window.casebookPage = function (config) {
         locations: config.locations || [],
         state: old.state || '',
         district: old.district || '',
+        stateQuery: old.state || '',
+        districtQuery: old.district || '',
+        courtQuery: '',
+        stateMenu: false,
+        districtMenu: false,
+        courtMenu: false,
         courtChoice: '',
         courtOther: '',
         caseNumber: old.case_number || '',
@@ -97,8 +104,52 @@ window.casebookPage = function (config) {
         stateCourts() {
             return (this.stateDistricts().find((item) => item.name === this.district) || {}).courts || [];
         },
+        filteredStates() {
+            const query = this.stateQuery.trim().toLowerCase();
+            return this.locations.filter((item) => query === '' || item.name.toLowerCase().includes(query));
+        },
+        filteredDistricts() {
+            const query = this.districtQuery.trim().toLowerCase();
+            return this.stateDistricts().filter((item) => query === '' || item.name.toLowerCase().includes(query));
+        },
+        filteredCourts() {
+            const query = this.courtQuery.trim().toLowerCase();
+            const selected = (this.courtChoice || '').trim().toLowerCase();
+            const searching = query !== '' && query !== selected;
+            const names = this.stateCourts().filter((name) => {
+                return name.toLowerCase() !== 'other' && (!searching || name.toLowerCase().includes(query));
+            });
+            names.push('Other');
+            return names;
+        },
         courtValue() {
-            return this.courtChoice === 'Other' ? this.courtOther.trim() : this.courtChoice;
+            if (this.courtChoice === 'Other') {
+                return (this.courtOther || '').trim();
+            }
+            return this.courtChoice || '';
+        },
+        chooseState(name) {
+            this.state = name;
+            this.stateQuery = name;
+            this.stateMenu = false;
+            this.selectState();
+            this.districtQuery = '';
+            this.courtQuery = '';
+        },
+        chooseDistrict(name) {
+            this.district = name;
+            this.districtQuery = name;
+            this.districtMenu = false;
+            this.selectDistrict();
+            this.courtQuery = '';
+        },
+        chooseCourt(name) {
+            this.courtChoice = name;
+            this.courtQuery = name;
+            this.courtMenu = false;
+            if (name !== 'Other') {
+                this.courtOther = '';
+            }
         },
         selectState() {
             this.district = '';
@@ -110,14 +161,17 @@ window.casebookPage = function (config) {
             this.courtOther = '';
         },
         syncCourtChoice() {
-            const saved = old.court || '';
+            const saved = (old.court || '').trim();
             const courts = this.stateCourts();
-            if (saved && courts.length && !courts.includes(saved)) {
+            const listed = courts.some((name) => name.toLowerCase() === saved.toLowerCase());
+            if (saved !== '' && !listed) {
                 this.courtChoice = 'Other';
-                this.courtOther = saved;
+                this.courtQuery = 'Other';
+                this.courtOther = saved.toLowerCase() === 'other' ? '' : saved;
                 return;
             }
             this.courtChoice = saved;
+            this.courtQuery = saved;
             this.courtOther = '';
         },
         openNewCase() {
@@ -125,6 +179,12 @@ window.casebookPage = function (config) {
             this.respondents = [''];
             this.state = '';
             this.district = '';
+            this.stateQuery = '';
+            this.districtQuery = '';
+            this.courtQuery = '';
+            this.stateMenu = false;
+            this.districtMenu = false;
+            this.courtMenu = false;
             this.courtChoice = '';
             this.courtOther = '';
             this.caseNumber = '';

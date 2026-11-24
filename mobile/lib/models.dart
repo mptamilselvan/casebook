@@ -1,15 +1,50 @@
 class UserAccount {
-  UserAccount({required this.id, required this.name, required this.email});
+  UserAccount({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.planName,
+    this.storageLabel,
+    this.storageLimitLabel,
+    this.casesCount,
+    this.casesLimit,
+  });
 
   final int id;
   final String name;
   final String email;
+  final String? planName;
+  final String? storageLabel;
+  final String? storageLimitLabel;
+  final int? casesCount;
+  final int? casesLimit;
 
   factory UserAccount.fromJson(Map<String, dynamic> json) {
+    final usage = json['usage'];
+    final map = usage is Map ? Map<String, dynamic>.from(usage) : null;
+
     return UserAccount(
       id: json['id'] as int,
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
+      planName: json['plan_name'] as String?,
+      storageLabel: map?['storage_label'] as String?,
+      storageLimitLabel: map?['storage_limit_label'] as String?,
+      casesCount: (map?['cases_count'] as num?)?.toInt(),
+      casesLimit: (map?['cases_limit'] as num?)?.toInt(),
+    );
+  }
+
+  UserAccount withUsage(Map<String, dynamic> usage) {
+    return UserAccount(
+      id: id,
+      name: name,
+      email: email,
+      planName: planName,
+      storageLabel: usage['storage_label'] as String?,
+      storageLimitLabel: usage['storage_limit_label'] as String?,
+      casesCount: (usage['cases_count'] as num?)?.toInt(),
+      casesLimit: (usage['cases_limit'] as num?)?.toInt(),
     );
   }
 }
@@ -81,8 +116,8 @@ class Party {
 
   factory Party.fromJson(Map<String, dynamic> json) {
     return Party(
-      id: json['id'] as int,
-      side: json['side'] as int,
+      id: (json['id'] as num).toInt(),
+      side: (json['side'] as num).toInt(),
       name: json['name'] as String? ?? '',
     );
   }
@@ -267,6 +302,22 @@ class StatePlace {
   }
 }
 
+class AppNotification {
+  AppNotification({required this.id, required this.title, required this.date});
+
+  final int id;
+  final String title;
+  final String date;
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: (json['id'] as num).toInt(),
+      title: json['title'] as String? ?? '',
+      date: json['date'] as String? ?? '',
+    );
+  }
+}
+
 class Workspace {
   Workspace({
     required this.filter,
@@ -280,6 +331,7 @@ class Workspace {
     required this.cases,
     required this.templates,
     this.locations = const [],
+    this.notifications = const [],
     this.active,
   });
 
@@ -294,6 +346,7 @@ class Workspace {
   final List<StatePlace> locations;
   final List<CaseSummary> cases;
   final List<CaseTemplate> templates;
+  final List<AppNotification> notifications;
   final CaseDetail? active;
 
   factory Workspace.fromJson(Map<String, dynamic> json) {
@@ -327,9 +380,33 @@ class Workspace {
       templates: (json['templates'] as List? ?? [])
           .map((item) => CaseTemplate.fromJson(item as Map<String, dynamic>))
           .toList(),
+      notifications: (json['notifications'] as List? ?? [])
+          .map((item) => AppNotification.fromJson(item as Map<String, dynamic>))
+          .toList(),
       active: json['case'] == null
           ? null
           : CaseDetail.fromJson(json['case'] as Map<String, dynamic>),
+    );
+  }
+
+  Workspace withActive(CaseDetail detail) {
+    return Workspace(
+      filter: filter,
+      today: today,
+      counts: counts,
+      filters: filters,
+      tabs: tabs,
+      party1Roles: party1Roles,
+      party2Roles: party2Roles,
+      folders: folders,
+      locations: locations,
+      cases: [
+        for (final item in cases)
+          if (item.id == detail.id) detail else item,
+      ],
+      templates: templates,
+      notifications: notifications,
+      active: detail,
     );
   }
 }

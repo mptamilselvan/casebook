@@ -6,6 +6,7 @@
                 <input type="text" x-model="searchMain" placeholder="Search documents, drafting, hearings..." class="w-full bg-white dark:bg-[#14151B] border border-gray-300 dark:border-[#2A2D39] rounded-md py-1.5 pl-9 pr-3 text-sm outline-none focus:border-blue-500">
             </div>
             <div class="flex items-center gap-4">
+                @include('casebook.partials.notifications')
                 <form method="POST" action="{{ route('cases.pin', $active) }}">
                     @csrf
                     @include('casebook.partials.return-fields')
@@ -14,7 +15,7 @@
                     </button>
                 </form>
                 <div class="relative">
-                    <button type="button" @click.stop="centerMenuOpen = !centerMenuOpen; topMenuOpen = false; sidebarMenu = null" class="p-1.5 rounded-md border border-gray-200 dark:border-[#262833] hover:bg-gray-100 dark:hover:bg-[#20222B]">
+                    <button type="button" @click.stop="centerMenuOpen = !centerMenuOpen; topMenuOpen = false; sidebarMenu = null; notificationsOpen = false" class="p-1.5 rounded-md border border-gray-200 dark:border-[#262833] hover:bg-gray-100 dark:hover:bg-[#20222B]">
                         <x-icon name="ellipsis" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     </button>
                     <div x-show="centerMenuOpen" x-cloak @click.stop class="absolute right-0 top-10 w-44 {{ $menuClass }}">
@@ -81,7 +82,8 @@
                     </button>
                 </div>
 
-                <div x-show="tab === 'Timeline'" @if ($tab !== 'Timeline') x-cloak @endif class="relative pl-6 pt-4">
+                <div x-show="tab === 'Timeline'" @if ($tab !== 'Timeline') x-cloak @endif>
+                    <div class="relative pl-6 pt-4">
                     <div class="absolute top-0 bottom-0 left-7 w-px bg-gray-200 dark:bg-[#262833]"></div>
                     @forelse ($active->events as $index => $event)
                         @php
@@ -108,7 +110,7 @@
                                 @endif
                             </div>
                             <div class="ml-6 bg-gray-50 dark:bg-[#16181D] border border-gray-200 dark:border-[#262833] rounded-xl p-4 group relative hover:border-gray-400 transition-colors">
-                                <button type="button" @click.stop="eventMenu = eventMenu === {{ $event->id }} ? null : {{ $event->id }}; sidebarMenu = null" class="absolute right-3 top-3 opacity-0 group-hover:opacity-100 p-1.5 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B]" :class="eventMenu === {{ $event->id }} ? 'opacity-100' : ''">
+                                <button type="button" @click.stop="eventMenu = eventMenu === {{ $event->id }} ? null : {{ $event->id }}; sidebarMenu = null; notificationsOpen = false" class="absolute right-3 top-3 opacity-0 group-hover:opacity-100 p-1.5 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B]" :class="eventMenu === {{ $event->id }} ? 'opacity-100' : ''">
                                     <x-icon name="ellipsis-vertical" class="w-4 h-4" />
                                 </button>
                                 <div x-show="eventMenu === {{ $event->id }}" x-cloak @click.stop class="absolute right-10 top-3 w-32 {{ $menuClass }}">
@@ -154,10 +156,11 @@
                     @empty
                     @endforelse
                     <div x-show="!hasVisible(eventHaystacks)" class="ml-6 text-gray-500 dark:text-gray-400 py-10 italic">No events match your search, or none logged yet.</div>
-                    @php
-                        $addingEvent = session('modal') === 'add-event';
-                    @endphp
-                    <form id="add-event-form" method="POST" action="{{ route('events.store', $active) }}" enctype="multipart/form-data" class="ml-6 mt-2 bg-white border border-gray-200 rounded-xl p-5">
+                </div>
+                @php
+                    $addingEvent = session('modal') === 'add-event';
+                @endphp
+                <form id="add-event-form" method="POST" action="{{ route('events.store', $active) }}" enctype="multipart/form-data" class="mt-2 bg-white border border-gray-200 rounded-xl p-5">
                         @csrf
                         @include('casebook.partials.return-fields')
                         <h3 class="font-bold mb-4">Add Event</h3>
@@ -247,7 +250,6 @@
                     <form method="POST" action="{{ route('parties.sync', $active) }}" class="bg-gray-50 dark:bg-[#16181D] border border-gray-200 dark:border-[#262833] rounded-xl p-6">
                         @csrf
                         @include('casebook.partials.return-fields')
-                        <button type="submit" class="hidden" tabindex="-1" aria-hidden="true">Save parties</button>
                         <div class="flex gap-8">
                             <div class="flex-1">
                                 <div class="flex justify-between items-center mb-4">
@@ -260,13 +262,16 @@
                                 </div>
                                 <div class="space-y-3">
                                     @forelse ($sideOne as $party)
-                                        <input type="text" name="side1[]" value="{{ $party->name }}" onblur="if (!this.form.contains(event.relatedTarget)) this.form.requestSubmit()" class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md p-2.5 text-sm outline-none focus:border-blue-500" placeholder="{{ $active->party1_role }} {{ $loop->iteration }}">
+                                        <input type="text" name="side1[]" value="{{ $party->name }}" class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md p-2.5 text-sm outline-none focus:border-blue-500" placeholder="{{ $active->party1_role }} {{ $loop->iteration }}">
                                     @empty
                                         <input type="text" name="side1[]" value="" class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md p-2.5 text-sm outline-none focus:border-blue-500" placeholder="{{ $active->party1_role }} 1">
                                     @endforelse
-                                    <button type="submit" name="add_side" value="1" class="text-blue-500 text-sm font-semibold flex items-center hover:text-blue-400 mt-2">
-                                        <x-icon name="plus" class="w-4 h-4 mr-1" /> Add Party
-                                    </button>
+                                    <div class="flex items-center gap-4 mt-2">
+                                        <button type="submit" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold">Save</button>
+                                        <button type="submit" name="add_side" value="1" class="text-blue-500 text-sm font-semibold flex items-center hover:text-blue-400">
+                                            <x-icon name="plus" class="w-4 h-4 mr-1" /> Add Party
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="w-px bg-gray-200 dark:bg-[#262833]"></div>
@@ -281,13 +286,16 @@
                                 </div>
                                 <div class="space-y-3">
                                     @forelse ($sideTwo as $party)
-                                        <input type="text" name="side2[]" value="{{ $party->name }}" onblur="if (!this.form.contains(event.relatedTarget)) this.form.requestSubmit()" class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md p-2.5 text-sm outline-none focus:border-blue-500" placeholder="{{ $active->party2_role }} {{ $loop->iteration }}">
+                                        <input type="text" name="side2[]" value="{{ $party->name }}" class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md p-2.5 text-sm outline-none focus:border-blue-500" placeholder="{{ $active->party2_role }} {{ $loop->iteration }}">
                                     @empty
                                         <input type="text" name="side2[]" value="" class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md p-2.5 text-sm outline-none focus:border-blue-500" placeholder="{{ $active->party2_role }} 1">
                                     @endforelse
-                                    <button type="submit" name="add_side" value="2" class="text-red-500 text-sm font-semibold flex items-center hover:text-red-400 mt-2">
-                                        <x-icon name="plus" class="w-4 h-4 mr-1" /> Add Party
-                                    </button>
+                                    <div class="flex items-center gap-4 mt-2">
+                                        <button type="submit" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold">Save</button>
+                                        <button type="submit" name="add_side" value="2" class="text-red-500 text-sm font-semibold flex items-center hover:text-red-400">
+                                            <x-icon name="plus" class="w-4 h-4 mr-1" /> Add Party
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -354,6 +362,9 @@
             </div>
         </div>
     @else
+        <header class="h-16 border-b border-gray-200 dark:border-[#262833] flex items-center justify-end px-6">
+            @include('casebook.partials.notifications')
+        </header>
         <div class="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">Select a case to view details, or create a new case.</div>
     @endif
 </div>
