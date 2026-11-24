@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\RedirectsToCasebook;
 use App\Models\CourtCase;
 use App\Models\Template;
 use App\Support\Casebook;
+use App\Support\IndiaLocations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -53,14 +54,15 @@ class CaseController extends Controller
             'party1Roles' => Casebook::PARTY_1,
             'party2Roles' => Casebook::PARTY_2,
             'folders' => Casebook::FOLDERS,
+            'locations' => IndiaLocations::tree(),
         ]);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'state' => ['nullable', 'string', 'max:100'],
-            'district' => ['nullable', 'string', 'max:100'],
+            'state' => ['required', 'string', 'max:100'],
+            'district' => ['required', 'string', 'max:100'],
             'court' => ['required', 'string', 'max:255'],
             'case_number' => ['nullable', 'string', 'max:100'],
             'case_year' => ['nullable', 'string', 'max:10'],

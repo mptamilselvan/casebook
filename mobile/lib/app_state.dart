@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
 import 'models.dart';
+import 'push.dart';
 
 class AppState extends ChangeNotifier {
   AppState(this.api);
@@ -37,6 +38,7 @@ class AppState extends ChangeNotifier {
       user = UserAccount.fromJson(
         await api.getJson('me') as Map<String, dynamic>,
       );
+      await CasebookPush.login(user!.id);
       await load();
       return true;
     } catch (_) {
@@ -212,6 +214,7 @@ class AppState extends ChangeNotifier {
     user = UserAccount.fromJson(body['user'] as Map<String, dynamic>);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('casebook_token', api.token ?? '');
+    await CasebookPush.login(user!.id);
     notifyListeners();
   }
 
@@ -219,6 +222,7 @@ class AppState extends ChangeNotifier {
     api.token = null;
     user = null;
     workspace = null;
+    await CasebookPush.logout();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('casebook_token');
     notifyListeners();

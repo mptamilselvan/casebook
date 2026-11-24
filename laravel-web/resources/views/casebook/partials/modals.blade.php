@@ -6,7 +6,7 @@
         </div>
         <label class="block text-xs font-semibold text-gray-500 mb-2">Signed in</label>
         <p class="text-sm font-medium text-gray-800">{{ auth()->user()->email }}</p>
-        <form method="POST" action="{{ route('logout') }}" class="mt-6">
+        <form method="POST" action="{{ route('logout') }}" class="mt-6" onsubmit="if (window.OneSignalDeferred) { window.OneSignalDeferred.push(async function (OneSignal) { await OneSignal.logout(); }); }">
             @csrf
             <button type="submit" class="w-full py-2 rounded-lg font-medium bg-gray-900 text-white">Sign out</button>
         </form>
@@ -58,7 +58,7 @@
 </div>
 
 <div x-show="newCaseOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <form method="POST" action="{{ route('cases.store') }}" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" @click.stop @submit="if (modalStep === 1) { $event.preventDefault(); if (court.trim() !== '') modalStep = 2 }">
+    <form method="POST" action="{{ route('cases.store') }}" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" @click.stop @submit="if (modalStep === 1) { $event.preventDefault(); if (courtValue().trim() !== '') modalStep = 2 }">
         @csrf
         @include('casebook.partials.return-fields')
         <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-[#262833]">
@@ -73,10 +73,37 @@
                 <p class="text-sm text-red-500 mb-4">{{ $errors->first() }}</p>
             @endif
             <div x-show="modalStep === 1" class="space-y-5">
-                <input type="text" name="state" x-model="state" placeholder="State (e.g., Tamil Nadu)" class="{{ $inputClass }}">
-                <input type="text" name="district" x-model="district" placeholder="District" class="{{ $inputClass }}">
-                <input type="text" name="court" x-model="court" placeholder="Court Name" class="{{ $inputClass }}">
-                <button type="button" @click="modalStep = 2" :disabled="court.trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
+                <input type="hidden" name="court" :value="courtValue()">
+                <div>
+                    <label for="new-case-state" class="block text-xs font-semibold text-gray-500 mb-1">State</label>
+                    <select id="new-case-state" name="state" x-model="state" @change="selectState()" class="{{ $inputClass }}">
+                        <option value="">Select state</option>
+                        <template x-for="item in locations" :key="item.name">
+                            <option :value="item.name" x-text="item.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label for="new-case-district" class="block text-xs font-semibold text-gray-500 mb-1">District</label>
+                    <select id="new-case-district" name="district" x-model="district" @change="selectDistrict()" :disabled="state === ''" class="{{ $inputClass }} disabled:opacity-50">
+                        <option value="">Select district</option>
+                        <template x-for="item in stateDistricts()" :key="item.name">
+                            <option :value="item.name" x-text="item.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label for="new-case-court" class="block text-xs font-semibold text-gray-500 mb-1">Court</label>
+                    <select id="new-case-court" x-model="courtChoice" :disabled="district === ''" class="{{ $inputClass }} disabled:opacity-50">
+                        <option value="">Select court</option>
+                        <template x-for="name in stateCourts()" :key="name">
+                            <option :value="name" x-text="name"></option>
+                        </template>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input x-show="courtChoice === 'Other'" x-cloak type="text" x-model="courtOther" placeholder="Court name" class="{{ $inputClass }} mt-3">
+                </div>
+                <button type="button" @click="modalStep = 2" :disabled="courtValue().trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
             </div>
             <div x-show="modalStep === 2" x-cloak class="space-y-5">
                 <div class="flex gap-4">

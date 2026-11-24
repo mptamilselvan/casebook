@@ -16,9 +16,11 @@ window.casebookPage = function (config) {
         searchMain: '',
         newCaseOpen: config.modal === 'new-case',
         modalStep: config.modal === 'new-case' ? (config.modalStep || 1) : 1,
+        locations: config.locations || [],
         state: old.state || '',
         district: old.district || '',
-        court: old.court || '',
+        courtChoice: '',
+        courtOther: '',
         caseNumber: old.case_number || '',
         caseYear: String(old.case_year || new Date().getFullYear()),
         p1Role: old.p1 || 'Petitioner',
@@ -49,6 +51,7 @@ window.casebookPage = function (config) {
         documentHaystacks: config.documentHaystacks || [],
         init() {
             this.applyTheme();
+            this.syncCourtChoice();
             if (config.modal === 'add-event') {
                 this.tab = 'Timeline';
                 this.$nextTick(() => this.focusAddEvent());
@@ -88,12 +91,42 @@ window.casebookPage = function (config) {
         hasVisible(list) {
             return (list || []).some((item) => this.matchesMain(item));
         },
+        stateDistricts() {
+            return (this.locations.find((item) => item.name === this.state) || {}).districts || [];
+        },
+        stateCourts() {
+            return (this.stateDistricts().find((item) => item.name === this.district) || {}).courts || [];
+        },
+        courtValue() {
+            return this.courtChoice === 'Other' ? this.courtOther.trim() : this.courtChoice;
+        },
+        selectState() {
+            this.district = '';
+            this.courtChoice = '';
+            this.courtOther = '';
+        },
+        selectDistrict() {
+            this.courtChoice = '';
+            this.courtOther = '';
+        },
+        syncCourtChoice() {
+            const saved = old.court || '';
+            const courts = this.stateCourts();
+            if (saved && courts.length && !courts.includes(saved)) {
+                this.courtChoice = 'Other';
+                this.courtOther = saved;
+                return;
+            }
+            this.courtChoice = saved;
+            this.courtOther = '';
+        },
         openNewCase() {
             this.petitioners = [''];
             this.respondents = [''];
             this.state = '';
             this.district = '';
-            this.court = '';
+            this.courtChoice = '';
+            this.courtOther = '';
             this.caseNumber = '';
             this.caseYear = String(new Date().getFullYear());
             this.p1Role = 'Petitioner';
@@ -142,3 +175,16 @@ window.casebookPage = function (config) {
 
 window.Alpine = Alpine;
 Alpine.start();
+
+const casebookPush = window.casebookPush;
+if (casebookPush && casebookPush.appId && casebookPush.userId) {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async (OneSignal) => {
+        await OneSignal.init({
+            appId: casebookPush.appId,
+            serviceWorkerPath: 'OneSignalSDKWorker.js',
+        });
+        await OneSignal.login(String(casebookPush.userId));
+        await OneSignal.Notifications.requestPermission();
+    });
+}

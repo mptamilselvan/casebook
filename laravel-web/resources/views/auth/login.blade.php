@@ -4,7 +4,7 @@
 <div class="min-h-full bg-white text-gray-800 flex items-center justify-center px-4 py-12">
     <div class="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
         <div class="flex items-center gap-3 mb-8">
-            <x-icon name="scale" class="w-7 h-7 text-blue-600" />
+            <img src="{{ asset('images/casebook-logo.png') }}" alt="" class="w-10 h-10 object-contain">
             <div>
                 <h1 class="text-xl font-bold leading-tight">Case Book</h1>
                 <p class="text-sm text-gray-500">Sign in with your email</p>

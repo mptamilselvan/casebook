@@ -10,7 +10,7 @@
 <div class="w-72 bg-white dark:bg-[#14151B] border-r border-gray-200 dark:border-[#262833] flex flex-col shrink-0 z-20">
     <div class="p-4 flex items-center justify-between relative">
         <div class="flex items-center gap-3">
-            <x-icon name="scale" class="w-6 h-6 text-blue-500" />
+            <img src="{{ asset('images/casebook-logo.png') }}" alt="" class="w-9 h-9 object-contain">
             <h1 class="font-bold text-lg leading-tight">Case Book</h1>
         </div>
         <button type="button" @click.stop="topMenuOpen = !topMenuOpen; sidebarMenu = null; centerMenuOpen = false" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#20222B]">

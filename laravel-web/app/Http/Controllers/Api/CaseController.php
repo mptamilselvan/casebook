@@ -7,6 +7,7 @@ use App\Models\CourtCase;
 use App\Models\Template;
 use App\Support\Casebook;
 use App\Support\CasebookData;
+use App\Support\IndiaLocations;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -46,6 +47,7 @@ class CaseController extends Controller
             'party1_roles' => Casebook::PARTY_1,
             'party2_roles' => Casebook::PARTY_2,
             'folders' => Casebook::FOLDERS,
+            'locations' => IndiaLocations::tree(),
             'cases' => $cases->map(fn (CourtCase $case) => CasebookData::caseSummary($case))->values(),
             'case' => $active ? CasebookData::caseDetail($active) : null,
             'templates' => $templates->map(fn (Template $template) => CasebookData::template($template))->values(),
@@ -60,8 +62,8 @@ class CaseController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'state' => ['nullable', 'string', 'max:100'],
-            'district' => ['nullable', 'string', 'max:100'],
+            'state' => ['required', 'string', 'max:100'],
+            'district' => ['required', 'string', 'max:100'],
             'court' => ['required', 'string', 'max:255'],
             'case_number' => ['nullable', 'string', 'max:100'],
             'case_year' => ['nullable', 'string', 'max:10'],

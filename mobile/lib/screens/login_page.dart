@@ -106,7 +106,11 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.balance, color: casebookBlue, size: 32),
+                        Image(
+                          image: AssetImage('assets/img/android-chrome-512x512.png'),
+                          width: 40,
+                          height: 40,
+                        ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Column(

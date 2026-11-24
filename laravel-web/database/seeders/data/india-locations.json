@@ -1,0 +1,4779 @@
+[
+  {
+    "name": "Andaman and Nicobar Islands",
+    "courts": [
+      "Calcutta High Court, Circuit Bench at Port Blair"
+    ],
+    "districts": [
+      {
+        "name": "Nicobar",
+        "courts": [
+          "District Court, Nicobar"
+        ]
+      },
+      {
+        "name": "North and Middle Andaman",
+        "courts": [
+          "District Court, North and Middle Andaman"
+        ]
+      },
+      {
+        "name": "South Andaman",
+        "courts": [
+          "District Court, South Andaman"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Andhra Pradesh",
+    "courts": [
+      "High Court of Andhra Pradesh"
+    ],
+    "districts": [
+      {
+        "name": "Alluri Sitharama Raju",
+        "courts": [
+          "District Court, Alluri Sitharama Raju"
+        ]
+      },
+      {
+        "name": "Anakapalli",
+        "courts": [
+          "District Court, Anakapalli"
+        ]
+      },
+      {
+        "name": "Ananthapuramu",
+        "courts": [
+          "District Court, Ananthapuramu"
+        ]
+      },
+      {
+        "name": "Annamayya",
+        "courts": [
+          "District Court, Annamayya"
+        ]
+      },
+      {
+        "name": "Bapatla",
+        "courts": [
+          "District Court, Bapatla"
+        ]
+      },
+      {
+        "name": "Chittoor",
+        "courts": [
+          "District Court, Chittoor"
+        ]
+      },
+      {
+        "name": "Dr. B.R. Ambedkar Konaseema",
+        "courts": [
+          "District Court, Dr. B.R. Ambedkar Konaseema"
+        ]
+      },
+      {
+        "name": "East Godavari",
+        "courts": [
+          "District Court, East Godavari"
+        ]
+      },
+      {
+        "name": "Eluru",
+        "courts": [
+          "District Court, Eluru"
+        ]
+      },
+      {
+        "name": "Guntur",
+        "courts": [
+          "District Court, Guntur"
+        ]
+      },
+      {
+        "name": "Kakinada",
+        "courts": [
+          "District Court, Kakinada"
+        ]
+      },
+      {
+        "name": "Krishna",
+        "courts": [
+          "District Court, Krishna"
+        ]
+      },
+      {
+        "name": "Kurnool",
+        "courts": [
+          "District Court, Kurnool"
+        ]
+      },
+      {
+        "name": "NTR",
+        "courts": [
+          "District Court, NTR"
+        ]
+      },
+      {
+        "name": "Nandyal",
+        "courts": [
+          "District Court, Nandyal"
+        ]
+      },
+      {
+        "name": "Palnadu",
+        "courts": [
+          "District Court, Palnadu"
+        ]
+      },
+      {
+        "name": "Parvathipuram Manyam",
+        "courts": [
+          "District Court, Parvathipuram Manyam"
+        ]
+      },
+      {
+        "name": "Prakasam",
+        "courts": [
+          "District Court, Prakasam"
+        ]
+      },
+      {
+        "name": "Sri Potti Sriramulu Nellore",
+        "courts": [
+          "District Court, Sri Potti Sriramulu Nellore"
+        ]
+      },
+      {
+        "name": "Sri Sathya Sai",
+        "courts": [
+          "District Court, Sri Sathya Sai"
+        ]
+      },
+      {
+        "name": "Srikakulam",
+        "courts": [
+          "District Court, Srikakulam"
+        ]
+      },
+      {
+        "name": "Tirupati",
+        "courts": [
+          "District Court, Tirupati"
+        ]
+      },
+      {
+        "name": "Visakhapatnam",
+        "courts": [
+          "District Court, Visakhapatnam"
+        ]
+      },
+      {
+        "name": "Vizianagaram",
+        "courts": [
+          "District Court, Vizianagaram"
+        ]
+      },
+      {
+        "name": "West Godavari",
+        "courts": [
+          "District Court, West Godavari"
+        ]
+      },
+      {
+        "name": "YSR Kadapa",
+        "courts": [
+          "District Court, YSR Kadapa"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Arunachal Pradesh",
+    "courts": [
+      "Gauhati High Court, Itanagar Bench"
+    ],
+    "districts": [
+      {
+        "name": "Anjaw",
+        "courts": [
+          "District Court, Anjaw"
+        ]
+      },
+      {
+        "name": "Changlang",
+        "courts": [
+          "District Court, Changlang"
+        ]
+      },
+      {
+        "name": "Dibang Valley",
+        "courts": [
+          "District Court, Dibang Valley"
+        ]
+      },
+      {
+        "name": "East Kameng",
+        "courts": [
+          "District Court, East Kameng"
+        ]
+      },
+      {
+        "name": "East Siang",
+        "courts": [
+          "District Court, East Siang"
+        ]
+      },
+      {
+        "name": "Kra Daadi",
+        "courts": [
+          "District Court, Kra Daadi"
+        ]
+      },
+      {
+        "name": "Kurung Kumey",
+        "courts": [
+          "District Court, Kurung Kumey"
+        ]
+      },
+      {
+        "name": "Lohit",
+        "courts": [
+          "District Court, Lohit"
+        ]
+      },
+      {
+        "name": "Longding",
+        "courts": [
+          "District Court, Longding"
+        ]
+      },
+      {
+        "name": "Lower Dibang Valley",
+        "courts": [
+          "District Court, Lower Dibang Valley"
+        ]
+      },
+      {
+        "name": "Lower Siang",
+        "courts": [
+          "District Court, Lower Siang"
+        ]
+      },
+      {
+        "name": "Lower Subansiri",
+        "courts": [
+          "District Court, Lower Subansiri"
+        ]
+      },
+      {
+        "name": "Namsai",
+        "courts": [
+          "District Court, Namsai"
+        ]
+      },
+      {
+        "name": "Papum Pare",
+        "courts": [
+          "District Court, Papum Pare"
+        ]
+      },
+      {
+        "name": "Siang",
+        "courts": [
+          "District Court, Siang"
+        ]
+      },
+      {
+        "name": "Tawang",
+        "courts": [
+          "District Court, Tawang"
+        ]
+      },
+      {
+        "name": "Tirap",
+        "courts": [
+          "District Court, Tirap"
+        ]
+      },
+      {
+        "name": "Upper Siang",
+        "courts": [
+          "District Court, Upper Siang"
+        ]
+      },
+      {
+        "name": "Upper Subansiri",
+        "courts": [
+          "District Court, Upper Subansiri"
+        ]
+      },
+      {
+        "name": "West Kameng",
+        "courts": [
+          "District Court, West Kameng"
+        ]
+      },
+      {
+        "name": "West Siang",
+        "courts": [
+          "District Court, West Siang"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Assam",
+    "courts": [
+      "Gauhati High Court"
+    ],
+    "districts": [
+      {
+        "name": "Baksa",
+        "courts": [
+          "District Court, Baksa"
+        ]
+      },
+      {
+        "name": "Barpeta",
+        "courts": [
+          "District Court, Barpeta"
+        ]
+      },
+      {
+        "name": "Biswanath",
+        "courts": [
+          "District Court, Biswanath"
+        ]
+      },
+      {
+        "name": "Bongaigaon",
+        "courts": [
+          "District Court, Bongaigaon"
+        ]
+      },
+      {
+        "name": "Cachar",
+        "courts": [
+          "District Court, Cachar"
+        ]
+      },
+      {
+        "name": "Charaideo",
+        "courts": [
+          "District Court, Charaideo"
+        ]
+      },
+      {
+        "name": "Chirang",
+        "courts": [
+          "District Court, Chirang"
+        ]
+      },
+      {
+        "name": "Darrang",
+        "courts": [
+          "District Court, Darrang"
+        ]
+      },
+      {
+        "name": "Dhemaji",
+        "courts": [
+          "District Court, Dhemaji"
+        ]
+      },
+      {
+        "name": "Dhubri",
+        "courts": [
+          "District Court, Dhubri"
+        ]
+      },
+      {
+        "name": "Dibrugarh",
+        "courts": [
+          "District Court, Dibrugarh"
+        ]
+      },
+      {
+        "name": "Dima Hasao",
+        "courts": [
+          "District Court, Dima Hasao"
+        ]
+      },
+      {
+        "name": "Goalpara",
+        "courts": [
+          "District Court, Goalpara"
+        ]
+      },
+      {
+        "name": "Golaghat",
+        "courts": [
+          "District Court, Golaghat"
+        ]
+      },
+      {
+        "name": "Hailakandi",
+        "courts": [
+          "District Court, Hailakandi"
+        ]
+      },
+      {
+        "name": "Hojai",
+        "courts": [
+          "District Court, Hojai"
+        ]
+      },
+      {
+        "name": "Jorhat",
+        "courts": [
+          "District Court, Jorhat"
+        ]
+      },
+      {
+        "name": "Kamrup",
+        "courts": [
+          "District Court, Kamrup"
+        ]
+      },
+      {
+        "name": "Kamrup Metropolitan",
+        "courts": [
+          "District Court, Kamrup Metropolitan"
+        ]
+      },
+      {
+        "name": "Karbi Anglong",
+        "courts": [
+          "District Court, Karbi Anglong"
+        ]
+      },
+      {
+        "name": "Karimganj",
+        "courts": [
+          "District Court, Karimganj"
+        ]
+      },
+      {
+        "name": "Kokrajhar",
+        "courts": [
+          "District Court, Kokrajhar"
+        ]
+      },
+      {
+        "name": "Lakhimpur",
+        "courts": [
+          "District Court, Lakhimpur"
+        ]
+      },
+      {
+        "name": "Majuli",
+        "courts": [
+          "District Court, Majuli"
+        ]
+      },
+      {
+        "name": "Morigaon",
+        "courts": [
+          "District Court, Morigaon"
+        ]
+      },
+      {
+        "name": "Nagaon",
+        "courts": [
+          "District Court, Nagaon"
+        ]
+      },
+      {
+        "name": "Nalbari",
+        "courts": [
+          "District Court, Nalbari"
+        ]
+      },
+      {
+        "name": "Sivasagar",
+        "courts": [
+          "District Court, Sivasagar"
+        ]
+      },
+      {
+        "name": "Sonitpur",
+        "courts": [
+          "District Court, Sonitpur"
+        ]
+      },
+      {
+        "name": "South Salmara-Mankachar",
+        "courts": [
+          "District Court, South Salmara-Mankachar"
+        ]
+      },
+      {
+        "name": "Tinsukia",
+        "courts": [
+          "District Court, Tinsukia"
+        ]
+      },
+      {
+        "name": "Udalguri",
+        "courts": [
+          "District Court, Udalguri"
+        ]
+      },
+      {
+        "name": "West Karbi Anglong",
+        "courts": [
+          "District Court, West Karbi Anglong"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Bihar",
+    "courts": [
+      "Patna High Court"
+    ],
+    "districts": [
+      {
+        "name": "Araria",
+        "courts": [
+          "District Court, Araria"
+        ]
+      },
+      {
+        "name": "Arwal",
+        "courts": [
+          "District Court, Arwal"
+        ]
+      },
+      {
+        "name": "Aurangabad",
+        "courts": [
+          "District Court, Aurangabad"
+        ]
+      },
+      {
+        "name": "Banka",
+        "courts": [
+          "District Court, Banka"
+        ]
+      },
+      {
+        "name": "Begusarai",
+        "courts": [
+          "District Court, Begusarai"
+        ]
+      },
+      {
+        "name": "Bhagalpur",
+        "courts": [
+          "District Court, Bhagalpur"
+        ]
+      },
+      {
+        "name": "Bhojpur",
+        "courts": [
+          "District Court, Bhojpur"
+        ]
+      },
+      {
+        "name": "Buxar",
+        "courts": [
+          "District Court, Buxar"
+        ]
+      },
+      {
+        "name": "Darbhanga",
+        "courts": [
+          "District Court, Darbhanga"
+        ]
+      },
+      {
+        "name": "East Champaran (Motihari)",
+        "courts": [
+          "District Court, East Champaran (Motihari)"
+        ]
+      },
+      {
+        "name": "Gaya",
+        "courts": [
+          "District Court, Gaya"
+        ]
+      },
+      {
+        "name": "Gopalganj",
+        "courts": [
+          "District Court, Gopalganj"
+        ]
+      },
+      {
+        "name": "Jamui",
+        "courts": [
+          "District Court, Jamui"
+        ]
+      },
+      {
+        "name": "Jehanabad",
+        "courts": [
+          "District Court, Jehanabad"
+        ]
+      },
+      {
+        "name": "Kaimur (Bhabua)",
+        "courts": [
+          "District Court, Kaimur (Bhabua)"
+        ]
+      },
+      {
+        "name": "Katihar",
+        "courts": [
+          "District Court, Katihar"
+        ]
+      },
+      {
+        "name": "Khagaria",
+        "courts": [
+          "District Court, Khagaria"
+        ]
+      },
+      {
+        "name": "Kishanganj",
+        "courts": [
+          "District Court, Kishanganj"
+        ]
+      },
+      {
+        "name": "Lakhisarai",
+        "courts": [
+          "District Court, Lakhisarai"
+        ]
+      },
+      {
+        "name": "Madhepura",
+        "courts": [
+          "District Court, Madhepura"
+        ]
+      },
+      {
+        "name": "Madhubani",
+        "courts": [
+          "District Court, Madhubani"
+        ]
+      },
+      {
+        "name": "Munger (Monghyr)",
+        "courts": [
+          "District Court, Munger (Monghyr)"
+        ]
+      },
+      {
+        "name": "Muzaffarpur",
+        "courts": [
+          "District Court, Muzaffarpur"
+        ]
+      },
+      {
+        "name": "Nalanda",
+        "courts": [
+          "District Court, Nalanda"
+        ]
+      },
+      {
+        "name": "Nawada",
+        "courts": [
+          "District Court, Nawada"
+        ]
+      },
+      {
+        "name": "Patna",
+        "courts": [
+          "District Court, Patna"
+        ]
+      },
+      {
+        "name": "Purnia (Purnea)",
+        "courts": [
+          "District Court, Purnia (Purnea)"
+        ]
+      },
+      {
+        "name": "Rohtas",
+        "courts": [
+          "District Court, Rohtas"
+        ]
+      },
+      {
+        "name": "Saharsa",
+        "courts": [
+          "District Court, Saharsa"
+        ]
+      },
+      {
+        "name": "Samastipur",
+        "courts": [
+          "District Court, Samastipur"
+        ]
+      },
+      {
+        "name": "Saran",
+        "courts": [
+          "District Court, Saran"
+        ]
+      },
+      {
+        "name": "Sheikhpura",
+        "courts": [
+          "District Court, Sheikhpura"
+        ]
+      },
+      {
+        "name": "Sheohar",
+        "courts": [
+          "District Court, Sheohar"
+        ]
+      },
+      {
+        "name": "Sitamarhi",
+        "courts": [
+          "District Court, Sitamarhi"
+        ]
+      },
+      {
+        "name": "Siwan",
+        "courts": [
+          "District Court, Siwan"
+        ]
+      },
+      {
+        "name": "Supaul",
+        "courts": [
+          "District Court, Supaul"
+        ]
+      },
+      {
+        "name": "Vaishali",
+        "courts": [
+          "District Court, Vaishali"
+        ]
+      },
+      {
+        "name": "West Champaran",
+        "courts": [
+          "District Court, West Champaran"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Chandigarh",
+    "courts": [
+      "Punjab and Haryana High Court"
+    ],
+    "districts": [
+      {
+        "name": "Chandigarh",
+        "courts": [
+          "District Court, Chandigarh"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Chhattisgarh",
+    "courts": [
+      "High Court of Chhattisgarh"
+    ],
+    "districts": [
+      {
+        "name": "Balod",
+        "courts": [
+          "District Court, Balod"
+        ]
+      },
+      {
+        "name": "Baloda Bazar",
+        "courts": [
+          "District Court, Baloda Bazar"
+        ]
+      },
+      {
+        "name": "Balrampur",
+        "courts": [
+          "District Court, Balrampur"
+        ]
+      },
+      {
+        "name": "Bastar",
+        "courts": [
+          "District Court, Bastar"
+        ]
+      },
+      {
+        "name": "Bemetara",
+        "courts": [
+          "District Court, Bemetara"
+        ]
+      },
+      {
+        "name": "Bijapur",
+        "courts": [
+          "District Court, Bijapur"
+        ]
+      },
+      {
+        "name": "Bilaspur",
+        "courts": [
+          "District Court, Bilaspur"
+        ]
+      },
+      {
+        "name": "Dantewada (South Bastar)",
+        "courts": [
+          "District Court, Dantewada (South Bastar)"
+        ]
+      },
+      {
+        "name": "Dhamtari",
+        "courts": [
+          "District Court, Dhamtari"
+        ]
+      },
+      {
+        "name": "Durg",
+        "courts": [
+          "District Court, Durg"
+        ]
+      },
+      {
+        "name": "Gariyaband",
+        "courts": [
+          "District Court, Gariyaband"
+        ]
+      },
+      {
+        "name": "Janjgir-Champa",
+        "courts": [
+          "District Court, Janjgir-Champa"
+        ]
+      },
+      {
+        "name": "Jashpur",
+        "courts": [
+          "District Court, Jashpur"
+        ]
+      },
+      {
+        "name": "Kabirdham (Kawardha)",
+        "courts": [
+          "District Court, Kabirdham (Kawardha)"
+        ]
+      },
+      {
+        "name": "Kanker (North Bastar)",
+        "courts": [
+          "District Court, Kanker (North Bastar)"
+        ]
+      },
+      {
+        "name": "Kondagaon",
+        "courts": [
+          "District Court, Kondagaon"
+        ]
+      },
+      {
+        "name": "Korba",
+        "courts": [
+          "District Court, Korba"
+        ]
+      },
+      {
+        "name": "Korea (Koriya)",
+        "courts": [
+          "District Court, Korea (Koriya)"
+        ]
+      },
+      {
+        "name": "Mahasamund",
+        "courts": [
+          "District Court, Mahasamund"
+        ]
+      },
+      {
+        "name": "Mungeli",
+        "courts": [
+          "District Court, Mungeli"
+        ]
+      },
+      {
+        "name": "Narayanpur",
+        "courts": [
+          "District Court, Narayanpur"
+        ]
+      },
+      {
+        "name": "Raigarh",
+        "courts": [
+          "District Court, Raigarh"
+        ]
+      },
+      {
+        "name": "Raipur",
+        "courts": [
+          "District Court, Raipur"
+        ]
+      },
+      {
+        "name": "Rajnandgaon",
+        "courts": [
+          "District Court, Rajnandgaon"
+        ]
+      },
+      {
+        "name": "Sukma",
+        "courts": [
+          "District Court, Sukma"
+        ]
+      },
+      {
+        "name": "Surajpur",
+        "courts": [
+          "District Court, Surajpur"
+        ]
+      },
+      {
+        "name": "Surguja",
+        "courts": [
+          "District Court, Surguja"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Dadra and Nagar Haveli and Daman and Diu",
+    "courts": [
+      "Bombay High Court"
+    ],
+    "districts": [
+      {
+        "name": "Dadra and Nagar Haveli",
+        "courts": [
+          "District Court, Dadra and Nagar Haveli"
+        ]
+      },
+      {
+        "name": "Daman",
+        "courts": [
+          "District Court, Daman"
+        ]
+      },
+      {
+        "name": "Diu",
+        "courts": [
+          "District Court, Diu"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Delhi",
+    "courts": [
+      "High Court of Delhi"
+    ],
+    "districts": [
+      {
+        "name": "Central Delhi",
+        "courts": [
+          "District Court, Central Delhi"
+        ]
+      },
+      {
+        "name": "East Delhi",
+        "courts": [
+          "District Court, East Delhi"
+        ]
+      },
+      {
+        "name": "New Delhi",
+        "courts": [
+          "District Court, New Delhi"
+        ]
+      },
+      {
+        "name": "North Delhi",
+        "courts": [
+          "District Court, North Delhi"
+        ]
+      },
+      {
+        "name": "North East Delhi",
+        "courts": [
+          "District Court, North East Delhi"
+        ]
+      },
+      {
+        "name": "North West Delhi",
+        "courts": [
+          "District Court, North West Delhi"
+        ]
+      },
+      {
+        "name": "Shahdara",
+        "courts": [
+          "District Court, Shahdara"
+        ]
+      },
+      {
+        "name": "South Delhi",
+        "courts": [
+          "District Court, South Delhi"
+        ]
+      },
+      {
+        "name": "South East Delhi",
+        "courts": [
+          "District Court, South East Delhi"
+        ]
+      },
+      {
+        "name": "South West Delhi",
+        "courts": [
+          "District Court, South West Delhi"
+        ]
+      },
+      {
+        "name": "West Delhi",
+        "courts": [
+          "District Court, West Delhi"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Goa",
+    "courts": [
+      "Bombay High Court, Panaji Bench"
+    ],
+    "districts": [
+      {
+        "name": "North Goa",
+        "courts": [
+          "District Court, North Goa"
+        ]
+      },
+      {
+        "name": "South Goa",
+        "courts": [
+          "District Court, South Goa"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Gujarat",
+    "courts": [
+      "High Court of Gujarat"
+    ],
+    "districts": [
+      {
+        "name": "Ahmedabad",
+        "courts": [
+          "District Court, Ahmedabad"
+        ]
+      },
+      {
+        "name": "Amreli",
+        "courts": [
+          "District Court, Amreli"
+        ]
+      },
+      {
+        "name": "Anand",
+        "courts": [
+          "District Court, Anand"
+        ]
+      },
+      {
+        "name": "Aravalli",
+        "courts": [
+          "District Court, Aravalli"
+        ]
+      },
+      {
+        "name": "Banaskantha (Palanpur)",
+        "courts": [
+          "District Court, Banaskantha (Palanpur)"
+        ]
+      },
+      {
+        "name": "Bharuch",
+        "courts": [
+          "District Court, Bharuch"
+        ]
+      },
+      {
+        "name": "Bhavnagar",
+        "courts": [
+          "District Court, Bhavnagar"
+        ]
+      },
+      {
+        "name": "Botad",
+        "courts": [
+          "District Court, Botad"
+        ]
+      },
+      {
+        "name": "Chhota Udepur",
+        "courts": [
+          "District Court, Chhota Udepur"
+        ]
+      },
+      {
+        "name": "Dahod",
+        "courts": [
+          "District Court, Dahod"
+        ]
+      },
+      {
+        "name": "Dangs (Ahwa)",
+        "courts": [
+          "District Court, Dangs (Ahwa)"
+        ]
+      },
+      {
+        "name": "Devbhoomi Dwarka",
+        "courts": [
+          "District Court, Devbhoomi Dwarka"
+        ]
+      },
+      {
+        "name": "Gandhinagar",
+        "courts": [
+          "District Court, Gandhinagar"
+        ]
+      },
+      {
+        "name": "Gir Somnath",
+        "courts": [
+          "District Court, Gir Somnath"
+        ]
+      },
+      {
+        "name": "Jamnagar",
+        "courts": [
+          "District Court, Jamnagar"
+        ]
+      },
+      {
+        "name": "Junagadh",
+        "courts": [
+          "District Court, Junagadh"
+        ]
+      },
+      {
+        "name": "Kachchh",
+        "courts": [
+          "District Court, Kachchh"
+        ]
+      },
+      {
+        "name": "Kheda (Nadiad)",
+        "courts": [
+          "District Court, Kheda (Nadiad)"
+        ]
+      },
+      {
+        "name": "Mahisagar",
+        "courts": [
+          "District Court, Mahisagar"
+        ]
+      },
+      {
+        "name": "Mehsana",
+        "courts": [
+          "District Court, Mehsana"
+        ]
+      },
+      {
+        "name": "Morbi",
+        "courts": [
+          "District Court, Morbi"
+        ]
+      },
+      {
+        "name": "Narmada (Rajpipla)",
+        "courts": [
+          "District Court, Narmada (Rajpipla)"
+        ]
+      },
+      {
+        "name": "Navsari",
+        "courts": [
+          "District Court, Navsari"
+        ]
+      },
+      {
+        "name": "Panchmahal (Godhra)",
+        "courts": [
+          "District Court, Panchmahal (Godhra)"
+        ]
+      },
+      {
+        "name": "Patan",
+        "courts": [
+          "District Court, Patan"
+        ]
+      },
+      {
+        "name": "Porbandar",
+        "courts": [
+          "District Court, Porbandar"
+        ]
+      },
+      {
+        "name": "Rajkot",
+        "courts": [
+          "District Court, Rajkot"
+        ]
+      },
+      {
+        "name": "Sabarkantha (Himmatnagar)",
+        "courts": [
+          "District Court, Sabarkantha (Himmatnagar)"
+        ]
+      },
+      {
+        "name": "Surat",
+        "courts": [
+          "District Court, Surat"
+        ]
+      },
+      {
+        "name": "Surendranagar",
+        "courts": [
+          "District Court, Surendranagar"
+        ]
+      },
+      {
+        "name": "Tapi (Vyara)",
+        "courts": [
+          "District Court, Tapi (Vyara)"
+        ]
+      },
+      {
+        "name": "Vadodara",
+        "courts": [
+          "District Court, Vadodara"
+        ]
+      },
+      {
+        "name": "Valsad",
+        "courts": [
+          "District Court, Valsad"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Haryana",
+    "courts": [
+      "Punjab and Haryana High Court"
+    ],
+    "districts": [
+      {
+        "name": "Ambala",
+        "courts": [
+          "District Court, Ambala"
+        ]
+      },
+      {
+        "name": "Bhiwani",
+        "courts": [
+          "District Court, Bhiwani"
+        ]
+      },
+      {
+        "name": "Charkhi Dadri",
+        "courts": [
+          "District Court, Charkhi Dadri"
+        ]
+      },
+      {
+        "name": "Faridabad",
+        "courts": [
+          "District Court, Faridabad"
+        ]
+      },
+      {
+        "name": "Fatehabad",
+        "courts": [
+          "District Court, Fatehabad"
+        ]
+      },
+      {
+        "name": "Gurgaon",
+        "courts": [
+          "District Court, Gurgaon"
+        ]
+      },
+      {
+        "name": "Hisar",
+        "courts": [
+          "District Court, Hisar"
+        ]
+      },
+      {
+        "name": "Jhajjar",
+        "courts": [
+          "District Court, Jhajjar"
+        ]
+      },
+      {
+        "name": "Jind",
+        "courts": [
+          "District Court, Jind"
+        ]
+      },
+      {
+        "name": "Kaithal",
+        "courts": [
+          "District Court, Kaithal"
+        ]
+      },
+      {
+        "name": "Karnal",
+        "courts": [
+          "District Court, Karnal"
+        ]
+      },
+      {
+        "name": "Kurukshetra",
+        "courts": [
+          "District Court, Kurukshetra"
+        ]
+      },
+      {
+        "name": "Mahendragarh",
+        "courts": [
+          "District Court, Mahendragarh"
+        ]
+      },
+      {
+        "name": "Mewat",
+        "courts": [
+          "District Court, Mewat"
+        ]
+      },
+      {
+        "name": "Palwal",
+        "courts": [
+          "District Court, Palwal"
+        ]
+      },
+      {
+        "name": "Panchkula",
+        "courts": [
+          "District Court, Panchkula"
+        ]
+      },
+      {
+        "name": "Panipat",
+        "courts": [
+          "District Court, Panipat"
+        ]
+      },
+      {
+        "name": "Rewari",
+        "courts": [
+          "District Court, Rewari"
+        ]
+      },
+      {
+        "name": "Rohtak",
+        "courts": [
+          "District Court, Rohtak"
+        ]
+      },
+      {
+        "name": "Sirsa",
+        "courts": [
+          "District Court, Sirsa"
+        ]
+      },
+      {
+        "name": "Sonipat",
+        "courts": [
+          "District Court, Sonipat"
+        ]
+      },
+      {
+        "name": "Yamunanagar",
+        "courts": [
+          "District Court, Yamunanagar"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Himachal Pradesh",
+    "courts": [
+      "High Court of Himachal Pradesh"
+    ],
+    "districts": [
+      {
+        "name": "Bilaspur",
+        "courts": [
+          "District Court, Bilaspur"
+        ]
+      },
+      {
+        "name": "Chamba",
+        "courts": [
+          "District Court, Chamba"
+        ]
+      },
+      {
+        "name": "Hamirpur",
+        "courts": [
+          "District Court, Hamirpur"
+        ]
+      },
+      {
+        "name": "Kangra",
+        "courts": [
+          "District Court, Kangra"
+        ]
+      },
+      {
+        "name": "Kinnaur",
+        "courts": [
+          "District Court, Kinnaur"
+        ]
+      },
+      {
+        "name": "Kullu",
+        "courts": [
+          "District Court, Kullu"
+        ]
+      },
+      {
+        "name": "Lahaul andamp; Spiti",
+        "courts": [
+          "District Court, Lahaul andamp; Spiti"
+        ]
+      },
+      {
+        "name": "Mandi",
+        "courts": [
+          "District Court, Mandi"
+        ]
+      },
+      {
+        "name": "Shimla",
+        "courts": [
+          "District Court, Shimla"
+        ]
+      },
+      {
+        "name": "Sirmaur (Sirmour)",
+        "courts": [
+          "District Court, Sirmaur (Sirmour)"
+        ]
+      },
+      {
+        "name": "Solan",
+        "courts": [
+          "District Court, Solan"
+        ]
+      },
+      {
+        "name": "Una",
+        "courts": [
+          "District Court, Una"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Jammu and Kashmir",
+    "courts": [
+      "High Court of Jammu and Kashmir and Ladakh"
+    ],
+    "districts": [
+      {
+        "name": "Anantnag",
+        "courts": [
+          "District Court, Anantnag"
+        ]
+      },
+      {
+        "name": "Bandipore",
+        "courts": [
+          "District Court, Bandipore"
+        ]
+      },
+      {
+        "name": "Baramulla",
+        "courts": [
+          "District Court, Baramulla"
+        ]
+      },
+      {
+        "name": "Budgam",
+        "courts": [
+          "District Court, Budgam"
+        ]
+      },
+      {
+        "name": "Doda",
+        "courts": [
+          "District Court, Doda"
+        ]
+      },
+      {
+        "name": "Ganderbal",
+        "courts": [
+          "District Court, Ganderbal"
+        ]
+      },
+      {
+        "name": "Jammu",
+        "courts": [
+          "District Court, Jammu"
+        ]
+      },
+      {
+        "name": "Kathua",
+        "courts": [
+          "District Court, Kathua"
+        ]
+      },
+      {
+        "name": "Kishtwar",
+        "courts": [
+          "District Court, Kishtwar"
+        ]
+      },
+      {
+        "name": "Kulgam",
+        "courts": [
+          "District Court, Kulgam"
+        ]
+      },
+      {
+        "name": "Kupwara",
+        "courts": [
+          "District Court, Kupwara"
+        ]
+      },
+      {
+        "name": "Poonch",
+        "courts": [
+          "District Court, Poonch"
+        ]
+      },
+      {
+        "name": "Pulwama",
+        "courts": [
+          "District Court, Pulwama"
+        ]
+      },
+      {
+        "name": "Rajouri",
+        "courts": [
+          "District Court, Rajouri"
+        ]
+      },
+      {
+        "name": "Ramban",
+        "courts": [
+          "District Court, Ramban"
+        ]
+      },
+      {
+        "name": "Reasi",
+        "courts": [
+          "District Court, Reasi"
+        ]
+      },
+      {
+        "name": "Samba",
+        "courts": [
+          "District Court, Samba"
+        ]
+      },
+      {
+        "name": "Shopian",
+        "courts": [
+          "District Court, Shopian"
+        ]
+      },
+      {
+        "name": "Srinagar",
+        "courts": [
+          "District Court, Srinagar"
+        ]
+      },
+      {
+        "name": "Udhampur",
+        "courts": [
+          "District Court, Udhampur"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Jharkhand",
+    "courts": [
+      "High Court of Jharkhand"
+    ],
+    "districts": [
+      {
+        "name": "Bokaro",
+        "courts": [
+          "District Court, Bokaro"
+        ]
+      },
+      {
+        "name": "Chatra",
+        "courts": [
+          "District Court, Chatra"
+        ]
+      },
+      {
+        "name": "Deoghar",
+        "courts": [
+          "District Court, Deoghar"
+        ]
+      },
+      {
+        "name": "Dhanbad",
+        "courts": [
+          "District Court, Dhanbad"
+        ]
+      },
+      {
+        "name": "Dumka",
+        "courts": [
+          "District Court, Dumka"
+        ]
+      },
+      {
+        "name": "East Singhbhum",
+        "courts": [
+          "District Court, East Singhbhum"
+        ]
+      },
+      {
+        "name": "Garhwa",
+        "courts": [
+          "District Court, Garhwa"
+        ]
+      },
+      {
+        "name": "Giridih",
+        "courts": [
+          "District Court, Giridih"
+        ]
+      },
+      {
+        "name": "Godda",
+        "courts": [
+          "District Court, Godda"
+        ]
+      },
+      {
+        "name": "Gumla",
+        "courts": [
+          "District Court, Gumla"
+        ]
+      },
+      {
+        "name": "Hazaribag",
+        "courts": [
+          "District Court, Hazaribag"
+        ]
+      },
+      {
+        "name": "Jamtara",
+        "courts": [
+          "District Court, Jamtara"
+        ]
+      },
+      {
+        "name": "Khunti",
+        "courts": [
+          "District Court, Khunti"
+        ]
+      },
+      {
+        "name": "Koderma",
+        "courts": [
+          "District Court, Koderma"
+        ]
+      },
+      {
+        "name": "Latehar",
+        "courts": [
+          "District Court, Latehar"
+        ]
+      },
+      {
+        "name": "Lohardaga",
+        "courts": [
+          "District Court, Lohardaga"
+        ]
+      },
+      {
+        "name": "Pakur",
+        "courts": [
+          "District Court, Pakur"
+        ]
+      },
+      {
+        "name": "Palamu",
+        "courts": [
+          "District Court, Palamu"
+        ]
+      },
+      {
+        "name": "Ramgarh",
+        "courts": [
+          "District Court, Ramgarh"
+        ]
+      },
+      {
+        "name": "Ranchi",
+        "courts": [
+          "District Court, Ranchi"
+        ]
+      },
+      {
+        "name": "Sahibganj",
+        "courts": [
+          "District Court, Sahibganj"
+        ]
+      },
+      {
+        "name": "Seraikela-Kharsawan",
+        "courts": [
+          "District Court, Seraikela-Kharsawan"
+        ]
+      },
+      {
+        "name": "Simdega",
+        "courts": [
+          "District Court, Simdega"
+        ]
+      },
+      {
+        "name": "West Singhbhum",
+        "courts": [
+          "District Court, West Singhbhum"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Karnataka",
+    "courts": [
+      "High Court of Karnataka"
+    ],
+    "districts": [
+      {
+        "name": "Bagalkot",
+        "courts": [
+          "District Court, Bagalkot"
+        ]
+      },
+      {
+        "name": "Ballari (Bellary)",
+        "courts": [
+          "District Court, Ballari (Bellary)"
+        ]
+      },
+      {
+        "name": "Belagavi (Belgaum)",
+        "courts": [
+          "District Court, Belagavi (Belgaum)"
+        ]
+      },
+      {
+        "name": "Bengaluru (Bangalore) Rural",
+        "courts": [
+          "District Court, Bengaluru (Bangalore) Rural"
+        ]
+      },
+      {
+        "name": "Bengaluru (Bangalore) Urban",
+        "courts": [
+          "District Court, Bengaluru (Bangalore) Urban"
+        ]
+      },
+      {
+        "name": "Bidar",
+        "courts": [
+          "District Court, Bidar"
+        ]
+      },
+      {
+        "name": "Chamarajanagar",
+        "courts": [
+          "District Court, Chamarajanagar"
+        ]
+      },
+      {
+        "name": "Chikballapur",
+        "courts": [
+          "District Court, Chikballapur"
+        ]
+      },
+      {
+        "name": "Chikkamagaluru (Chikmagalur)",
+        "courts": [
+          "District Court, Chikkamagaluru (Chikmagalur)"
+        ]
+      },
+      {
+        "name": "Chitradurga",
+        "courts": [
+          "District Court, Chitradurga"
+        ]
+      },
+      {
+        "name": "Dakshina Kannada",
+        "courts": [
+          "District Court, Dakshina Kannada"
+        ]
+      },
+      {
+        "name": "Davangere",
+        "courts": [
+          "District Court, Davangere"
+        ]
+      },
+      {
+        "name": "Dharwad",
+        "courts": [
+          "District Court, Dharwad"
+        ]
+      },
+      {
+        "name": "Gadag",
+        "courts": [
+          "District Court, Gadag"
+        ]
+      },
+      {
+        "name": "Hassan",
+        "courts": [
+          "District Court, Hassan"
+        ]
+      },
+      {
+        "name": "Haveri",
+        "courts": [
+          "District Court, Haveri"
+        ]
+      },
+      {
+        "name": "Kalaburagi (Gulbarga)",
+        "courts": [
+          "District Court, Kalaburagi (Gulbarga)"
+        ]
+      },
+      {
+        "name": "Kodagu",
+        "courts": [
+          "District Court, Kodagu"
+        ]
+      },
+      {
+        "name": "Kolar",
+        "courts": [
+          "District Court, Kolar"
+        ]
+      },
+      {
+        "name": "Koppal",
+        "courts": [
+          "District Court, Koppal"
+        ]
+      },
+      {
+        "name": "Mandya",
+        "courts": [
+          "District Court, Mandya"
+        ]
+      },
+      {
+        "name": "Mysuru (Mysore)",
+        "courts": [
+          "District Court, Mysuru (Mysore)"
+        ]
+      },
+      {
+        "name": "Raichur",
+        "courts": [
+          "District Court, Raichur"
+        ]
+      },
+      {
+        "name": "Ramanagara",
+        "courts": [
+          "District Court, Ramanagara"
+        ]
+      },
+      {
+        "name": "Shivamogga (Shimoga)",
+        "courts": [
+          "District Court, Shivamogga (Shimoga)"
+        ]
+      },
+      {
+        "name": "Tumakuru (Tumkur)",
+        "courts": [
+          "District Court, Tumakuru (Tumkur)"
+        ]
+      },
+      {
+        "name": "Udupi",
+        "courts": [
+          "District Court, Udupi"
+        ]
+      },
+      {
+        "name": "Uttara Kannada (Karwar)",
+        "courts": [
+          "District Court, Uttara Kannada (Karwar)"
+        ]
+      },
+      {
+        "name": "Vijayapura (Bijapur)",
+        "courts": [
+          "District Court, Vijayapura (Bijapur)"
+        ]
+      },
+      {
+        "name": "Yadgir",
+        "courts": [
+          "District Court, Yadgir"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Kerala",
+    "courts": [
+      "High Court of Kerala"
+    ],
+    "districts": [
+      {
+        "name": "Alappuzha",
+        "courts": [
+          "District Court, Alappuzha"
+        ]
+      },
+      {
+        "name": "Ernakulam",
+        "courts": [
+          "District Court, Ernakulam"
+        ]
+      },
+      {
+        "name": "Idukki",
+        "courts": [
+          "District Court, Idukki"
+        ]
+      },
+      {
+        "name": "Kannur",
+        "courts": [
+          "District Court, Kannur"
+        ]
+      },
+      {
+        "name": "Kasaragod",
+        "courts": [
+          "District Court, Kasaragod"
+        ]
+      },
+      {
+        "name": "Kollam",
+        "courts": [
+          "District Court, Kollam"
+        ]
+      },
+      {
+        "name": "Kottayam",
+        "courts": [
+          "District Court, Kottayam"
+        ]
+      },
+      {
+        "name": "Kozhikode",
+        "courts": [
+          "District Court, Kozhikode"
+        ]
+      },
+      {
+        "name": "Malappuram",
+        "courts": [
+          "District Court, Malappuram"
+        ]
+      },
+      {
+        "name": "Palakkad",
+        "courts": [
+          "District Court, Palakkad"
+        ]
+      },
+      {
+        "name": "Pathanamthitta",
+        "courts": [
+          "District Court, Pathanamthitta"
+        ]
+      },
+      {
+        "name": "Thiruvananthapuram",
+        "courts": [
+          "District Court, Thiruvananthapuram"
+        ]
+      },
+      {
+        "name": "Thrissur",
+        "courts": [
+          "District Court, Thrissur"
+        ]
+      },
+      {
+        "name": "Wayanad",
+        "courts": [
+          "District Court, Wayanad"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Ladakh",
+    "courts": [
+      "High Court of Jammu and Kashmir and Ladakh"
+    ],
+    "districts": [
+      {
+        "name": "Kargil",
+        "courts": [
+          "District Court, Kargil"
+        ]
+      },
+      {
+        "name": "Leh",
+        "courts": [
+          "District Court, Leh"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Lakshadweep",
+    "courts": [
+      "High Court of Kerala"
+    ],
+    "districts": [
+      {
+        "name": "Agatti",
+        "courts": [
+          "District Court, Agatti"
+        ]
+      },
+      {
+        "name": "Amini",
+        "courts": [
+          "District Court, Amini"
+        ]
+      },
+      {
+        "name": "Androth",
+        "courts": [
+          "District Court, Androth"
+        ]
+      },
+      {
+        "name": "Bithra",
+        "courts": [
+          "District Court, Bithra"
+        ]
+      },
+      {
+        "name": "Chethlath",
+        "courts": [
+          "District Court, Chethlath"
+        ]
+      },
+      {
+        "name": "Kadmath",
+        "courts": [
+          "District Court, Kadmath"
+        ]
+      },
+      {
+        "name": "Kalpeni",
+        "courts": [
+          "District Court, Kalpeni"
+        ]
+      },
+      {
+        "name": "Kavaratti",
+        "courts": [
+          "District Court, Kavaratti"
+        ]
+      },
+      {
+        "name": "Kilthan",
+        "courts": [
+          "District Court, Kilthan"
+        ]
+      },
+      {
+        "name": "Minicoy",
+        "courts": [
+          "District Court, Minicoy"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Madhya Pradesh",
+    "courts": [
+      "High Court of Madhya Pradesh"
+    ],
+    "districts": [
+      {
+        "name": "Agar Malwa",
+        "courts": [
+          "District Court, Agar Malwa"
+        ]
+      },
+      {
+        "name": "Alirajpur",
+        "courts": [
+          "District Court, Alirajpur"
+        ]
+      },
+      {
+        "name": "Anuppur",
+        "courts": [
+          "District Court, Anuppur"
+        ]
+      },
+      {
+        "name": "Ashoknagar",
+        "courts": [
+          "District Court, Ashoknagar"
+        ]
+      },
+      {
+        "name": "Balaghat",
+        "courts": [
+          "District Court, Balaghat"
+        ]
+      },
+      {
+        "name": "Barwani",
+        "courts": [
+          "District Court, Barwani"
+        ]
+      },
+      {
+        "name": "Betul",
+        "courts": [
+          "District Court, Betul"
+        ]
+      },
+      {
+        "name": "Bhind",
+        "courts": [
+          "District Court, Bhind"
+        ]
+      },
+      {
+        "name": "Bhopal",
+        "courts": [
+          "District Court, Bhopal"
+        ]
+      },
+      {
+        "name": "Burhanpur",
+        "courts": [
+          "District Court, Burhanpur"
+        ]
+      },
+      {
+        "name": "Chhatarpur",
+        "courts": [
+          "District Court, Chhatarpur"
+        ]
+      },
+      {
+        "name": "Chhindwara",
+        "courts": [
+          "District Court, Chhindwara"
+        ]
+      },
+      {
+        "name": "Damoh",
+        "courts": [
+          "District Court, Damoh"
+        ]
+      },
+      {
+        "name": "Datia",
+        "courts": [
+          "District Court, Datia"
+        ]
+      },
+      {
+        "name": "Dewas",
+        "courts": [
+          "District Court, Dewas"
+        ]
+      },
+      {
+        "name": "Dhar",
+        "courts": [
+          "District Court, Dhar"
+        ]
+      },
+      {
+        "name": "Dindori",
+        "courts": [
+          "District Court, Dindori"
+        ]
+      },
+      {
+        "name": "Guna",
+        "courts": [
+          "District Court, Guna"
+        ]
+      },
+      {
+        "name": "Gwalior",
+        "courts": [
+          "District Court, Gwalior"
+        ]
+      },
+      {
+        "name": "Harda",
+        "courts": [
+          "District Court, Harda"
+        ]
+      },
+      {
+        "name": "Hoshangabad",
+        "courts": [
+          "District Court, Hoshangabad"
+        ]
+      },
+      {
+        "name": "Indore",
+        "courts": [
+          "District Court, Indore"
+        ]
+      },
+      {
+        "name": "Jabalpur",
+        "courts": [
+          "District Court, Jabalpur"
+        ]
+      },
+      {
+        "name": "Jhabua",
+        "courts": [
+          "District Court, Jhabua"
+        ]
+      },
+      {
+        "name": "Katni",
+        "courts": [
+          "District Court, Katni"
+        ]
+      },
+      {
+        "name": "Khandwa",
+        "courts": [
+          "District Court, Khandwa"
+        ]
+      },
+      {
+        "name": "Khargone",
+        "courts": [
+          "District Court, Khargone"
+        ]
+      },
+      {
+        "name": "Mandla",
+        "courts": [
+          "District Court, Mandla"
+        ]
+      },
+      {
+        "name": "Mandsaur",
+        "courts": [
+          "District Court, Mandsaur"
+        ]
+      },
+      {
+        "name": "Morena",
+        "courts": [
+          "District Court, Morena"
+        ]
+      },
+      {
+        "name": "Narsinghpur",
+        "courts": [
+          "District Court, Narsinghpur"
+        ]
+      },
+      {
+        "name": "Neemuch",
+        "courts": [
+          "District Court, Neemuch"
+        ]
+      },
+      {
+        "name": "Panna",
+        "courts": [
+          "District Court, Panna"
+        ]
+      },
+      {
+        "name": "Raisen",
+        "courts": [
+          "District Court, Raisen"
+        ]
+      },
+      {
+        "name": "Rajgarh",
+        "courts": [
+          "District Court, Rajgarh"
+        ]
+      },
+      {
+        "name": "Ratlam",
+        "courts": [
+          "District Court, Ratlam"
+        ]
+      },
+      {
+        "name": "Rewa",
+        "courts": [
+          "District Court, Rewa"
+        ]
+      },
+      {
+        "name": "Sagar",
+        "courts": [
+          "District Court, Sagar"
+        ]
+      },
+      {
+        "name": "Satna",
+        "courts": [
+          "District Court, Satna"
+        ]
+      },
+      {
+        "name": "Sehore",
+        "courts": [
+          "District Court, Sehore"
+        ]
+      },
+      {
+        "name": "Seoni",
+        "courts": [
+          "District Court, Seoni"
+        ]
+      },
+      {
+        "name": "Shahdol",
+        "courts": [
+          "District Court, Shahdol"
+        ]
+      },
+      {
+        "name": "Shajapur",
+        "courts": [
+          "District Court, Shajapur"
+        ]
+      },
+      {
+        "name": "Sheopur",
+        "courts": [
+          "District Court, Sheopur"
+        ]
+      },
+      {
+        "name": "Shivpuri",
+        "courts": [
+          "District Court, Shivpuri"
+        ]
+      },
+      {
+        "name": "Sidhi",
+        "courts": [
+          "District Court, Sidhi"
+        ]
+      },
+      {
+        "name": "Singrauli",
+        "courts": [
+          "District Court, Singrauli"
+        ]
+      },
+      {
+        "name": "Tikamgarh",
+        "courts": [
+          "District Court, Tikamgarh"
+        ]
+      },
+      {
+        "name": "Ujjain",
+        "courts": [
+          "District Court, Ujjain"
+        ]
+      },
+      {
+        "name": "Umaria",
+        "courts": [
+          "District Court, Umaria"
+        ]
+      },
+      {
+        "name": "Vidisha",
+        "courts": [
+          "District Court, Vidisha"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Maharashtra",
+    "courts": [
+      "Bombay High Court"
+    ],
+    "districts": [
+      {
+        "name": "Ahmednagar",
+        "courts": [
+          "District Court, Ahmednagar"
+        ]
+      },
+      {
+        "name": "Akola",
+        "courts": [
+          "District Court, Akola"
+        ]
+      },
+      {
+        "name": "Amravati",
+        "courts": [
+          "District Court, Amravati"
+        ]
+      },
+      {
+        "name": "Aurangabad",
+        "courts": [
+          "District Court, Aurangabad"
+        ]
+      },
+      {
+        "name": "Beed",
+        "courts": [
+          "District Court, Beed"
+        ]
+      },
+      {
+        "name": "Bhandara",
+        "courts": [
+          "District Court, Bhandara"
+        ]
+      },
+      {
+        "name": "Buldhana",
+        "courts": [
+          "District Court, Buldhana"
+        ]
+      },
+      {
+        "name": "Chandrapur",
+        "courts": [
+          "District Court, Chandrapur"
+        ]
+      },
+      {
+        "name": "Dhule",
+        "courts": [
+          "District Court, Dhule"
+        ]
+      },
+      {
+        "name": "Gadchiroli",
+        "courts": [
+          "District Court, Gadchiroli"
+        ]
+      },
+      {
+        "name": "Gondia",
+        "courts": [
+          "District Court, Gondia"
+        ]
+      },
+      {
+        "name": "Hingoli",
+        "courts": [
+          "District Court, Hingoli"
+        ]
+      },
+      {
+        "name": "Jalgaon",
+        "courts": [
+          "District Court, Jalgaon"
+        ]
+      },
+      {
+        "name": "Jalna",
+        "courts": [
+          "District Court, Jalna"
+        ]
+      },
+      {
+        "name": "Kolhapur",
+        "courts": [
+          "District Court, Kolhapur"
+        ]
+      },
+      {
+        "name": "Latur",
+        "courts": [
+          "District Court, Latur"
+        ]
+      },
+      {
+        "name": "Mumbai City",
+        "courts": [
+          "District Court, Mumbai City"
+        ]
+      },
+      {
+        "name": "Mumbai Suburban",
+        "courts": [
+          "District Court, Mumbai Suburban"
+        ]
+      },
+      {
+        "name": "Nagpur",
+        "courts": [
+          "District Court, Nagpur"
+        ]
+      },
+      {
+        "name": "Nanded",
+        "courts": [
+          "District Court, Nanded"
+        ]
+      },
+      {
+        "name": "Nandurbar",
+        "courts": [
+          "District Court, Nandurbar"
+        ]
+      },
+      {
+        "name": "Nashik",
+        "courts": [
+          "District Court, Nashik"
+        ]
+      },
+      {
+        "name": "Osmanabad",
+        "courts": [
+          "District Court, Osmanabad"
+        ]
+      },
+      {
+        "name": "Palghar",
+        "courts": [
+          "District Court, Palghar"
+        ]
+      },
+      {
+        "name": "Parbhani",
+        "courts": [
+          "District Court, Parbhani"
+        ]
+      },
+      {
+        "name": "Pune",
+        "courts": [
+          "District Court, Pune"
+        ]
+      },
+      {
+        "name": "Raigad",
+        "courts": [
+          "District Court, Raigad"
+        ]
+      },
+      {
+        "name": "Ratnagiri",
+        "courts": [
+          "District Court, Ratnagiri"
+        ]
+      },
+      {
+        "name": "Sangli",
+        "courts": [
+          "District Court, Sangli"
+        ]
+      },
+      {
+        "name": "Satara",
+        "courts": [
+          "District Court, Satara"
+        ]
+      },
+      {
+        "name": "Sindhudurg",
+        "courts": [
+          "District Court, Sindhudurg"
+        ]
+      },
+      {
+        "name": "Solapur",
+        "courts": [
+          "District Court, Solapur"
+        ]
+      },
+      {
+        "name": "Thane",
+        "courts": [
+          "District Court, Thane"
+        ]
+      },
+      {
+        "name": "Wardha",
+        "courts": [
+          "District Court, Wardha"
+        ]
+      },
+      {
+        "name": "Washim",
+        "courts": [
+          "District Court, Washim"
+        ]
+      },
+      {
+        "name": "Yavatmal",
+        "courts": [
+          "District Court, Yavatmal"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Manipur",
+    "courts": [
+      "High Court of Manipur"
+    ],
+    "districts": [
+      {
+        "name": "Bishnupur",
+        "courts": [
+          "District Court, Bishnupur"
+        ]
+      },
+      {
+        "name": "Chandel",
+        "courts": [
+          "District Court, Chandel"
+        ]
+      },
+      {
+        "name": "Churachandpur",
+        "courts": [
+          "District Court, Churachandpur"
+        ]
+      },
+      {
+        "name": "Imphal East",
+        "courts": [
+          "District Court, Imphal East"
+        ]
+      },
+      {
+        "name": "Imphal West",
+        "courts": [
+          "District Court, Imphal West"
+        ]
+      },
+      {
+        "name": "Jiribam",
+        "courts": [
+          "District Court, Jiribam"
+        ]
+      },
+      {
+        "name": "Kakching",
+        "courts": [
+          "District Court, Kakching"
+        ]
+      },
+      {
+        "name": "Kamjong",
+        "courts": [
+          "District Court, Kamjong"
+        ]
+      },
+      {
+        "name": "Kangpokpi",
+        "courts": [
+          "District Court, Kangpokpi"
+        ]
+      },
+      {
+        "name": "Noney",
+        "courts": [
+          "District Court, Noney"
+        ]
+      },
+      {
+        "name": "Pherzawl",
+        "courts": [
+          "District Court, Pherzawl"
+        ]
+      },
+      {
+        "name": "Senapati",
+        "courts": [
+          "District Court, Senapati"
+        ]
+      },
+      {
+        "name": "Tamenglong",
+        "courts": [
+          "District Court, Tamenglong"
+        ]
+      },
+      {
+        "name": "Tengnoupal",
+        "courts": [
+          "District Court, Tengnoupal"
+        ]
+      },
+      {
+        "name": "Thoubal",
+        "courts": [
+          "District Court, Thoubal"
+        ]
+      },
+      {
+        "name": "Ukhrul",
+        "courts": [
+          "District Court, Ukhrul"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Meghalaya",
+    "courts": [
+      "High Court of Meghalaya"
+    ],
+    "districts": [
+      {
+        "name": "East Garo Hills",
+        "courts": [
+          "District Court, East Garo Hills"
+        ]
+      },
+      {
+        "name": "East Jaintia Hills",
+        "courts": [
+          "District Court, East Jaintia Hills"
+        ]
+      },
+      {
+        "name": "East Khasi Hills",
+        "courts": [
+          "District Court, East Khasi Hills"
+        ]
+      },
+      {
+        "name": "North Garo Hills",
+        "courts": [
+          "District Court, North Garo Hills"
+        ]
+      },
+      {
+        "name": "Ri Bhoi",
+        "courts": [
+          "District Court, Ri Bhoi"
+        ]
+      },
+      {
+        "name": "South Garo Hills",
+        "courts": [
+          "District Court, South Garo Hills"
+        ]
+      },
+      {
+        "name": "South West Garo Hills",
+        "courts": [
+          "District Court, South West Garo Hills"
+        ]
+      },
+      {
+        "name": "South West Khasi Hills",
+        "courts": [
+          "District Court, South West Khasi Hills"
+        ]
+      },
+      {
+        "name": "West Garo Hills",
+        "courts": [
+          "District Court, West Garo Hills"
+        ]
+      },
+      {
+        "name": "West Jaintia Hills",
+        "courts": [
+          "District Court, West Jaintia Hills"
+        ]
+      },
+      {
+        "name": "West Khasi Hills",
+        "courts": [
+          "District Court, West Khasi Hills"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Mizoram",
+    "courts": [
+      "Gauhati High Court, Aizawl Bench"
+    ],
+    "districts": [
+      {
+        "name": "Aizawl",
+        "courts": [
+          "District Court, Aizawl"
+        ]
+      },
+      {
+        "name": "Champhai",
+        "courts": [
+          "District Court, Champhai"
+        ]
+      },
+      {
+        "name": "Kolasib",
+        "courts": [
+          "District Court, Kolasib"
+        ]
+      },
+      {
+        "name": "Lawngtlai",
+        "courts": [
+          "District Court, Lawngtlai"
+        ]
+      },
+      {
+        "name": "Lunglei",
+        "courts": [
+          "District Court, Lunglei"
+        ]
+      },
+      {
+        "name": "Mamit",
+        "courts": [
+          "District Court, Mamit"
+        ]
+      },
+      {
+        "name": "Saiha",
+        "courts": [
+          "District Court, Saiha"
+        ]
+      },
+      {
+        "name": "Serchhip",
+        "courts": [
+          "District Court, Serchhip"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Nagaland",
+    "courts": [
+      "Gauhati High Court, Kohima Bench"
+    ],
+    "districts": [
+      {
+        "name": "Dimapur",
+        "courts": [
+          "District Court, Dimapur"
+        ]
+      },
+      {
+        "name": "Kiphire",
+        "courts": [
+          "District Court, Kiphire"
+        ]
+      },
+      {
+        "name": "Kohima",
+        "courts": [
+          "District Court, Kohima"
+        ]
+      },
+      {
+        "name": "Longleng",
+        "courts": [
+          "District Court, Longleng"
+        ]
+      },
+      {
+        "name": "Mokokchung",
+        "courts": [
+          "District Court, Mokokchung"
+        ]
+      },
+      {
+        "name": "Mon",
+        "courts": [
+          "District Court, Mon"
+        ]
+      },
+      {
+        "name": "Peren",
+        "courts": [
+          "District Court, Peren"
+        ]
+      },
+      {
+        "name": "Phek",
+        "courts": [
+          "District Court, Phek"
+        ]
+      },
+      {
+        "name": "Tuensang",
+        "courts": [
+          "District Court, Tuensang"
+        ]
+      },
+      {
+        "name": "Wokha",
+        "courts": [
+          "District Court, Wokha"
+        ]
+      },
+      {
+        "name": "Zunheboto",
+        "courts": [
+          "District Court, Zunheboto"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Odisha",
+    "courts": [
+      "High Court of Orissa"
+    ],
+    "districts": [
+      {
+        "name": "Angul",
+        "courts": [
+          "District Court, Angul"
+        ]
+      },
+      {
+        "name": "Balangir",
+        "courts": [
+          "District Court, Balangir"
+        ]
+      },
+      {
+        "name": "Balasore",
+        "courts": [
+          "District Court, Balasore"
+        ]
+      },
+      {
+        "name": "Bargarh",
+        "courts": [
+          "District Court, Bargarh"
+        ]
+      },
+      {
+        "name": "Bhadrak",
+        "courts": [
+          "District Court, Bhadrak"
+        ]
+      },
+      {
+        "name": "Boudh",
+        "courts": [
+          "District Court, Boudh"
+        ]
+      },
+      {
+        "name": "Cuttack",
+        "courts": [
+          "District Court, Cuttack"
+        ]
+      },
+      {
+        "name": "Deogarh",
+        "courts": [
+          "District Court, Deogarh"
+        ]
+      },
+      {
+        "name": "Dhenkanal",
+        "courts": [
+          "District Court, Dhenkanal"
+        ]
+      },
+      {
+        "name": "Gajapati",
+        "courts": [
+          "District Court, Gajapati"
+        ]
+      },
+      {
+        "name": "Ganjam",
+        "courts": [
+          "District Court, Ganjam"
+        ]
+      },
+      {
+        "name": "Jagatsinghapur",
+        "courts": [
+          "District Court, Jagatsinghapur"
+        ]
+      },
+      {
+        "name": "Jajpur",
+        "courts": [
+          "District Court, Jajpur"
+        ]
+      },
+      {
+        "name": "Jharsuguda",
+        "courts": [
+          "District Court, Jharsuguda"
+        ]
+      },
+      {
+        "name": "Kalahandi",
+        "courts": [
+          "District Court, Kalahandi"
+        ]
+      },
+      {
+        "name": "Kandhamal",
+        "courts": [
+          "District Court, Kandhamal"
+        ]
+      },
+      {
+        "name": "Kendrapara",
+        "courts": [
+          "District Court, Kendrapara"
+        ]
+      },
+      {
+        "name": "Kendujhar (Keonjhar)",
+        "courts": [
+          "District Court, Kendujhar (Keonjhar)"
+        ]
+      },
+      {
+        "name": "Khordha",
+        "courts": [
+          "District Court, Khordha"
+        ]
+      },
+      {
+        "name": "Koraput",
+        "courts": [
+          "District Court, Koraput"
+        ]
+      },
+      {
+        "name": "Malkangiri",
+        "courts": [
+          "District Court, Malkangiri"
+        ]
+      },
+      {
+        "name": "Mayurbhanj",
+        "courts": [
+          "District Court, Mayurbhanj"
+        ]
+      },
+      {
+        "name": "Nabarangpur",
+        "courts": [
+          "District Court, Nabarangpur"
+        ]
+      },
+      {
+        "name": "Nayagarh",
+        "courts": [
+          "District Court, Nayagarh"
+        ]
+      },
+      {
+        "name": "Nuapada",
+        "courts": [
+          "District Court, Nuapada"
+        ]
+      },
+      {
+        "name": "Puri",
+        "courts": [
+          "District Court, Puri"
+        ]
+      },
+      {
+        "name": "Rayagada",
+        "courts": [
+          "District Court, Rayagada"
+        ]
+      },
+      {
+        "name": "Sambalpur",
+        "courts": [
+          "District Court, Sambalpur"
+        ]
+      },
+      {
+        "name": "Sonepur",
+        "courts": [
+          "District Court, Sonepur"
+        ]
+      },
+      {
+        "name": "Sundargarh",
+        "courts": [
+          "District Court, Sundargarh"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Puducherry",
+    "courts": [
+      "Madras High Court"
+    ],
+    "districts": [
+      {
+        "name": "Karaikal",
+        "courts": [
+          "District Court, Karaikal"
+        ]
+      },
+      {
+        "name": "Mahe",
+        "courts": [
+          "District Court, Mahe"
+        ]
+      },
+      {
+        "name": "Pondicherry",
+        "courts": [
+          "District Court, Pondicherry"
+        ]
+      },
+      {
+        "name": "Yanam",
+        "courts": [
+          "District Court, Yanam"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Punjab",
+    "courts": [
+      "Punjab and Haryana High Court"
+    ],
+    "districts": [
+      {
+        "name": "Amritsar",
+        "courts": [
+          "District Court, Amritsar"
+        ]
+      },
+      {
+        "name": "Barnala",
+        "courts": [
+          "District Court, Barnala"
+        ]
+      },
+      {
+        "name": "Bathinda",
+        "courts": [
+          "District Court, Bathinda"
+        ]
+      },
+      {
+        "name": "Faridkot",
+        "courts": [
+          "District Court, Faridkot"
+        ]
+      },
+      {
+        "name": "Fatehgarh Sahib",
+        "courts": [
+          "District Court, Fatehgarh Sahib"
+        ]
+      },
+      {
+        "name": "Fazilka",
+        "courts": [
+          "District Court, Fazilka"
+        ]
+      },
+      {
+        "name": "Ferozepur",
+        "courts": [
+          "District Court, Ferozepur"
+        ]
+      },
+      {
+        "name": "Gurdaspur",
+        "courts": [
+          "District Court, Gurdaspur"
+        ]
+      },
+      {
+        "name": "Hoshiarpur",
+        "courts": [
+          "District Court, Hoshiarpur"
+        ]
+      },
+      {
+        "name": "Jalandhar",
+        "courts": [
+          "District Court, Jalandhar"
+        ]
+      },
+      {
+        "name": "Kapurthala",
+        "courts": [
+          "District Court, Kapurthala"
+        ]
+      },
+      {
+        "name": "Ludhiana",
+        "courts": [
+          "District Court, Ludhiana"
+        ]
+      },
+      {
+        "name": "Mansa",
+        "courts": [
+          "District Court, Mansa"
+        ]
+      },
+      {
+        "name": "Moga",
+        "courts": [
+          "District Court, Moga"
+        ]
+      },
+      {
+        "name": "Muktsar",
+        "courts": [
+          "District Court, Muktsar"
+        ]
+      },
+      {
+        "name": "Nawanshahr (Shahid Bhagat Singh Nagar)",
+        "courts": [
+          "District Court, Nawanshahr (Shahid Bhagat Singh Nagar)"
+        ]
+      },
+      {
+        "name": "Pathankot",
+        "courts": [
+          "District Court, Pathankot"
+        ]
+      },
+      {
+        "name": "Patiala",
+        "courts": [
+          "District Court, Patiala"
+        ]
+      },
+      {
+        "name": "Rupnagar",
+        "courts": [
+          "District Court, Rupnagar"
+        ]
+      },
+      {
+        "name": "Sahibzada Ajit Singh Nagar (Mohali)",
+        "courts": [
+          "District Court, Sahibzada Ajit Singh Nagar (Mohali)"
+        ]
+      },
+      {
+        "name": "Sangrur",
+        "courts": [
+          "District Court, Sangrur"
+        ]
+      },
+      {
+        "name": "Tarn Taran",
+        "courts": [
+          "District Court, Tarn Taran"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Rajasthan",
+    "courts": [
+      "Rajasthan High Court"
+    ],
+    "districts": [
+      {
+        "name": "Ajmer",
+        "courts": [
+          "District Court, Ajmer"
+        ]
+      },
+      {
+        "name": "Alwar",
+        "courts": [
+          "District Court, Alwar"
+        ]
+      },
+      {
+        "name": "Banswara",
+        "courts": [
+          "District Court, Banswara"
+        ]
+      },
+      {
+        "name": "Baran",
+        "courts": [
+          "District Court, Baran"
+        ]
+      },
+      {
+        "name": "Barmer",
+        "courts": [
+          "District Court, Barmer"
+        ]
+      },
+      {
+        "name": "Bharatpur",
+        "courts": [
+          "District Court, Bharatpur"
+        ]
+      },
+      {
+        "name": "Bhilwara",
+        "courts": [
+          "District Court, Bhilwara"
+        ]
+      },
+      {
+        "name": "Bikaner",
+        "courts": [
+          "District Court, Bikaner"
+        ]
+      },
+      {
+        "name": "Bundi",
+        "courts": [
+          "District Court, Bundi"
+        ]
+      },
+      {
+        "name": "Chittorgarh",
+        "courts": [
+          "District Court, Chittorgarh"
+        ]
+      },
+      {
+        "name": "Churu",
+        "courts": [
+          "District Court, Churu"
+        ]
+      },
+      {
+        "name": "Dausa",
+        "courts": [
+          "District Court, Dausa"
+        ]
+      },
+      {
+        "name": "Dholpur",
+        "courts": [
+          "District Court, Dholpur"
+        ]
+      },
+      {
+        "name": "Dungarpur",
+        "courts": [
+          "District Court, Dungarpur"
+        ]
+      },
+      {
+        "name": "Hanumangarh",
+        "courts": [
+          "District Court, Hanumangarh"
+        ]
+      },
+      {
+        "name": "Jaipur",
+        "courts": [
+          "District Court, Jaipur"
+        ]
+      },
+      {
+        "name": "Jaisalmer",
+        "courts": [
+          "District Court, Jaisalmer"
+        ]
+      },
+      {
+        "name": "Jalore",
+        "courts": [
+          "District Court, Jalore"
+        ]
+      },
+      {
+        "name": "Jhalawar",
+        "courts": [
+          "District Court, Jhalawar"
+        ]
+      },
+      {
+        "name": "Jhunjhunu",
+        "courts": [
+          "District Court, Jhunjhunu"
+        ]
+      },
+      {
+        "name": "Jodhpur",
+        "courts": [
+          "District Court, Jodhpur"
+        ]
+      },
+      {
+        "name": "Karauli",
+        "courts": [
+          "District Court, Karauli"
+        ]
+      },
+      {
+        "name": "Kota",
+        "courts": [
+          "District Court, Kota"
+        ]
+      },
+      {
+        "name": "Nagaur",
+        "courts": [
+          "District Court, Nagaur"
+        ]
+      },
+      {
+        "name": "Pali",
+        "courts": [
+          "District Court, Pali"
+        ]
+      },
+      {
+        "name": "Pratapgarh",
+        "courts": [
+          "District Court, Pratapgarh"
+        ]
+      },
+      {
+        "name": "Rajsamand",
+        "courts": [
+          "District Court, Rajsamand"
+        ]
+      },
+      {
+        "name": "Sawai Madhopur",
+        "courts": [
+          "District Court, Sawai Madhopur"
+        ]
+      },
+      {
+        "name": "Sikar",
+        "courts": [
+          "District Court, Sikar"
+        ]
+      },
+      {
+        "name": "Sirohi",
+        "courts": [
+          "District Court, Sirohi"
+        ]
+      },
+      {
+        "name": "Sri Ganganagar",
+        "courts": [
+          "District Court, Sri Ganganagar"
+        ]
+      },
+      {
+        "name": "Tonk",
+        "courts": [
+          "District Court, Tonk"
+        ]
+      },
+      {
+        "name": "Udaipur",
+        "courts": [
+          "District Court, Udaipur"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Sikkim",
+    "courts": [
+      "High Court of Sikkim"
+    ],
+    "districts": [
+      {
+        "name": "East Sikkim",
+        "courts": [
+          "District Court, East Sikkim"
+        ]
+      },
+      {
+        "name": "North Sikkim",
+        "courts": [
+          "District Court, North Sikkim"
+        ]
+      },
+      {
+        "name": "South Sikkim",
+        "courts": [
+          "District Court, South Sikkim"
+        ]
+      },
+      {
+        "name": "West Sikkim",
+        "courts": [
+          "District Court, West Sikkim"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Tamil Nadu",
+    "courts": [
+      "Madras High Court",
+      "Madurai Bench of Madras High Court"
+    ],
+    "districts": [
+      {
+        "name": "Ariyalur",
+        "courts": [
+          "District Court, Ariyalur"
+        ]
+      },
+      {
+        "name": "Chengalpattu",
+        "courts": [
+          "District Court, Chengalpattu"
+        ]
+      },
+      {
+        "name": "Chennai",
+        "courts": [
+          "District Court, Chennai"
+        ]
+      },
+      {
+        "name": "Coimbatore",
+        "courts": [
+          "District Court, Coimbatore"
+        ]
+      },
+      {
+        "name": "Cuddalore",
+        "courts": [
+          "District Court, Cuddalore"
+        ]
+      },
+      {
+        "name": "Dharmapuri",
+        "courts": [
+          "District Court, Dharmapuri"
+        ]
+      },
+      {
+        "name": "Dindigul",
+        "courts": [
+          "District Court, Dindigul"
+        ]
+      },
+      {
+        "name": "Erode",
+        "courts": [
+          "District Court, Erode"
+        ]
+      },
+      {
+        "name": "Kallakurichi",
+        "courts": [
+          "District Court, Kallakurichi"
+        ]
+      },
+      {
+        "name": "Kanchipuram",
+        "courts": [
+          "District Court, Kanchipuram"
+        ]
+      },
+      {
+        "name": "Kanyakumari",
+        "courts": [
+          "District Court, Kanyakumari"
+        ]
+      },
+      {
+        "name": "Karur",
+        "courts": [
+          "District Court, Karur"
+        ]
+      },
+      {
+        "name": "Krishnagiri",
+        "courts": [
+          "District Court, Krishnagiri"
+        ]
+      },
+      {
+        "name": "Madurai",
+        "courts": [
+          "District Court, Madurai"
+        ]
+      },
+      {
+        "name": "Mayiladuthurai",
+        "courts": [
+          "District Court, Mayiladuthurai"
+        ]
+      },
+      {
+        "name": "Nagapattinam",
+        "courts": [
+          "District Court, Nagapattinam"
+        ]
+      },
+      {
+        "name": "Namakkal",
+        "courts": [
+          "District Court, Namakkal"
+        ]
+      },
+      {
+        "name": "Nilgiris",
+        "courts": [
+          "District Court, Nilgiris"
+        ]
+      },
+      {
+        "name": "Perambalur",
+        "courts": [
+          "District Court, Perambalur"
+        ]
+      },
+      {
+        "name": "Pudukkottai",
+        "courts": [
+          "District Court, Pudukkottai"
+        ]
+      },
+      {
+        "name": "Ramanathapuram",
+        "courts": [
+          "District Court, Ramanathapuram"
+        ]
+      },
+      {
+        "name": "Ranipet",
+        "courts": [
+          "District Court, Ranipet"
+        ]
+      },
+      {
+        "name": "Salem",
+        "courts": [
+          "District Court, Salem"
+        ]
+      },
+      {
+        "name": "Sivaganga",
+        "courts": [
+          "District Court, Sivaganga"
+        ]
+      },
+      {
+        "name": "Tenkasi",
+        "courts": [
+          "District Court, Tenkasi"
+        ]
+      },
+      {
+        "name": "Thanjavur",
+        "courts": [
+          "District Court, Thanjavur"
+        ]
+      },
+      {
+        "name": "Theni",
+        "courts": [
+          "District Court, Theni"
+        ]
+      },
+      {
+        "name": "Thoothukudi",
+        "courts": [
+          "District Court, Thoothukudi"
+        ]
+      },
+      {
+        "name": "Tiruchirappalli",
+        "courts": [
+          "District Court, Tiruchirappalli"
+        ]
+      },
+      {
+        "name": "Tirunelveli",
+        "courts": [
+          "District Court, Tirunelveli"
+        ]
+      },
+      {
+        "name": "Tirupathur",
+        "courts": [
+          "District Court, Tirupathur"
+        ]
+      },
+      {
+        "name": "Tiruppur",
+        "courts": [
+          "District Court, Tiruppur"
+        ]
+      },
+      {
+        "name": "Tiruvallur",
+        "courts": [
+          "District Court, Tiruvallur"
+        ]
+      },
+      {
+        "name": "Tiruvannamalai",
+        "courts": [
+          "District Court, Tiruvannamalai"
+        ]
+      },
+      {
+        "name": "Tiruvarur",
+        "courts": [
+          "District Court, Tiruvarur"
+        ]
+      },
+      {
+        "name": "Vellore",
+        "courts": [
+          "District Court, Vellore"
+        ]
+      },
+      {
+        "name": "Viluppuram",
+        "courts": [
+          "District Court, Viluppuram"
+        ]
+      },
+      {
+        "name": "Virudhunagar",
+        "courts": [
+          "District Court, Virudhunagar"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Telangana",
+    "courts": [
+      "High Court for the State of Telangana"
+    ],
+    "districts": [
+      {
+        "name": "Adilabad",
+        "courts": [
+          "District Court, Adilabad"
+        ]
+      },
+      {
+        "name": "Bhadradri Kothagudem",
+        "courts": [
+          "District Court, Bhadradri Kothagudem"
+        ]
+      },
+      {
+        "name": "Hyderabad",
+        "courts": [
+          "District Court, Hyderabad"
+        ]
+      },
+      {
+        "name": "Jagtial",
+        "courts": [
+          "District Court, Jagtial"
+        ]
+      },
+      {
+        "name": "Jangaon",
+        "courts": [
+          "District Court, Jangaon"
+        ]
+      },
+      {
+        "name": "Jayashankar Bhoopalpally",
+        "courts": [
+          "District Court, Jayashankar Bhoopalpally"
+        ]
+      },
+      {
+        "name": "Jogulamba Gadwal",
+        "courts": [
+          "District Court, Jogulamba Gadwal"
+        ]
+      },
+      {
+        "name": "Kamareddy",
+        "courts": [
+          "District Court, Kamareddy"
+        ]
+      },
+      {
+        "name": "Karimnagar",
+        "courts": [
+          "District Court, Karimnagar"
+        ]
+      },
+      {
+        "name": "Khammam",
+        "courts": [
+          "District Court, Khammam"
+        ]
+      },
+      {
+        "name": "Komaram Bheem Asifabad",
+        "courts": [
+          "District Court, Komaram Bheem Asifabad"
+        ]
+      },
+      {
+        "name": "Mahabubabad",
+        "courts": [
+          "District Court, Mahabubabad"
+        ]
+      },
+      {
+        "name": "Mahabubnagar",
+        "courts": [
+          "District Court, Mahabubnagar"
+        ]
+      },
+      {
+        "name": "Mancherial",
+        "courts": [
+          "District Court, Mancherial"
+        ]
+      },
+      {
+        "name": "Medak",
+        "courts": [
+          "District Court, Medak"
+        ]
+      },
+      {
+        "name": "Medchal",
+        "courts": [
+          "District Court, Medchal"
+        ]
+      },
+      {
+        "name": "Mulugu",
+        "courts": [
+          "District Court, Mulugu"
+        ]
+      },
+      {
+        "name": "Nagarkurnool",
+        "courts": [
+          "District Court, Nagarkurnool"
+        ]
+      },
+      {
+        "name": "Nalgonda",
+        "courts": [
+          "District Court, Nalgonda"
+        ]
+      },
+      {
+        "name": "Narayanpet",
+        "courts": [
+          "District Court, Narayanpet"
+        ]
+      },
+      {
+        "name": "Nirmal",
+        "courts": [
+          "District Court, Nirmal"
+        ]
+      },
+      {
+        "name": "Nizamabad",
+        "courts": [
+          "District Court, Nizamabad"
+        ]
+      },
+      {
+        "name": "Peddapalli",
+        "courts": [
+          "District Court, Peddapalli"
+        ]
+      },
+      {
+        "name": "Rajanna Sircilla",
+        "courts": [
+          "District Court, Rajanna Sircilla"
+        ]
+      },
+      {
+        "name": "Rangareddy",
+        "courts": [
+          "District Court, Rangareddy"
+        ]
+      },
+      {
+        "name": "Sangareddy",
+        "courts": [
+          "District Court, Sangareddy"
+        ]
+      },
+      {
+        "name": "Siddipet",
+        "courts": [
+          "District Court, Siddipet"
+        ]
+      },
+      {
+        "name": "Suryapet",
+        "courts": [
+          "District Court, Suryapet"
+        ]
+      },
+      {
+        "name": "Vikarabad",
+        "courts": [
+          "District Court, Vikarabad"
+        ]
+      },
+      {
+        "name": "Wanaparthy",
+        "courts": [
+          "District Court, Wanaparthy"
+        ]
+      },
+      {
+        "name": "Warangal (Rural)",
+        "courts": [
+          "District Court, Warangal (Rural)"
+        ]
+      },
+      {
+        "name": "Warangal (Urban)",
+        "courts": [
+          "District Court, Warangal (Urban)"
+        ]
+      },
+      {
+        "name": "Yadadri Bhuvanagiri",
+        "courts": [
+          "District Court, Yadadri Bhuvanagiri"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Tripura",
+    "courts": [
+      "High Court of Tripura"
+    ],
+    "districts": [
+      {
+        "name": "Dhalai",
+        "courts": [
+          "District Court, Dhalai"
+        ]
+      },
+      {
+        "name": "Gomati",
+        "courts": [
+          "District Court, Gomati"
+        ]
+      },
+      {
+        "name": "Khowai",
+        "courts": [
+          "District Court, Khowai"
+        ]
+      },
+      {
+        "name": "North Tripura",
+        "courts": [
+          "District Court, North Tripura"
+        ]
+      },
+      {
+        "name": "Sepahijala",
+        "courts": [
+          "District Court, Sepahijala"
+        ]
+      },
+      {
+        "name": "South Tripura",
+        "courts": [
+          "District Court, South Tripura"
+        ]
+      },
+      {
+        "name": "Unakoti",
+        "courts": [
+          "District Court, Unakoti"
+        ]
+      },
+      {
+        "name": "West Tripura",
+        "courts": [
+          "District Court, West Tripura"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Uttar Pradesh",
+    "courts": [
+      "Allahabad High Court"
+    ],
+    "districts": [
+      {
+        "name": "Agra",
+        "courts": [
+          "District Court, Agra"
+        ]
+      },
+      {
+        "name": "Aligarh",
+        "courts": [
+          "District Court, Aligarh"
+        ]
+      },
+      {
+        "name": "Allahabad",
+        "courts": [
+          "District Court, Allahabad"
+        ]
+      },
+      {
+        "name": "Ambedkar Nagar",
+        "courts": [
+          "District Court, Ambedkar Nagar"
+        ]
+      },
+      {
+        "name": "Amethi (Chatrapati Sahuji Mahraj Nagar)",
+        "courts": [
+          "District Court, Amethi (Chatrapati Sahuji Mahraj Nagar)"
+        ]
+      },
+      {
+        "name": "Amroha (J.P. Nagar)",
+        "courts": [
+          "District Court, Amroha (J.P. Nagar)"
+        ]
+      },
+      {
+        "name": "Auraiya",
+        "courts": [
+          "District Court, Auraiya"
+        ]
+      },
+      {
+        "name": "Azamgarh",
+        "courts": [
+          "District Court, Azamgarh"
+        ]
+      },
+      {
+        "name": "Baghpat",
+        "courts": [
+          "District Court, Baghpat"
+        ]
+      },
+      {
+        "name": "Bahraich",
+        "courts": [
+          "District Court, Bahraich"
+        ]
+      },
+      {
+        "name": "Ballia",
+        "courts": [
+          "District Court, Ballia"
+        ]
+      },
+      {
+        "name": "Balrampur",
+        "courts": [
+          "District Court, Balrampur"
+        ]
+      },
+      {
+        "name": "Banda",
+        "courts": [
+          "District Court, Banda"
+        ]
+      },
+      {
+        "name": "Barabanki",
+        "courts": [
+          "District Court, Barabanki"
+        ]
+      },
+      {
+        "name": "Bareilly",
+        "courts": [
+          "District Court, Bareilly"
+        ]
+      },
+      {
+        "name": "Basti",
+        "courts": [
+          "District Court, Basti"
+        ]
+      },
+      {
+        "name": "Bhadohi",
+        "courts": [
+          "District Court, Bhadohi"
+        ]
+      },
+      {
+        "name": "Bijnor",
+        "courts": [
+          "District Court, Bijnor"
+        ]
+      },
+      {
+        "name": "Budaun",
+        "courts": [
+          "District Court, Budaun"
+        ]
+      },
+      {
+        "name": "Bulandshahr",
+        "courts": [
+          "District Court, Bulandshahr"
+        ]
+      },
+      {
+        "name": "Chandauli",
+        "courts": [
+          "District Court, Chandauli"
+        ]
+      },
+      {
+        "name": "Chitrakoot",
+        "courts": [
+          "District Court, Chitrakoot"
+        ]
+      },
+      {
+        "name": "Deoria",
+        "courts": [
+          "District Court, Deoria"
+        ]
+      },
+      {
+        "name": "Etah",
+        "courts": [
+          "District Court, Etah"
+        ]
+      },
+      {
+        "name": "Etawah",
+        "courts": [
+          "District Court, Etawah"
+        ]
+      },
+      {
+        "name": "Faizabad",
+        "courts": [
+          "District Court, Faizabad"
+        ]
+      },
+      {
+        "name": "Farrukhabad",
+        "courts": [
+          "District Court, Farrukhabad"
+        ]
+      },
+      {
+        "name": "Fatehpur",
+        "courts": [
+          "District Court, Fatehpur"
+        ]
+      },
+      {
+        "name": "Firozabad",
+        "courts": [
+          "District Court, Firozabad"
+        ]
+      },
+      {
+        "name": "Gautam Buddha Nagar",
+        "courts": [
+          "District Court, Gautam Buddha Nagar"
+        ]
+      },
+      {
+        "name": "Ghaziabad",
+        "courts": [
+          "District Court, Ghaziabad"
+        ]
+      },
+      {
+        "name": "Ghazipur",
+        "courts": [
+          "District Court, Ghazipur"
+        ]
+      },
+      {
+        "name": "Gonda",
+        "courts": [
+          "District Court, Gonda"
+        ]
+      },
+      {
+        "name": "Gorakhpur",
+        "courts": [
+          "District Court, Gorakhpur"
+        ]
+      },
+      {
+        "name": "Hamirpur",
+        "courts": [
+          "District Court, Hamirpur"
+        ]
+      },
+      {
+        "name": "Hapur (Panchsheel Nagar)",
+        "courts": [
+          "District Court, Hapur (Panchsheel Nagar)"
+        ]
+      },
+      {
+        "name": "Hardoi",
+        "courts": [
+          "District Court, Hardoi"
+        ]
+      },
+      {
+        "name": "Hathras",
+        "courts": [
+          "District Court, Hathras"
+        ]
+      },
+      {
+        "name": "Jalaun",
+        "courts": [
+          "District Court, Jalaun"
+        ]
+      },
+      {
+        "name": "Jaunpur",
+        "courts": [
+          "District Court, Jaunpur"
+        ]
+      },
+      {
+        "name": "Jhansi",
+        "courts": [
+          "District Court, Jhansi"
+        ]
+      },
+      {
+        "name": "Kannauj",
+        "courts": [
+          "District Court, Kannauj"
+        ]
+      },
+      {
+        "name": "Kanpur Dehat",
+        "courts": [
+          "District Court, Kanpur Dehat"
+        ]
+      },
+      {
+        "name": "Kanpur Nagar",
+        "courts": [
+          "District Court, Kanpur Nagar"
+        ]
+      },
+      {
+        "name": "Kanshiram Nagar (Kasganj)",
+        "courts": [
+          "District Court, Kanshiram Nagar (Kasganj)"
+        ]
+      },
+      {
+        "name": "Kaushambi",
+        "courts": [
+          "District Court, Kaushambi"
+        ]
+      },
+      {
+        "name": "Kushinagar (Padrauna)",
+        "courts": [
+          "District Court, Kushinagar (Padrauna)"
+        ]
+      },
+      {
+        "name": "Lakhimpur - Kheri",
+        "courts": [
+          "District Court, Lakhimpur - Kheri"
+        ]
+      },
+      {
+        "name": "Lalitpur",
+        "courts": [
+          "District Court, Lalitpur"
+        ]
+      },
+      {
+        "name": "Lucknow",
+        "courts": [
+          "District Court, Lucknow"
+        ]
+      },
+      {
+        "name": "Maharajganj",
+        "courts": [
+          "District Court, Maharajganj"
+        ]
+      },
+      {
+        "name": "Mahoba",
+        "courts": [
+          "District Court, Mahoba"
+        ]
+      },
+      {
+        "name": "Mainpuri",
+        "courts": [
+          "District Court, Mainpuri"
+        ]
+      },
+      {
+        "name": "Mathura",
+        "courts": [
+          "District Court, Mathura"
+        ]
+      },
+      {
+        "name": "Mau",
+        "courts": [
+          "District Court, Mau"
+        ]
+      },
+      {
+        "name": "Meerut",
+        "courts": [
+          "District Court, Meerut"
+        ]
+      },
+      {
+        "name": "Mirzapur",
+        "courts": [
+          "District Court, Mirzapur"
+        ]
+      },
+      {
+        "name": "Moradabad",
+        "courts": [
+          "District Court, Moradabad"
+        ]
+      },
+      {
+        "name": "Muzaffarnagar",
+        "courts": [
+          "District Court, Muzaffarnagar"
+        ]
+      },
+      {
+        "name": "Pilibhit",
+        "courts": [
+          "District Court, Pilibhit"
+        ]
+      },
+      {
+        "name": "Pratapgarh",
+        "courts": [
+          "District Court, Pratapgarh"
+        ]
+      },
+      {
+        "name": "RaeBareli",
+        "courts": [
+          "District Court, RaeBareli"
+        ]
+      },
+      {
+        "name": "Rampur",
+        "courts": [
+          "District Court, Rampur"
+        ]
+      },
+      {
+        "name": "Saharanpur",
+        "courts": [
+          "District Court, Saharanpur"
+        ]
+      },
+      {
+        "name": "Sambhal (Bhim Nagar)",
+        "courts": [
+          "District Court, Sambhal (Bhim Nagar)"
+        ]
+      },
+      {
+        "name": "Sant Kabir Nagar",
+        "courts": [
+          "District Court, Sant Kabir Nagar"
+        ]
+      },
+      {
+        "name": "Shahjahanpur",
+        "courts": [
+          "District Court, Shahjahanpur"
+        ]
+      },
+      {
+        "name": "Shamali (Prabuddh Nagar)",
+        "courts": [
+          "District Court, Shamali (Prabuddh Nagar)"
+        ]
+      },
+      {
+        "name": "Shravasti",
+        "courts": [
+          "District Court, Shravasti"
+        ]
+      },
+      {
+        "name": "Siddharth Nagar",
+        "courts": [
+          "District Court, Siddharth Nagar"
+        ]
+      },
+      {
+        "name": "Sitapur",
+        "courts": [
+          "District Court, Sitapur"
+        ]
+      },
+      {
+        "name": "Sonbhadra",
+        "courts": [
+          "District Court, Sonbhadra"
+        ]
+      },
+      {
+        "name": "Sultanpur",
+        "courts": [
+          "District Court, Sultanpur"
+        ]
+      },
+      {
+        "name": "Unnao",
+        "courts": [
+          "District Court, Unnao"
+        ]
+      },
+      {
+        "name": "Varanasi",
+        "courts": [
+          "District Court, Varanasi"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Uttarakhand",
+    "courts": [
+      "High Court of Uttarakhand"
+    ],
+    "districts": [
+      {
+        "name": "Almora",
+        "courts": [
+          "District Court, Almora"
+        ]
+      },
+      {
+        "name": "Bageshwar",
+        "courts": [
+          "District Court, Bageshwar"
+        ]
+      },
+      {
+        "name": "Chamoli",
+        "courts": [
+          "District Court, Chamoli"
+        ]
+      },
+      {
+        "name": "Champawat",
+        "courts": [
+          "District Court, Champawat"
+        ]
+      },
+      {
+        "name": "Dehradun",
+        "courts": [
+          "District Court, Dehradun"
+        ]
+      },
+      {
+        "name": "Haridwar",
+        "courts": [
+          "District Court, Haridwar"
+        ]
+      },
+      {
+        "name": "Nainital",
+        "courts": [
+          "District Court, Nainital"
+        ]
+      },
+      {
+        "name": "Pauri Garhwal",
+        "courts": [
+          "District Court, Pauri Garhwal"
+        ]
+      },
+      {
+        "name": "Pithoragarh",
+        "courts": [
+          "District Court, Pithoragarh"
+        ]
+      },
+      {
+        "name": "Rudraprayag",
+        "courts": [
+          "District Court, Rudraprayag"
+        ]
+      },
+      {
+        "name": "Tehri Garhwal",
+        "courts": [
+          "District Court, Tehri Garhwal"
+        ]
+      },
+      {
+        "name": "Udham Singh Nagar",
+        "courts": [
+          "District Court, Udham Singh Nagar"
+        ]
+      },
+      {
+        "name": "Uttarkashi",
+        "courts": [
+          "District Court, Uttarkashi"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "West Bengal",
+    "courts": [
+      "Calcutta High Court"
+    ],
+    "districts": [
+      {
+        "name": "Alipurduar",
+        "courts": [
+          "District Court, Alipurduar"
+        ]
+      },
+      {
+        "name": "Bankura",
+        "courts": [
+          "District Court, Bankura"
+        ]
+      },
+      {
+        "name": "Birbhum",
+        "courts": [
+          "District Court, Birbhum"
+        ]
+      },
+      {
+        "name": "Burdwan (Bardhaman)",
+        "courts": [
+          "District Court, Burdwan (Bardhaman)"
+        ]
+      },
+      {
+        "name": "Cooch Behar",
+        "courts": [
+          "District Court, Cooch Behar"
+        ]
+      },
+      {
+        "name": "Dakshin Dinajpur (South Dinajpur)",
+        "courts": [
+          "District Court, Dakshin Dinajpur (South Dinajpur)"
+        ]
+      },
+      {
+        "name": "Darjeeling",
+        "courts": [
+          "District Court, Darjeeling"
+        ]
+      },
+      {
+        "name": "Hooghly",
+        "courts": [
+          "District Court, Hooghly"
+        ]
+      },
+      {
+        "name": "Howrah",
+        "courts": [
+          "District Court, Howrah"
+        ]
+      },
+      {
+        "name": "Jalpaiguri",
+        "courts": [
+          "District Court, Jalpaiguri"
+        ]
+      },
+      {
+        "name": "Jhargram",
+        "courts": [
+          "District Court, Jhargram"
+        ]
+      },
+      {
+        "name": "Kalimpong",
+        "courts": [
+          "District Court, Kalimpong"
+        ]
+      },
+      {
+        "name": "Kolkata",
+        "courts": [
+          "District Court, Kolkata"
+        ]
+      },
+      {
+        "name": "Malda",
+        "courts": [
+          "District Court, Malda"
+        ]
+      },
+      {
+        "name": "Murshidabad",
+        "courts": [
+          "District Court, Murshidabad"
+        ]
+      },
+      {
+        "name": "Nadia",
+        "courts": [
+          "District Court, Nadia"
+        ]
+      },
+      {
+        "name": "North 24 Parganas",
+        "courts": [
+          "District Court, North 24 Parganas"
+        ]
+      },
+      {
+        "name": "Paschim Bardhaman",
+        "courts": [
+          "District Court, Paschim Bardhaman"
+        ]
+      },
+      {
+        "name": "Paschim Medinipur (West Medinipur)",
+        "courts": [
+          "District Court, Paschim Medinipur (West Medinipur)"
+        ]
+      },
+      {
+        "name": "Purba Medinipur (East Medinipur)",
+        "courts": [
+          "District Court, Purba Medinipur (East Medinipur)"
+        ]
+      },
+      {
+        "name": "Purulia",
+        "courts": [
+          "District Court, Purulia"
+        ]
+      },
+      {
+        "name": "South 24 Parganas",
+        "courts": [
+          "District Court, South 24 Parganas"
+        ]
+      },
+      {
+        "name": "Uttar Dinajpur (North Dinajpur)",
+        "courts": [
+          "District Court, Uttar Dinajpur (North Dinajpur)"
+        ]
+      }
+    ]
+  }
+]

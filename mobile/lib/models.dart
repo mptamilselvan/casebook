@@ -235,6 +235,38 @@ class CaseTemplate {
   }
 }
 
+class CourtPlace {
+  CourtPlace({required this.name, required this.courts});
+
+  final String name;
+  final List<String> courts;
+
+  factory CourtPlace.fromJson(Map<String, dynamic> json) {
+    return CourtPlace(
+      name: json['name'] as String? ?? '',
+      courts: (json['courts'] as List? ?? [])
+          .map((item) => item.toString())
+          .toList(),
+    );
+  }
+}
+
+class StatePlace {
+  StatePlace({required this.name, required this.districts});
+
+  final String name;
+  final List<CourtPlace> districts;
+
+  factory StatePlace.fromJson(Map<String, dynamic> json) {
+    return StatePlace(
+      name: json['name'] as String? ?? '',
+      districts: (json['districts'] as List? ?? [])
+          .map((item) => CourtPlace.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class Workspace {
   Workspace({
     required this.filter,
@@ -247,6 +279,7 @@ class Workspace {
     required this.folders,
     required this.cases,
     required this.templates,
+    this.locations = const [],
     this.active,
   });
 
@@ -258,6 +291,7 @@ class Workspace {
   final Map<String, String> party1Roles;
   final Map<String, String> party2Roles;
   final List<String> folders;
+  final List<StatePlace> locations;
   final List<CaseSummary> cases;
   final List<CaseTemplate> templates;
   final CaseDetail? active;
@@ -283,6 +317,9 @@ class Workspace {
       ),
       folders: (json['folders'] as List? ?? [])
           .map((item) => item.toString())
+          .toList(),
+      locations: (json['locations'] as List? ?? [])
+          .map((item) => StatePlace.fromJson(item as Map<String, dynamic>))
           .toList(),
       cases: (json['cases'] as List? ?? [])
           .map((item) => CaseSummary.fromJson(item as Map<String, dynamic>))

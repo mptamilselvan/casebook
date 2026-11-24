@@ -10,6 +10,7 @@
     $alpine = [
         'tab' => $tab,
         'today' => $today,
+        'locations' => $locations,
         'modal' => session('modal'),
         'modalStep' => (int) session('modal_step', 1),
         'templateId' => $activeTemplate?->id,

@@ -21,9 +21,10 @@ class NewCasePage extends StatefulWidget {
 
 class _NewCasePageState extends State<NewCasePage> {
   int step = 1;
-  final stateName = TextEditingController();
-  final district = TextEditingController();
-  final court = TextEditingController();
+  String? selectedState;
+  String? selectedDistrict;
+  String? selectedCourt;
+  final courtOther = TextEditingController();
   final number = TextEditingController();
   final year = TextEditingController(text: DateTime.now().year.toString());
   late String role1 =
@@ -38,9 +39,7 @@ class _NewCasePageState extends State<NewCasePage> {
   @override
   void dispose() {
     for (final controller in [
-      stateName,
-      district,
-      court,
+      courtOther,
       number,
       year,
       ...petitioners,
@@ -58,9 +57,11 @@ class _NewCasePageState extends State<NewCasePage> {
     });
     try {
       await widget.state.createCase({
-        'state': stateName.text,
-        'district': district.text,
-        'court': court.text,
+        'state': selectedState ?? '',
+        'district': selectedDistrict ?? '',
+        'court': selectedCourt == 'Other'
+            ? courtOther.text.trim()
+            : (selectedCourt ?? ''),
         'case_number': number.text,
         'case_year': year.text,
         'party1_role': role1,
@@ -84,6 +85,15 @@ class _NewCasePageState extends State<NewCasePage> {
   Widget build(BuildContext context) {
     final roles1 = widget.state.workspace?.party1Roles ?? {};
     final roles2 = widget.state.workspace?.party2Roles ?? {};
+    final places = widget.state.workspace?.locations ?? const <StatePlace>[];
+    final districts = places
+        .where((place) => place.name == selectedState)
+        .expand((place) => place.districts)
+        .toList();
+    final courts = districts
+        .where((place) => place.name == selectedDistrict)
+        .expand((place) => place.courts)
+        .toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -94,22 +104,78 @@ class _NewCasePageState extends State<NewCasePage> {
           if (error != null)
             Text(error!, style: const TextStyle(color: Color(0xFFDC2626))),
           if (step == 1) ...[
-            TextField(
-              controller: stateName,
+            DropdownButtonFormField<String>(
+              key: ValueKey('state-$selectedState'),
+              initialValue: selectedState,
               decoration: casebookField('State'),
+              hint: const Text('Select state'),
+              items: [
+                for (final place in places)
+                  DropdownMenuItem(value: place.name, child: Text(place.name)),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  selectedState = value;
+                  selectedDistrict = null;
+                  selectedCourt = null;
+                  courtOther.clear();
+                });
+              },
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: district,
+            DropdownButtonFormField<String>(
+              key: ValueKey('district-$selectedState'),
+              initialValue: selectedDistrict,
               decoration: casebookField('District'),
+              hint: const Text('Select district'),
+              items: [
+                for (final place in districts)
+                  DropdownMenuItem(value: place.name, child: Text(place.name)),
+              ],
+              onChanged: selectedState == null
+                  ? null
+                  : (value) {
+                      setState(() {
+                        selectedDistrict = value;
+                        selectedCourt = null;
+                        courtOther.clear();
+                      });
+                    },
             ),
             const SizedBox(height: 12),
-            TextField(controller: court, decoration: casebookField('Court')),
+            DropdownButtonFormField<String>(
+              key: ValueKey('court-$selectedState-$selectedDistrict'),
+              initialValue: selectedCourt,
+              decoration: casebookField('Court'),
+              hint: const Text('Select court'),
+              items: [
+                for (final name in courts)
+                  DropdownMenuItem(value: name, child: Text(name)),
+                const DropdownMenuItem(value: 'Other', child: Text('Other')),
+              ],
+              onChanged: selectedDistrict == null
+                  ? null
+                  : (value) => setState(() => selectedCourt = value),
+            ),
+            if (selectedCourt == 'Other') ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: courtOther,
+                decoration: casebookField('Court name'),
+              ),
+            ],
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () {
-                if (court.text.trim().isEmpty) {
-                  setState(() => error = 'Court is required.');
+                final courtName = selectedCourt == 'Other'
+                    ? courtOther.text.trim()
+                    : (selectedCourt ?? '');
+                if (selectedState == null ||
+                    selectedDistrict == null ||
+                    courtName.isEmpty) {
+                  setState(
+                    () => error = 'State, district, and court are required.',
+                  );
                   return;
                 }
                 setState(() {

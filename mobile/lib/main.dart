@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'api.dart';
 import 'app_state.dart';
+import 'push.dart';
 import 'screens/casebook_page.dart';
 import 'screens/login_page.dart';
 import 'theme.dart';
@@ -11,6 +12,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Flutter does not package files named ".env", so the app loads assets/env.
   await dotenv.load(fileName: 'assets/env', isOptional: true);
+  await CasebookPush.start();
   runApp(CasebookApp(state: AppState(ApiClient())));
 }
 
@@ -50,22 +52,23 @@ class _CasebookAppState extends State<CasebookApp> {
       home: !ready
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : signedIn
-              ? CasebookPage(
-                  state: widget.state,
-                  onSignedOut: () => setState(() {
-                    signedIn = false;
-                    pendingEmail = null;
-                  }),
-                )
-              : LoginPage(
-                  state: widget.state,
-                  pendingEmail: pendingEmail,
-                  onAuthenticated: () => setState(() {
-                    signedIn = true;
-                    pendingEmail = null;
-                  }),
-                  onVerificationSent: (email) => setState(() => pendingEmail = email),
-                ),
+          ? CasebookPage(
+              state: widget.state,
+              onSignedOut: () => setState(() {
+                signedIn = false;
+                pendingEmail = null;
+              }),
+            )
+          : LoginPage(
+              state: widget.state,
+              pendingEmail: pendingEmail,
+              onAuthenticated: () => setState(() {
+                signedIn = true;
+                pendingEmail = null;
+              }),
+              onVerificationSent: (email) =>
+                  setState(() => pendingEmail = email),
+            ),
     );
   }
 }
