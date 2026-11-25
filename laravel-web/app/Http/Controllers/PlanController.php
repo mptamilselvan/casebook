@@ -14,10 +14,14 @@ class PlanController extends Controller
             ->with('prices')
             ->orderBy('sort_order')
             ->get();
+        $user = $request->user();
 
         return view('casebook.plans', [
             'plans' => $plans,
-            'currentPlanId' => $request->user()->plan_id,
+            'currentPlanId' => $user->plan_id,
+            'billingInterval' => $user->billing_interval,
+            'subscriptionStatus' => $user->subscription_status,
+            'renewsOn' => $user->plan_renews_on?->format('j M Y'),
         ]);
     }
 }

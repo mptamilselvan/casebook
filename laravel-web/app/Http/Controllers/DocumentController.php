@@ -26,7 +26,7 @@ class DocumentController extends Controller
             return $this->redirectToCase($request, $case)
                 ->withErrors($validator)
                 ->withInput()
-                ->with('modal', 'add-document');
+                ->with('modal', 'document');
         }
 
         $data = $validator->validated();
@@ -36,7 +36,7 @@ class DocumentController extends Controller
             return $this->redirectToCase($request, $case)
                 ->withErrors(['file' => $reason])
                 ->withInput()
-                ->with('modal', 'add-document');
+                ->with('modal', 'document');
         }
 
         $name = trim((string) ($data['name'] ?? ''));

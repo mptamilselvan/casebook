@@ -9,10 +9,21 @@ class Price extends Model
 {
     public const INR = 'INR';
 
+    public const MONTHLY = 'monthly';
+
+    public const YEARLY = 'yearly';
+
+    public const INTERVALS = [
+        self::MONTHLY,
+        self::YEARLY,
+    ];
+
     protected $fillable = [
         'plan_id',
         'amount',
         'currency',
+        'interval',
+        'razorpay_plan_id',
     ];
 
     protected function casts(): array
@@ -30,5 +41,10 @@ class Price extends Model
     public function label(): string
     {
         return '₹'.number_format($this->amount);
+    }
+
+    public function period(): string
+    {
+        return $this->interval === self::YEARLY ? 'year' : 'month';
     }
 }

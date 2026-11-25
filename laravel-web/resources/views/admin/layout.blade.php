@@ -7,7 +7,7 @@
             <img src="{{ asset('images/casebook-logo.png') }}" alt="" class="w-9 h-9 object-contain">
             <div>
                 <h1 class="font-bold text-lg leading-tight">Case Book</h1>
-                <p class="text-sm text-gray-500">Admin</p>
+                <p class="text-sm text-gray-500">Superadmin</p>
             </div>
         </div>
 
@@ -23,6 +23,14 @@
             <a href="{{ route('admin.plans.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold {{ request()->routeIs('admin.plans.*') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50' }}">
                 <x-icon name="indian-rupee" class="w-4 h-4" />
                 Plans &amp; prices
+            </a>
+            <a href="{{ route('admin.roles.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold {{ request()->routeIs('admin.roles.*') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50' }}">
+                <x-icon name="users" class="w-4 h-4" />
+                Roles
+            </a>
+            <a href="{{ route('admin.permissions.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold {{ request()->routeIs('admin.permissions.*') ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50' }}">
+                <x-icon name="list-todo" class="w-4 h-4" />
+                Permissions
             </a>
         </nav>
 

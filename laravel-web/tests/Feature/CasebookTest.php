@@ -178,4 +178,72 @@ class CasebookTest extends TestCase
 
         $this->assertSame('Lakshmi', $case->caseParties()->where('side', 1)->value('name'));
     }
+
+    public function test_priority_is_saved_and_delete_stays_on_the_case(): void
+    {
+        $case = CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'O.S. 3/2026',
+            'court' => 'Madras High Court',
+        ]);
+
+        $this->assertSame('medium', $case->fresh()->priority);
+
+        $this->post(route('cases.priority', $case), [
+            'priority' => 'high',
+            'case' => $case->id,
+        ])->assertRedirect();
+
+        $this->assertSame('high', $case->fresh()->priority);
+
+        $this->get('/?case='.$case->id)
+            ->assertOk()
+            ->assertSee('Delete this case?')
+            ->assertDontSee('Delete this case and its files?');
+
+        Sanctum::actingAs($this->user);
+        $this->putJson('/api/cases/'.$case->id.'/priority', ['priority' => 'low'])
+            ->assertOk()
+            ->assertJsonPath('priority', 'low');
+    }
+
+    public function test_starred_cases_and_future_hearings_open_on_their_lists(): void
+    {
+        $past = CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Past hearing',
+            'court' => 'Madras High Court',
+            'next_hearing' => today()->subDay()->toDateString(),
+        ]);
+        $future = CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Future hearing',
+            'court' => 'Madras High Court',
+            'next_hearing' => today()->addDays(5)->toDateString(),
+        ]);
+        $starred = CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Starred hearing',
+            'court' => 'Madras High Court',
+            'is_pinned' => true,
+            'next_hearing' => today()->subDays(3)->toDateString(),
+        ]);
+
+        $this->post(route('cases.pin', $past), ['case' => $past->id])->assertRedirect();
+        $this->assertTrue($past->fresh()->is_pinned);
+
+        $this->get(route('cases.index', ['filter' => 'Starred', 'case' => $future->id]))
+            ->assertOk()
+            ->assertSee('Starred hearing')
+            ->assertSee('Past hearing')
+            ->assertDontSee('Future hearing');
+
+        $this->get(route('cases.index', ['filter' => 'Upcoming', 'case' => $past->id]))
+            ->assertOk()
+            ->assertSee('Future hearing')
+            ->assertDontSee('Past hearing')
+            ->assertDontSee('Starred hearing');
+
+        $this->assertTrue($starred->fresh()->is_pinned);
+    }
 }

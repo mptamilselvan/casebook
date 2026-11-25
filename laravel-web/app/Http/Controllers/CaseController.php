@@ -30,11 +30,8 @@ class CaseController extends Controller
             ->when($filter === 'All Cases', fn ($query) => $query->orderByDesc('is_pinned')->orderByDesc('updated_at'))
             ->get();
 
-        $active = null;
-        if ($request->filled('case')) {
-            $active = CourtCase::with(['caseParties', 'events', 'documents'])->find($request->integer('case'));
-        }
-        $active ??= CourtCase::with(['caseParties', 'events', 'documents'])->orderByDesc('is_pinned')->orderByDesc('updated_at')->first();
+        $active = $cases->firstWhere('id', $request->integer('case')) ?? $cases->first();
+        $active?->load(['caseParties', 'events', 'documents']);
 
         $templates = Template::query()->orderBy('title')->get();
         $activeTemplate = Template::query()->find($request->integer('template')) ?? $templates->first();
@@ -171,6 +168,17 @@ class CaseController extends Controller
         $active = CourtCase::query()->find($request->integer('case')) ?? $case;
 
         return $this->redirectToCase($request, $active);
+    }
+
+    public function updatePriority(Request $request, CourtCase $case)
+    {
+        $data = $request->validate([
+            'priority' => ['required', 'in:low,medium,high'],
+        ]);
+
+        $case->update(['priority' => $data['priority']]);
+
+        return $this->redirectToCase($request, $case);
     }
 
     public function updateHearing(Request $request, CourtCase $case)

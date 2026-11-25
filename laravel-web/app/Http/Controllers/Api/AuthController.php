@@ -25,9 +25,9 @@ class AuthController extends Controller
             ], 403);
         }
 
-        if ($result['user']->isAdmin()) {
+        if ($result['user']->isSuperAdmin()) {
             return response()->json([
-                'message' => 'Admin accounts sign in with a password.',
+                'message' => 'Superadmin accounts sign in from the admin page.',
             ], 403);
         }
 

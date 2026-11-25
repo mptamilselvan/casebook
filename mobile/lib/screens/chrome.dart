@@ -50,6 +50,7 @@ class CasebookTopBar extends StatelessWidget {
     this.onCloseSearch,
     this.onSearchChanged,
     this.notifications = const [],
+    this.subtitle,
   });
 
   final String title;
@@ -63,12 +64,16 @@ class CasebookTopBar extends StatelessWidget {
   final VoidCallback? onCloseSearch;
   final ValueChanged<String>? onSearchChanged;
   final List<AppNotification> notifications;
+  final Widget? subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
       child: Row(
+        crossAxisAlignment: subtitle == null
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
         children: [
           IconButton(
             onPressed: onMenu,
@@ -123,12 +128,21 @@ class CasebookTopBar extends StatelessWidget {
             )
           else ...[
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: casebookText,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
+              child: Padding(
+                padding: EdgeInsets.only(top: subtitle == null ? 0 : 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: casebookText,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    ?subtitle,
+                  ],
                 ),
               ),
             ),
@@ -140,17 +154,20 @@ class CasebookTopBar extends StatelessWidget {
           ],
           _NotificationButton(items: notifications),
           if (onAvatar != null)
-            GestureDetector(
-              onTap: onAvatar,
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: casebookPurple,
-                child: Text(
-                  avatarLetter,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+            Padding(
+              padding: EdgeInsets.only(top: subtitle == null ? 0 : 8),
+              child: GestureDetector(
+                onTap: onAvatar,
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: casebookPurple,
+                  child: Text(
+                    avatarLetter,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -271,6 +288,60 @@ class _NotificationSheet extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class PriorityColors {
+  static Color background(String priority) {
+    switch (priority) {
+      case 'high':
+        return const Color(0xFFFEE2E2);
+      case 'low':
+        return const Color(0xFFD1FAE5);
+      default:
+        return const Color(0xFFFEF3C7);
+    }
+  }
+
+  static Color foreground(String priority) {
+    switch (priority) {
+      case 'high':
+        return const Color(0xFFB91C1C);
+      case 'low':
+        return const Color(0xFF047857);
+      default:
+        return const Color(0xFFB45309);
+    }
+  }
+
+  static String label(String priority) {
+    switch (priority) {
+      case 'high':
+        return 'High';
+      case 'low':
+        return 'Low';
+      default:
+        return 'Medium';
+    }
+  }
+}
+
+class PriorityLabel extends StatelessWidget {
+  const PriorityLabel({super.key, required this.priority});
+
+  final String priority;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      PriorityColors.label(priority),
+      style: TextStyle(
+        color: PriorityColors.foreground(priority),
+        backgroundColor: PriorityColors.background(priority),
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
       ),
     );
   }

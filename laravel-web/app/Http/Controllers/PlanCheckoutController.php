@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Models\Price;
 use App\Support\Billing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,8 +13,12 @@ class PlanCheckoutController extends Controller
 {
     public function checkout(Request $request, Plan $plan): JsonResponse
     {
+        $data = $request->validate([
+            'interval' => ['nullable', 'in:monthly,yearly'],
+        ]);
+
         try {
-            $payload = Billing::start($request->user(), $plan);
+            $payload = Billing::start($request->user(), $plan, $data['interval'] ?? Price::MONTHLY);
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 503);
         }
@@ -28,14 +33,14 @@ class PlanCheckoutController extends Controller
     public function verify(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'razorpay_order_id' => ['required', 'string', 'max:100'],
+            'razorpay_subscription_id' => ['required', 'string', 'max:100'],
             'razorpay_payment_id' => ['required', 'string', 'max:100'],
             'razorpay_signature' => ['required', 'string', 'max:255'],
         ]);
 
         $payload = Billing::verify(
             $request->user(),
-            $data['razorpay_order_id'],
+            $data['razorpay_subscription_id'],
             $data['razorpay_payment_id'],
             $data['razorpay_signature'],
         );

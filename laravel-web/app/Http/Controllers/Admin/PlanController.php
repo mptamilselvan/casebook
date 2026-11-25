@@ -37,7 +37,8 @@ class PlanController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'space_limit' => ['required', 'integer', 'min:0', 'max:100000'],
             'cases_limit' => ['nullable', 'integer', 'min:0', 'max:1000000'],
-            'amount' => ['required', 'integer', 'min:0', 'max:10000000'],
+            'monthly_amount' => ['required', 'integer', 'min:0', 'max:10000000'],
+            'yearly_amount' => ['required', 'integer', 'min:0', 'max:10000000'],
         ]);
 
         if ($validator->fails()) {
@@ -55,15 +56,29 @@ class PlanController extends Controller
             'cases_limit' => $data['cases_limit'],
         ]);
 
-        Price::query()->updateOrCreate(
-            ['plan_id' => $plan->id, 'currency' => Price::INR],
-            ['amount' => $data['amount']],
-        );
+        $this->savePrice($plan, Price::MONTHLY, $data['monthly_amount']);
+        $this->savePrice($plan, Price::YEARLY, $data['yearly_amount']);
 
         User::query()
             ->where('plan_id', $plan->id)
             ->update(['plan_name' => $plan->name]);
 
         return back()->with('status', $plan->name.' updated.');
+    }
+
+    private function savePrice(Plan $plan, string $interval, int $amount): void
+    {
+        $price = Price::query()->firstOrNew([
+            'plan_id' => $plan->id,
+            'currency' => Price::INR,
+            'interval' => $interval,
+        ]);
+
+        if (! $price->exists || (int) $price->amount !== $amount) {
+            $price->razorpay_plan_id = null;
+        }
+
+        $price->amount = $amount;
+        $price->save();
     }
 }

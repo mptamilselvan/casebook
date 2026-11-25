@@ -41,49 +41,82 @@ class ApiClient {
   final String baseUrl;
   String? token;
 
-  Map<String, String> _headers({bool json = true}) {
+  Map<String, String> _headers({bool json = true, String method = 'GET'}) {
     return {
       if (json) 'Accept': 'application/json',
       if (json) 'Content-Type': 'application/json',
       if (!json) 'Accept': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
+      // The live host rejects PUT and DELETE before they reach Laravel.
+      if (_spoof(method)) 'X-HTTP-Method-Override': method,
     };
   }
 
+  bool _spoof(String method) =>
+      method == 'PUT' || method == 'PATCH' || method == 'DELETE';
+
+  String _wireMethod(String method) => _spoof(method) ? 'POST' : method;
+
   Future<dynamic> getJson(String path) async {
-    final response = await http.get(Uri.parse('$baseUrl/$path'), headers: _headers());
+    final response = await http.get(
+      Uri.parse('$baseUrl/$path'),
+      headers: _headers(),
+    );
     return _decode(response);
   }
 
-  Future<dynamic> sendJson(String method, String path, [Map<String, dynamic>? body]) async {
+  Future<dynamic> sendJson(
+    String method,
+    String path, [
+    Map<String, dynamic>? body,
+  ]) async {
     final uri = Uri.parse('$baseUrl/$path');
     final payload = body == null ? null : jsonEncode(body);
-    final response = await http.Request(method, uri)
-        .replace(headers: _headers(), body: payload)
+    final response = await http.Request(_wireMethod(method), uri)
+        .replace(
+          headers: _headers(method: method),
+          body: payload,
+        )
         .send();
     final resolved = await http.Response.fromStream(response);
     return _decode(resolved);
   }
 
-  Future<dynamic> postJson(String path, Map<String, dynamic> body) => sendJson('POST', path, body);
+  Future<dynamic> postJson(String path, Map<String, dynamic> body) =>
+      sendJson('POST', path, body);
 
-  Future<dynamic> putJson(String path, Map<String, dynamic> body) => sendJson('PUT', path, body);
+  Future<dynamic> putJson(String path, Map<String, dynamic> body) =>
+      sendJson('PUT', path, body);
 
   Future<dynamic> deleteJson(String path) => sendJson('DELETE', path);
 
-  Future<dynamic> upload(String method, String path, Map<String, String> fields, {List<int>? bytes, String? filename}) async {
-    final request = http.MultipartRequest(method, Uri.parse('$baseUrl/$path'));
-    request.headers.addAll(_headers(json: false));
+  Future<dynamic> upload(
+    String method,
+    String path,
+    Map<String, String> fields, {
+    List<int>? bytes,
+    String? filename,
+  }) async {
+    final request = http.MultipartRequest(
+      _wireMethod(method),
+      Uri.parse('$baseUrl/$path'),
+    );
+    request.headers.addAll(_headers(json: false, method: method));
     request.fields.addAll(fields);
     if (bytes != null && filename != null) {
-      request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+      request.files.add(
+        http.MultipartFile.fromBytes('file', bytes, filename: filename),
+      );
     }
     final response = await http.Response.fromStream(await request.send());
     return _decode(response);
   }
 
   Future<List<int>> download(String path) async {
-    final response = await http.get(Uri.parse('$baseUrl/$path'), headers: _headers(json: false));
+    final response = await http.get(
+      Uri.parse('$baseUrl/$path'),
+      headers: _headers(json: false),
+    );
     if (response.statusCode >= 400) {
       throw ApiException('Could not open this file.');
     }

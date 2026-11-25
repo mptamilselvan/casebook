@@ -64,6 +64,7 @@ class CaseSummary {
     this.party1Role,
     this.party2Role,
     this.status,
+    this.priority = 'medium',
     this.type,
     this.userId,
   });
@@ -81,6 +82,7 @@ class CaseSummary {
   final String? party1Role;
   final String? party2Role;
   final String? status;
+  final String priority;
   final String? type;
   final int? userId;
 
@@ -99,6 +101,7 @@ class CaseSummary {
       party1Role: json['party1_role'] as String?,
       party2Role: json['party2_role'] as String?,
       status: json['status'] as String?,
+      priority: json['priority'] as String? ?? 'medium',
       type: json['type'] as String?,
       userId: json['user_id'] as int?,
     );
@@ -202,6 +205,7 @@ class CaseDetail extends CaseSummary {
     super.party1Role,
     super.party2Role,
     super.status,
+    super.priority,
     super.type,
     super.userId,
     required this.tasks,
@@ -231,6 +235,7 @@ class CaseDetail extends CaseSummary {
       party1Role: summary.party1Role,
       party2Role: summary.party2Role,
       status: summary.status,
+      priority: summary.priority,
       type: summary.type,
       userId: summary.userId,
       tasks: json['tasks'] as String? ?? '',

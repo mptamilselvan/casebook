@@ -34,7 +34,7 @@ class EmailLogin
                 'name' => self::nameFromEmail($email),
                 'email' => $email,
                 'password' => Str::password(40),
-                'role' => User::ROLE_USER,
+                'role' => User::ROLE_ADMIN,
             ]);
         }
 
@@ -51,6 +51,10 @@ class EmailLogin
 
         if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
+        }
+
+        if ($user->owner_id === null && $user->role === User::ROLE_MEMBER) {
+            $user->forceFill(['role' => User::ROLE_ADMIN])->save();
         }
 
         $user->assignFreePlan();

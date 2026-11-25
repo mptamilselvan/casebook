@@ -1,4 +1,4 @@
-@extends('layouts.casebook', ['title' => 'Admin sign in'])
+@extends('layouts.casebook', ['title' => 'Superadmin sign in'])
 
 @section('content')
 <div class="min-h-full bg-white text-gray-800 flex items-center justify-center px-4 py-12">
@@ -7,7 +7,7 @@
             <img src="{{ asset('images/casebook-logo.png') }}" alt="" class="w-10 h-10 object-contain">
             <div>
                 <h1 class="text-xl font-bold leading-tight">Case Book</h1>
-                <p class="text-sm text-gray-500">Admin sign in</p>
+                <p class="text-sm text-gray-500">Superadmin sign in</p>
             </div>
         </div>
 

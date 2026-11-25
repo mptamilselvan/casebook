@@ -13,6 +13,11 @@ class OneSignal
             && filled(config('services.onesignal.rest_api_key'));
     }
 
+    public static function externalId(int $userId): string
+    {
+        return 'casebook-'.$userId;
+    }
+
     public function notifyUser(int $userId, string $title, string $message, array $data = []): bool
     {
         if (! $this->enabled()) {
@@ -28,7 +33,7 @@ class OneSignal
                 'app_id' => config('services.onesignal.app_id'),
                 'target_channel' => 'push',
                 'include_aliases' => [
-                    'external_id' => [(string) $userId],
+                    'external_id' => [self::externalId($userId)],
                 ],
                 'headings' => ['en' => $title],
                 'contents' => ['en' => $message],

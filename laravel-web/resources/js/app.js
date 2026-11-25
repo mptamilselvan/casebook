@@ -9,6 +9,7 @@ window.casebookPage = function (config) {
         settingsOpen: false,
         centerMenuOpen: false,
         notificationsOpen: false,
+        deleteCaseOpen: false,
         sidebarMenu: null,
         eventMenu: null,
         draftFullscreen: false,
@@ -37,6 +38,7 @@ window.casebookPage = function (config) {
         editOpen: config.modal === 'edit-case',
         edit: config.edit || { id: '', title: '', court: '' },
         eventOpen: config.modal === 'event',
+        docOpen: config.modal === 'document',
         eventForm: config.event || {
             id: '',
             date: config.today,
@@ -45,7 +47,6 @@ window.casebookPage = function (config) {
             isHearing: false,
             fileLabel: 'No file',
         },
-        docOpen: false,
         docName: old.doc_name || '',
         docFolder: old.doc_folder || 'Pleadings',
         templateOpen: config.modal === 'template',
@@ -59,28 +60,17 @@ window.casebookPage = function (config) {
         init() {
             this.applyTheme();
             this.syncCourtChoice();
-            if (config.modal === 'add-event') {
+            if (config.modal === 'event') {
                 this.tab = 'Timeline';
-                this.$nextTick(() => this.focusAddEvent());
             }
-            if (config.modal === 'add-document') {
+            if (config.modal === 'document') {
                 this.tab = 'Documents';
-                this.$nextTick(() => this.focusUploadDocument());
             }
         },
-        focusAddEvent() {
-            this.tab = 'Timeline';
-            this.$nextTick(() => {
-                document.getElementById('add-event-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                document.getElementById('add-event-title')?.focus();
-            });
-        },
-        focusUploadDocument() {
-            this.tab = 'Documents';
-            this.$nextTick(() => {
-                document.getElementById('upload-document-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                document.getElementById('upload-document-name')?.focus();
-            });
+        openDocument() {
+            this.docName = '';
+            this.docFolder = 'Pleadings';
+            this.docOpen = true;
         },
         applyTheme() {
             this.theme = 'light';
@@ -244,7 +234,7 @@ if (casebookPush && casebookPush.appId && casebookPush.userId) {
             appId: casebookPush.appId,
             serviceWorkerPath: 'OneSignalSDKWorker.js',
         });
-        await OneSignal.login(String(casebookPush.userId));
+        await OneSignal.login('casebook-' + String(casebookPush.userId));
         await OneSignal.Notifications.requestPermission();
     });
 }

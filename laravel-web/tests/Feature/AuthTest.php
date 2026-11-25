@@ -74,6 +74,7 @@ class AuthTest extends TestCase
         $user = User::query()->where('email', 'new.advocate@firm.test')->first();
 
         $this->assertNotNull($user);
+        $this->assertSame(User::ROLE_ADMIN, $user->role);
         $this->assertNull($user->email_verified_at);
         $this->assertGuest();
         $this->get('/')->assertRedirect(route('login'));

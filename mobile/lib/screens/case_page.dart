@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../app_state.dart';
@@ -28,7 +27,7 @@ class CasePage extends StatefulWidget {
 }
 
 class _CasePageState extends State<CasePage> {
-  static const tabs = ['Timeline', 'Documents', 'Parties', 'Tasks'];
+  static const tabs = ['Timeline', 'Documents', 'Parties', 'Tasks', 'Settings'];
 
   final page = PageController();
   final searchBox = TextEditingController();
@@ -125,8 +124,8 @@ class _CasePageState extends State<CasePage> {
               searchBox.clear();
             }),
             onSearchChanged: (value) => setState(() => query = value),
+            subtitle: _AccountLine(user: widget.state.user),
           ),
-          _AccountLine(user: widget.state.user),
           if (item == null)
             const Expanded(
               child: Center(
@@ -140,19 +139,13 @@ class _CasePageState extends State<CasePage> {
             _CaseHeader(
               item: item,
               onSetHearing: () => _setHearing(item),
+              onPriority: (value) =>
+                  _run(widget.state.updatePriority(item.id, value)),
               onEdit: () async {
                 await editCase(context, widget.state, item);
                 widget.onChanged();
               },
-              onDelete: () async {
-                final confirmed = await confirmDelete(
-                  context,
-                  'Delete this case?',
-                );
-                if (confirmed) {
-                  await _run(widget.state.deleteCase(item.id));
-                }
-              },
+              onToggleStar: () => _run(widget.state.togglePin(item.id)),
             ),
             _TabBar(labels: tabs, index: tab, onTap: _goTo),
             Expanded(
@@ -174,7 +167,24 @@ class _CasePageState extends State<CasePage> {
                     onOpenFile: _openFile,
                   ),
                   _Parties(state: widget.state, item: item),
-                  _Tasks(state: widget.state, item: item, onRun: _run),
+                  _Tasks(
+                    state: widget.state,
+                    item: item,
+                    active: tab == 3,
+                    onRun: _run,
+                  ),
+                  _Settings(
+                    item: item,
+                    onDelete: () async {
+                      final confirmed = await confirmCaseDelete(
+                        context,
+                        item.title,
+                      );
+                      if (confirmed) {
+                        await _run(widget.state.deleteCase(item.id));
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -225,7 +235,7 @@ class _AccountLine extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      padding: const EdgeInsets.only(top: 2, bottom: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -263,14 +273,16 @@ class _CaseHeader extends StatelessWidget {
   const _CaseHeader({
     required this.item,
     required this.onSetHearing,
+    required this.onPriority,
     required this.onEdit,
-    required this.onDelete,
+    required this.onToggleStar,
   });
 
   final CaseDetail item;
   final VoidCallback onSetHearing;
+  final ValueChanged<String> onPriority;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onToggleStar;
 
   @override
   Widget build(BuildContext context) {
@@ -350,21 +362,12 @@ class _CaseHeader extends StatelessWidget {
                         onSelected: (value) {
                           if (value == 'edit') {
                             onEdit();
-                          } else if (value == 'delete') {
-                            onDelete();
                           }
                         },
                         itemBuilder: (_) => const [
                           PopupMenuItem(
                             value: 'edit',
                             child: Text('Edit Case'),
-                          ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text(
-                              'Delete Case',
-                              style: TextStyle(color: casebookDanger),
-                            ),
                           ),
                         ],
                       ),
@@ -391,18 +394,61 @@ class _CaseHeader extends StatelessWidget {
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _Tag(
                   icon: Icons.account_balance,
                   label: item.court,
                   background: const Color(0xFFF3F4F6),
                   foreground: casebookText,
+                  expand: true,
                 ),
                 _Tag(
                   label: item.status ?? 'Active',
                   background: const Color(0xFFFEF3C7),
                   foreground: casebookAmber,
                 ),
+                PopupMenuButton<String>(
+                  onSelected: onPriority,
+                  color: Colors.white,
+                  padding: EdgeInsets.zero,
+                  itemBuilder: (_) => [
+                    for (final value in ['low', 'medium', 'high'])
+                      PopupMenuItem(
+                        value: value,
+                        child: Text(
+                          PriorityColors.label(value),
+                          style: TextStyle(
+                            color: PriorityColors.foreground(value),
+                            backgroundColor: PriorityColors.background(value),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: PriorityColors.background(item.priority),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      PriorityColors.label(item.priority),
+                      style: TextStyle(
+                        color: PriorityColors.foreground(item.priority),
+                        backgroundColor: PriorityColors.background(
+                          item.priority,
+                        ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                _StarButton(starred: item.isPinned, onPressed: onToggleStar),
               ],
             ),
           ),
@@ -418,38 +464,134 @@ class _Tag extends StatelessWidget {
     required this.background,
     required this.foreground,
     this.icon,
+    this.expand = false,
   });
 
   final String label;
   final Color background;
   final Color foreground;
   final IconData? icon;
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
+    final style = TextStyle(
+      color: foreground,
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      height: 1.3,
+    );
+    final maxWidth = MediaQuery.sizeOf(context).width - 52;
     return Container(
+      constraints: expand ? BoxConstraints(maxWidth: maxWidth) : null,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: foreground),
-            const SizedBox(width: 4),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            if (icon != null)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Icon(icon, size: 12, color: foreground),
+                ),
+              ),
+            TextSpan(text: label, style: style),
           ],
-          Text(
-            label,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _StarButton extends StatelessWidget {
+  const _StarButton({required this.starred, required this.onPressed});
+
+  final bool starred;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = starred ? const Color(0xFFCA8A04) : casebookMuted;
+    return Material(
+      color: starred ? const Color(0xFFFEF3C7) : const Color(0xFFF3F4F6),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                starred ? Icons.star : Icons.star_border,
+                size: 14,
+                color: color,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                starred ? 'Starred' : 'Star',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Settings extends StatelessWidget {
+  const _Settings({required this.item, required this.onDelete});
+
+  final CaseDetail item;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      children: [
+        const Text(
+          'Case settings',
+          style: TextStyle(
+            color: casebookText,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Delete ${item.title} and its documents, events, and files.',
+          style: const TextStyle(color: casebookMuted, fontSize: 13),
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: onDelete,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFFDC2626),
+            side: const BorderSide(color: Color(0xFFFECACA)),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-        ],
-      ),
+          icon: const Icon(Icons.delete_outline),
+          label: const Text(
+            'Delete case',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -472,15 +614,17 @@ class _TabBar extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: casebookLine)),
       ),
-      child: Row(
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            Expanded(
-              child: InkWell(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            for (var i = 0; i < labels.length; i++)
+              InkWell(
                 onTap: () => onTap(i),
                 child: Container(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.only(bottom: 12, top: 4),
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -499,8 +643,8 @@ class _TabBar extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -524,105 +668,6 @@ class _Timeline extends StatefulWidget {
 }
 
 class _TimelineState extends State<_Timeline> {
-  final _scroll = ScrollController();
-  final _formKey = GlobalKey();
-  final _titleFocus = FocusNode();
-  final _title = TextEditingController();
-  final _notes = TextEditingController();
-  DateTime _date = DateTime.now();
-  List<int>? _bytes;
-  String? _filename;
-  bool _busy = false;
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    _titleFocus.dispose();
-    _title.dispose();
-    _notes.dispose();
-    super.dispose();
-  }
-
-  Future<void> _focusForm() async {
-    final target = _formKey.currentContext;
-    if (target != null) {
-      await Scrollable.ensureVisible(
-        target,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-        alignment: 0.05,
-      );
-    } else if (_scroll.hasClients) {
-      await _scroll.animateTo(
-        _scroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-      );
-    }
-    if (mounted) {
-      _titleFocus.requestFocus();
-    }
-  }
-
-  Future<void> _pickFile() async {
-    final picked = await FilePicker.pickFiles();
-    if (picked.isEmpty) {
-      return;
-    }
-    final file = picked.first;
-    final data = await file.readAsBytes();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _bytes = data;
-      _filename = file.name;
-    });
-  }
-
-  Future<void> _save() async {
-    final name = _title.text.trim();
-    if (name.isEmpty || _busy) {
-      _titleFocus.requestFocus();
-      return;
-    }
-    setState(() => _busy = true);
-    final formatted =
-        '${_date.year.toString().padLeft(4, '0')}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}';
-    try {
-      await widget.state.saveEvent(
-        widget.item.id,
-        {
-          'event_date': formatted,
-          'title': name,
-          'description': _notes.text,
-          'is_hearing': '0',
-        },
-        bytes: _bytes,
-        filename: _filename,
-      );
-      if (!mounted) {
-        return;
-      }
-      _title.clear();
-      _notes.clear();
-      setState(() {
-        _bytes = null;
-        _filename = null;
-        _date = DateTime.now();
-      });
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.toString())));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _busy = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
@@ -638,17 +683,13 @@ class _TimelineState extends State<_Timeline> {
                 (event.fileName ?? '').toLowerCase().contains(q);
           }).toList();
 
-    final formatted =
-        '${_date.year.toString().padLeft(4, '0')}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}';
-
     return ListView(
-      controller: _scroll,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
         PurpleButton(
           icon: Icons.add,
           label: 'Add Event',
-          onPressed: _focusForm,
+          onPressed: () => openEventForm(context, state, item),
         ),
         if (events.isEmpty)
           const Padding(
@@ -835,108 +876,6 @@ class _TimelineState extends State<_Timeline> {
               ),
             ],
           ),
-        KeyedSubtree(
-          key: _formKey,
-          child: WhiteCard(
-            margin: const EdgeInsets.only(top: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Add Event',
-                  style: TextStyle(
-                    color: casebookText,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Date',
-                  style: TextStyle(
-                    color: casebookMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                InkWell(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                      initialDate: _date,
-                    );
-                    if (picked != null) {
-                      setState(() => _date = picked);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: casebookLine),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      formatted,
-                      style: const TextStyle(color: casebookText),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Title',
-                  style: TextStyle(
-                    color: casebookMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _title,
-                  focusNode: _titleFocus,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Counter Filed',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Notes',
-                  style: TextStyle(
-                    color: casebookMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _notes,
-                  minLines: 2,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Event details...',
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _pickFile,
-                  icon: const Icon(Icons.attach_file, size: 18),
-                  label: Text(_filename ?? 'Attach file'),
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _busy ? null : _save,
-                  child: Text(_busy ? 'Saving...' : 'Save Event'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -962,98 +901,6 @@ class _Documents extends StatefulWidget {
 }
 
 class _DocumentsState extends State<_Documents> {
-  final _scroll = ScrollController();
-  final _formKey = GlobalKey();
-  final _nameFocus = FocusNode();
-  final _name = TextEditingController();
-  late String _folder = widget.state.workspace?.folders.first ?? 'Pleadings';
-  List<int>? _bytes;
-  String? _filename;
-  bool _busy = false;
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    _nameFocus.dispose();
-    _name.dispose();
-    super.dispose();
-  }
-
-  Future<void> _focusForm() async {
-    final target = _formKey.currentContext;
-    if (target != null) {
-      await Scrollable.ensureVisible(
-        target,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-        alignment: 0.05,
-      );
-    } else if (_scroll.hasClients) {
-      await _scroll.animateTo(
-        _scroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-      );
-    }
-    if (mounted) {
-      _nameFocus.requestFocus();
-    }
-  }
-
-  Future<void> _pickFile() async {
-    final picked = await FilePicker.pickFiles();
-    if (picked.isEmpty) {
-      return;
-    }
-    final file = picked.first;
-    final data = await file.readAsBytes();
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _bytes = data;
-      _filename = file.name;
-      if (_name.text.trim().isEmpty) {
-        _name.text = file.name;
-      }
-    });
-  }
-
-  Future<void> _save() async {
-    if (_busy) {
-      return;
-    }
-    final name = _name.text.trim();
-    if (name.isEmpty && _filename == null) {
-      _nameFocus.requestFocus();
-      return;
-    }
-    setState(() => _busy = true);
-    try {
-      await widget.onRun(
-        widget.state.saveDocument(
-          widget.item.id,
-          _folder,
-          name,
-          bytes: _bytes,
-          filename: _filename,
-        ),
-      );
-      if (!mounted) {
-        return;
-      }
-      _name.clear();
-      setState(() {
-        _bytes = null;
-        _filename = null;
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _busy = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
@@ -1061,7 +908,6 @@ class _DocumentsState extends State<_Documents> {
     final query = widget.query;
     final onRun = widget.onRun;
     final onOpenFile = widget.onOpenFile;
-    final folders = state.workspace?.folders ?? const ['Pleadings'];
     final q = query.trim().toLowerCase();
     final documents = q.isEmpty
         ? item.documents
@@ -1070,13 +916,12 @@ class _DocumentsState extends State<_Documents> {
               .toList();
 
     return ListView(
-      controller: _scroll,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
         PurpleButton(
           icon: Icons.upload,
           label: 'Add Document',
-          onPressed: _focusForm,
+          onPressed: () => openDocumentForm(context, state, item),
         ),
         if (documents.isEmpty)
           const Text(
@@ -1146,79 +991,6 @@ class _DocumentsState extends State<_Documents> {
                 ],
               ),
             ),
-        KeyedSubtree(
-          key: _formKey,
-          child: WhiteCard(
-            margin: const EdgeInsets.only(top: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Upload Document',
-                  style: TextStyle(
-                    color: casebookText,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _pickFile,
-                  icon: const Icon(Icons.attach_file, size: 18),
-                  label: Text(_filename ?? 'Browse files'),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Document name',
-                  style: TextStyle(
-                    color: casebookMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _name,
-                  focusNode: _nameFocus,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Plaint.pdf',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Folder',
-                  style: TextStyle(
-                    color: casebookMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: folders.contains(_folder)
-                      ? _folder
-                      : folders.first,
-                  items: [
-                    for (final folder in folders)
-                      DropdownMenuItem(value: folder, child: Text(folder)),
-                  ],
-                  onChanged: _busy
-                      ? null
-                      : (value) {
-                          if (value != null) {
-                            setState(() => _folder = value);
-                          }
-                        },
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _busy ? null : _save,
-                  child: Text(_busy ? 'Saving...' : 'Save Document'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -1334,10 +1106,16 @@ class _Parties extends StatelessWidget {
 }
 
 class _Tasks extends StatefulWidget {
-  const _Tasks({required this.state, required this.item, required this.onRun});
+  const _Tasks({
+    required this.state,
+    required this.item,
+    required this.active,
+    required this.onRun,
+  });
 
   final AppState state;
   final CaseDetail item;
+  final bool active;
   final Future<void> Function(Future<void> action) onRun;
 
   @override
@@ -1347,60 +1125,113 @@ class _Tasks extends StatefulWidget {
 class _TasksState extends State<_Tasks> {
   late final TextEditingController tasks;
   late final FocusNode focus;
+  final fieldKey = GlobalKey();
+  String? _posted;
 
   @override
   void initState() {
     super.initState();
     tasks = TextEditingController(text: widget.item.tasks);
-    focus = FocusNode()
-      ..addListener(() {
-        if (!focus.hasFocus) {
-          _save();
-        }
-      });
+    focus = FocusNode()..addListener(_onFocus);
   }
 
   @override
   void didUpdateWidget(covariant _Tasks oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.item.id != widget.item.id &&
+    if (oldWidget.item.id != widget.item.id) {
+      final value = tasks.text;
+      if (value != oldWidget.item.tasks) {
+        widget.onRun(widget.state.updateTasks(oldWidget.item.id, value));
+      }
+      _posted = null;
+      tasks.text = widget.item.tasks;
+      return;
+    }
+    if (oldWidget.active && !widget.active) {
+      _save();
+    }
+    if (!focus.hasFocus &&
+        tasks.text == oldWidget.item.tasks &&
         tasks.text != widget.item.tasks) {
       tasks.text = widget.item.tasks;
     }
   }
 
   @override
+  void deactivate() {
+    _save();
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
+    focus.removeListener(_onFocus);
     focus.dispose();
     tasks.dispose();
     super.dispose();
   }
 
-  Future<void> _save() {
-    if (tasks.text == widget.item.tasks) {
-      return Future.value();
+  void _onFocus() {
+    if (!focus.hasFocus) {
+      _save();
     }
-    return widget.onRun(widget.state.updateTasks(widget.item.id, tasks.text));
+  }
+
+  void _saveIfOutside(Offset global) {
+    final box = fieldKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || !box.attached) {
+      return;
+    }
+    final local = box.globalToLocal(global);
+    if (box.size.contains(local)) {
+      return;
+    }
+    focus.unfocus();
+    _save();
+  }
+
+  Future<void> _save() async {
+    final value = tasks.text;
+    if (value == widget.item.tasks || value == _posted) {
+      return;
+    }
+    _posted = value;
+    final caseId = widget.item.id;
+    await widget.onRun(widget.state.updateTasks(caseId, value));
+    if (mounted && widget.item.id == caseId && widget.item.tasks != value) {
+      _posted = null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      children: [
-        const Text(
-          'Quick Notes / Tasks',
-          style: TextStyle(color: casebookMuted, fontSize: 12),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: tasks,
-          focusNode: focus,
-          minLines: 8,
-          maxLines: 14,
-          decoration: const InputDecoration(hintText: 'Type notes...'),
-        ),
-      ],
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (event) => _saveIfOutside(event.position),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        children: [
+          const Text(
+            'Quick Notes / Tasks',
+            style: TextStyle(color: casebookMuted, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            key: fieldKey,
+            controller: tasks,
+            focusNode: focus,
+            minLines: 8,
+            maxLines: 14,
+            onTapOutside: (_) {
+              focus.unfocus();
+              _save();
+            },
+            decoration: const InputDecoration(
+              hintText: 'Write down tasks to complete before the next hearing.',
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

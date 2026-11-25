@@ -11,7 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             IndiaLocationSeeder::class,
             PlanSeeder::class,
-            AdminUserSeeder::class,
+            PermissionSeeder::class,
+            SuperAdminUserSeeder::class,
         ]);
     }
 }

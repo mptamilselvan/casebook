@@ -7,6 +7,7 @@ import 'case_page.dart';
 import 'chrome.dart';
 import 'forms.dart';
 import 'prices_page.dart';
+import 'team_pages.dart';
 
 enum _Screen { cases, templates, calendar }
 
@@ -114,6 +115,20 @@ class _CasebookPageState extends State<CasebookPage> {
                       ),
                     );
                   },
+                  onPeople: () {
+                    _closeMenu();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => PeoplePage(api: state.api)),
+                    );
+                  },
+                  onPermissions: () {
+                    _closeMenu();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => RolesPermissionsPage(api: state.api),
+                      ),
+                    );
+                  },
                   onOpenCase: (item) {
                     _closeMenu();
                     setState(() => screen = _Screen.cases);
@@ -175,6 +190,8 @@ class _Menu extends StatelessWidget {
     required this.onFilter,
     required this.onTemplates,
     required this.onPrices,
+    required this.onPeople,
+    required this.onPermissions,
     required this.onOpenCase,
   });
 
@@ -185,6 +202,8 @@ class _Menu extends StatelessWidget {
   final ValueChanged<String> onFilter;
   final VoidCallback onTemplates;
   final VoidCallback onPrices;
+  final VoidCallback onPeople;
+  final VoidCallback onPermissions;
   final ValueChanged<CaseSummary> onOpenCase;
 
   @override
@@ -257,6 +276,18 @@ class _Menu extends StatelessWidget {
                   label: 'Prices',
                   selected: false,
                   onTap: onPrices,
+                ),
+                _StatRow(
+                  icon: Icons.group_outlined,
+                  label: 'People Management',
+                  selected: false,
+                  onTap: onPeople,
+                ),
+                _StatRow(
+                  icon: Icons.checklist,
+                  label: 'Roles & Permissions',
+                  selected: false,
+                  onTap: onPermissions,
                 ),
               ],
             ),
@@ -390,13 +421,23 @@ class _CaseTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                          color: casebookText,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: casebookText,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          PriorityLabel(priority: item.priority),
+                        ],
                       ),
                       if (item.partiesLabel.isNotEmpty)
                         Padding(

@@ -50,6 +50,7 @@ class CasebookData
             'case_year' => $case->case_year,
             'type' => $case->type,
             'status' => $case->status,
+            'priority' => $case->priority ?: 'medium',
             'next_hearing' => $case->next_hearing?->toDateString(),
             'judge' => $case->judge,
             'stage' => $case->stage,

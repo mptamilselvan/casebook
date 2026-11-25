@@ -51,6 +51,12 @@ class HearingReminderTest extends TestCase
         });
         Mail::assertSentCount(1);
         Http::assertSentCount(1);
+        Http::assertSent(function ($request) use ($user) {
+            $aliases = $request->data()['include_aliases']['external_id'] ?? [];
+
+            return $request->url() === 'https://api.onesignal.com/notifications'
+                && $aliases === ['casebook-'.$user->id];
+        });
         $reminder = HearingReminder::query()->sole();
         $this->assertSame($due->id, $reminder->case_id);
         $this->assertTrue($reminder->hearing_on->isSameDay(today()->addDays(3)));

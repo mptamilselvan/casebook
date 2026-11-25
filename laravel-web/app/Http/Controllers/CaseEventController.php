@@ -63,7 +63,7 @@ class CaseEventController extends Controller
             return $this->redirectToCase($request, $case)
                 ->withErrors($validator)
                 ->withInput()
-                ->with('modal', $event->exists ? 'event' : 'add-event');
+                ->with('modal', 'event');
         }
 
         $data = $validator->validated();
@@ -81,7 +81,7 @@ class CaseEventController extends Controller
                 return $this->redirectToCase($request, $case)
                     ->withErrors(['file' => $reason])
                     ->withInput()
-                    ->with('modal', $event->exists ? 'event' : 'add-event');
+                    ->with('modal', 'event');
             }
 
             if ($event->exists && $event->file_path) {

@@ -1,3 +1,25 @@
+@if ($active)
+<div x-show="deleteCaseOpen" x-cloak @click.self="deleteCaseOpen = false" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <form method="POST" action="{{ route('cases.destroy', $active) }}" @click.stop class="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden">
+        @csrf
+        @method('DELETE')
+        @include('casebook.partials.return-fields')
+        <div class="px-7 pt-7 pb-5">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <x-icon name="trash" class="w-6 h-6" />
+            </div>
+            <h2 class="text-center text-xl font-bold text-gray-900">Delete this case?</h2>
+            <p class="mt-3 text-center text-sm font-semibold text-gray-800">{{ $active->title }}</p>
+            <p class="mt-2 text-center text-sm text-gray-500">Documents, events, and files for this case will be removed.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 bg-gray-50 px-7 py-5">
+            <button type="button" @click="deleteCaseOpen = false" class="rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-gray-700">Cancel</button>
+            <button type="submit" class="rounded-xl bg-red-600 py-3 text-sm font-semibold text-white">Delete case</button>
+        </div>
+    </form>
+</div>
+@endif
+
 <div x-show="settingsOpen" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-[#14151B] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-sm shadow-2xl p-6" @click.stop>
         <div class="flex justify-between items-center mb-6">
@@ -112,9 +134,15 @@
                 <button type="button" @click="modalStep = 2" :disabled="courtValue().trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
             </div>
             <div x-show="modalStep === 2" x-cloak class="space-y-5">
-                <div class="flex gap-4">
-                    <input type="text" name="case_number" x-model="caseNumber" placeholder="Case No (O.S. 124)" class="{{ $inputClass }} flex-1">
-                    <input type="text" name="case_year" x-model="caseYear" class="{{ $inputClass }} w-1/3 text-center">
+                <div class="flex items-end gap-3">
+                    <div class="min-w-0 flex-1">
+                        <label for="new-case-number" class="block text-xs font-semibold text-gray-500 mb-1">Case number</label>
+                        <input id="new-case-number" type="text" name="case_number" x-model="caseNumber" placeholder="O.S. 124" class="{{ $inputClass }}">
+                    </div>
+                    <div class="shrink-0" style="width: 5rem">
+                        <label for="new-case-year" class="block text-xs font-semibold text-gray-500 mb-1">Year</label>
+                        <input id="new-case-year" type="text" name="case_year" x-model="caseYear" inputmode="numeric" maxlength="4" class="{{ $inputClass }} text-center" style="width: 5rem">
+                    </div>
                 </div>
                 <div class="bg-white dark:bg-[#1A1C23] p-4 rounded-xl border border-gray-200 dark:border-[#262833]">
                     <div class="space-y-3">
@@ -193,6 +221,39 @@
                 </div>
             </div>
             <button type="submit" :disabled="!eventForm.title" class="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Save Event</button>
+        </div>
+    </form>
+</div>
+
+<div x-show="docOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <form method="POST" action="{{ route('documents.store', $active) }}" enctype="multipart/form-data" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-md shadow-2xl" @click.stop>
+        @csrf
+        @include('casebook.partials.return-fields')
+        <div class="flex justify-between p-5 border-b border-gray-200 dark:border-[#262833]">
+            <h2 class="text-lg font-bold">Upload Document</h2>
+            <button type="button" @click="docOpen = false" class="text-gray-500 dark:text-gray-400"><x-icon name="x" class="w-5 h-5" /></button>
+        </div>
+        <div class="p-6 space-y-4">
+            @if (session('modal') === 'document' && $errors->any())
+                <p class="text-sm text-red-500">{{ $errors->first() }}</p>
+            @endif
+            <div>
+                <label for="upload-document-folder" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Folder</label>
+                <select id="upload-document-folder" name="folder" x-model="docFolder" class="{{ $inputClass }}">
+                    @foreach ($folders as $folder)
+                        <option value="{{ $folder }}">{{ $folder }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="upload-document-name" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Document Name</label>
+                <input id="upload-document-name" type="text" name="name" x-model="docName" placeholder="e.g., Affidavit.pdf" class="{{ $inputClass }}">
+            </div>
+            <div>
+                <label for="upload-document-file" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">File</label>
+                <input id="upload-document-file" type="file" name="file" class="block w-full text-sm text-gray-500">
+            </div>
+            <button type="submit" class="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold">Save Document</button>
         </div>
     </form>
 </div>

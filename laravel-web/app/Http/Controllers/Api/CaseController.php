@@ -27,11 +27,7 @@ class CaseController extends Controller
             ->when($filter === 'All Cases', fn ($query) => $query->orderByDesc('is_pinned')->orderByDesc('updated_at'))
             ->get();
 
-        $active = null;
-        if ($request->filled('case')) {
-            $active = CourtCase::query()->find($request->integer('case'));
-        }
-        $active ??= CourtCase::query()->orderByDesc('is_pinned')->orderByDesc('updated_at')->first();
+        $active = $cases->firstWhere('id', $request->integer('case')) ?? $cases->first();
 
         $templates = Template::query()->orderBy('title')->get();
 
@@ -120,13 +116,54 @@ class CaseController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'court' => ['required', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:50'],
+            'state' => ['nullable', 'string', 'max:100'],
+            'district' => ['nullable', 'string', 'max:100'],
+            'case_number' => ['nullable', 'string', 'max:100'],
+            'case_year' => ['nullable', 'string', 'max:10'],
+            'party1_role' => ['nullable', 'in:'.implode(',', array_keys(Casebook::PARTY_1))],
+            'party2_role' => ['nullable', 'in:'.implode(',', array_keys(Casebook::PARTY_2))],
+            'petitioners' => ['nullable', 'array'],
+            'petitioners.*' => ['nullable', 'string', 'max:255'],
+            'respondents' => ['nullable', 'array'],
+            'respondents.*' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $number = trim((string) ($request->exists('case_number') ? ($data['case_number'] ?? '') : $case->case_number));
+        $year = trim((string) ($request->exists('case_year') ? ($data['case_year'] ?? '') : $case->case_year));
+        $title = trim($data['title']);
+        if ($request->exists('case_number') || $request->exists('case_year')) {
+            $built = trim($number.'/'.$year, '/');
+            if ($built !== '') {
+                $title = $built;
+            }
+        }
+
+        $state = $request->exists('state') ? ($data['state'] ?: null) : $case->state;
+        $district = $request->exists('district') ? ($data['district'] ?: null) : $case->district;
+        if ($state && $district) {
+            IndiaLocations::rememberCourt($state, $district, $data['court']);
+        }
+
         $case->update([
-            'title' => $data['title'],
+            'title' => $title !== '' ? $title : $case->title,
             'court' => $data['court'],
             'status' => filled($data['status'] ?? null) ? $data['status'] : $case->status,
+            'state' => $state,
+            'district' => $district,
+            'case_number' => $number !== '' ? $number : null,
+            'case_year' => $year !== '' ? $year : null,
+            'party1_role' => $data['party1_role'] ?? $case->party1_role,
+            'party2_role' => $data['party2_role'] ?? $case->party2_role,
         ]);
+
+        if ($request->exists('petitioners') || $request->exists('respondents')) {
+            $case->caseParties()->delete();
+            $this->storeParties($case, $data['petitioners'] ?? [], 1);
+            $this->storeParties($case, $data['respondents'] ?? [], 2);
+            $case->syncPartiesLabel();
+        }
+
+        $case->refresh();
 
         return response()->json(CasebookData::caseDetail($case));
     }
@@ -143,6 +180,17 @@ class CaseController extends Controller
     public function togglePin(CourtCase $case): JsonResponse
     {
         $case->update(['is_pinned' => ! $case->is_pinned]);
+
+        return response()->json(CasebookData::caseDetail($case));
+    }
+
+    public function updatePriority(Request $request, CourtCase $case): JsonResponse
+    {
+        $data = $request->validate([
+            'priority' => ['required', 'in:low,medium,high'],
+        ]);
+
+        $case->update(['priority' => $data['priority']]);
 
         return response()->json(CasebookData::caseDetail($case));
     }

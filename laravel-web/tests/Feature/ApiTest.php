@@ -203,4 +203,46 @@ class ApiTest extends TestCase
 
         $this->assertSame('Suresh', $case->caseParties()->where('side', 1)->value('name'));
     }
+
+    public function test_case_details_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+        $case = CourtCase::query()->create([
+            'user_id' => $user->id,
+            'title' => 'O.S. 1/2026',
+            'state' => 'Tamil Nadu',
+            'district' => 'Chennai',
+            'court' => 'Madras High Court',
+            'case_number' => 'O.S. 1',
+            'case_year' => '2026',
+            'party1_role' => 'Petitioner',
+            'party2_role' => 'Respondent',
+            'status' => 'Active',
+        ]);
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        $this->withToken($token)->putJson('/api/cases/'.$case->id, [
+            'title' => 'O.S. 99/2026',
+            'state' => 'Tamil Nadu',
+            'district' => 'Chennai',
+            'court' => 'City Civil Court',
+            'case_number' => 'O.S. 99',
+            'case_year' => '2026',
+            'status' => 'Pending',
+            'party1_role' => 'Petitioner',
+            'party2_role' => 'Respondent',
+            'petitioners' => ['Ramesh'],
+            'respondents' => ['State'],
+        ])->assertOk()
+            ->assertJsonPath('title', 'O.S. 99/2026')
+            ->assertJsonPath('court', 'City Civil Court')
+            ->assertJsonPath('status', 'Pending')
+            ->assertJsonPath('parties.0.name', 'Ramesh');
+
+        $case->refresh();
+        $this->assertSame('O.S. 99/2026', $case->title);
+        $this->assertSame('City Civil Court', $case->court);
+        $this->assertSame('Ramesh', $case->caseParties()->where('side', 1)->value('name'));
+    }
 }

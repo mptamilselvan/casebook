@@ -24,9 +24,11 @@ class PlanTest extends TestCase
         $this->assertDatabaseHas('plans', ['code' => 'free', 'space_limit' => 1, 'cases_limit' => 10]);
         $this->assertDatabaseHas('plans', ['code' => 'basic', 'space_limit' => 5, 'cases_limit' => 50]);
         $this->assertDatabaseHas('plans', ['code' => 'pro', 'space_limit' => 10, 'cases_limit' => null]);
-        $this->assertDatabaseHas('prices', ['amount' => 0, 'currency' => 'INR']);
-        $this->assertDatabaseHas('prices', ['amount' => 100, 'currency' => 'INR']);
-        $this->assertDatabaseHas('prices', ['amount' => 300, 'currency' => 'INR']);
+        $this->assertDatabaseHas('prices', ['amount' => 0, 'currency' => 'INR', 'interval' => 'monthly']);
+        $this->assertDatabaseHas('prices', ['amount' => 100, 'currency' => 'INR', 'interval' => 'monthly']);
+        $this->assertDatabaseHas('prices', ['amount' => 1000, 'currency' => 'INR', 'interval' => 'yearly']);
+        $this->assertDatabaseHas('prices', ['amount' => 300, 'currency' => 'INR', 'interval' => 'monthly']);
+        $this->assertDatabaseHas('prices', ['amount' => 3000, 'currency' => 'INR', 'interval' => 'yearly']);
     }
 
     public function test_verifying_an_email_assigns_the_free_plan(): void
@@ -66,7 +68,13 @@ class PlanTest extends TestCase
             ->assertSee('Pro')
             ->assertSee('₹0')
             ->assertSee('₹100')
+            ->assertSee('₹1,000')
             ->assertSee('₹300')
+            ->assertSee('₹3,000')
+            ->assertSee('Monthly')
+            ->assertSee('Yearly')
+            ->assertSee('per month')
+            ->assertSee('Subscribe · ₹100 / month')
             ->assertSee('1 GB')
             ->assertSee('5 GB')
             ->assertSee('10 GB')
@@ -87,9 +95,13 @@ class PlanTest extends TestCase
             ->assertJsonPath('plans.0.price.amount', 0)
             ->assertJsonPath('plans.0.space_label', '1 GB')
             ->assertJsonPath('plans.1.price.amount', 100)
+            ->assertJsonPath('plans.1.prices.0.interval', 'monthly')
+            ->assertJsonPath('plans.1.prices.1.interval', 'yearly')
+            ->assertJsonPath('plans.1.prices.1.amount', 1000)
             ->assertJsonPath('plans.1.space_label', '5 GB')
             ->assertJsonPath('plans.2.code', 'pro')
             ->assertJsonPath('plans.2.price.amount', 300)
+            ->assertJsonPath('plans.2.prices.1.amount', 3000)
             ->assertJsonPath('plans.2.space_label', '10 GB')
             ->assertJsonPath('plans.2.cases_limit', null);
     }
@@ -111,7 +123,7 @@ class PlanTest extends TestCase
     public function test_admin_can_change_plan_limits_and_price(): void
     {
         $admin = User::factory()->create([
-            'role' => User::ROLE_ADMIN,
+            'role' => User::ROLE_SUPERADMIN,
             'password' => 'password',
         ]);
         $basic = Plan::query()->where('code', Plan::BASIC)->firstOrFail();
@@ -129,20 +141,26 @@ class PlanTest extends TestCase
             ->assertSee('Plans & prices')
             ->assertSee('Storage space (GB)')
             ->assertSee('Cases limit')
-            ->assertSee('Price (INR)');
+            ->assertSee('Monthly price (INR)')
+            ->assertSee('Yearly price (INR)');
+
+        $basic->inrPrice('monthly')->update(['razorpay_plan_id' => 'plan_old']);
 
         $this->put(route('admin.plans.update', $basic), [
             'name' => 'Basic Plus',
             'space_limit' => 8,
             'cases_limit' => 40,
-            'amount' => 150,
+            'monthly_amount' => 150,
+            'yearly_amount' => 1500,
         ])->assertRedirect();
 
         $basic->refresh()->load('prices');
         $this->assertSame('Basic Plus', $basic->name);
         $this->assertSame(8, $basic->space_limit);
         $this->assertSame(40, $basic->cases_limit);
-        $this->assertSame(150, $basic->inrPrice()->amount);
+        $this->assertSame(150, $basic->inrPrice('monthly')->amount);
+        $this->assertSame(1500, $basic->inrPrice('yearly')->amount);
+        $this->assertNull($basic->inrPrice('monthly')->razorpay_plan_id);
         $this->assertSame('INR', $basic->inrPrice()->currency);
         $this->assertSame('Basic Plus', $member->fresh()->plan_name);
 
@@ -151,7 +169,8 @@ class PlanTest extends TestCase
             'name' => 'Pro',
             'space_limit' => 12,
             'cases_limit' => '',
-            'amount' => 300,
+            'monthly_amount' => 300,
+            'yearly_amount' => 3000,
         ])->assertRedirect();
 
         $this->assertNull($pro->fresh()->cases_limit);

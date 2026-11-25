@@ -1,8 +1,8 @@
 # Flutter packages this file, not mobile/.env.
 # Phone and Mac must be on the same Wi-Fi. 127.0.0.1 is the phone itself.
 # Android emulator: http://10.0.2.2:8000/api
-#API_BASE_URL=http://192.168.1.2:8000/api
-API_BASE_URL=https://grabmedia.net/casebook/api
+API_BASE_URL=http://192.168.1.4:8000/api
+#API_BASE_URL=https://grabmedia.net/casebook/api
 
 # Public OneSignal app id. The REST API key stays in laravel-web/.env.
 ONESIGNAL_APP_ID=dae7d002-5e18-4660-914c-7530b4ea721b

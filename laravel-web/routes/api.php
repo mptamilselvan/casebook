@@ -5,8 +5,10 @@ use App\Http\Controllers\Api\CaseController;
 use App\Http\Controllers\Api\CaseEventController;
 use App\Http\Controllers\Api\CasePartyController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\PlanCheckoutController;
+use App\Http\Controllers\Api\TeamPermissionController;
 use App\Http\Controllers\Api\TemplateController;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsEnabled;
@@ -20,6 +22,12 @@ Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class, EnsureUserIsEna
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/plans', [PlanController::class, 'index']);
+    Route::get('/people', [PersonController::class, 'index']);
+    Route::post('/people', [PersonController::class, 'store']);
+    Route::put('/people/{user}', [PersonController::class, 'update']);
+    Route::delete('/people/{user}', [PersonController::class, 'destroy']);
+    Route::get('/role-permissions', [TeamPermissionController::class, 'index']);
+    Route::put('/role-permissions', [TeamPermissionController::class, 'update']);
     Route::post('/plans/{plan}/checkout', [PlanCheckoutController::class, 'checkout']);
     Route::post('/plans/verify', [PlanCheckoutController::class, 'verify']);
     Route::get('/casebook', [CaseController::class, 'index']);
@@ -29,6 +37,7 @@ Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class, EnsureUserIsEna
     Route::delete('/cases/{case}', [CaseController::class, 'destroy']);
     Route::post('/cases/{case}/pin', [CaseController::class, 'togglePin']);
     Route::put('/cases/{case}/hearing', [CaseController::class, 'updateHearing']);
+    Route::put('/cases/{case}/priority', [CaseController::class, 'updatePriority']);
     Route::put('/cases/{case}/tasks', [CaseController::class, 'updateTasks']);
     Route::put('/cases/{case}/parties', [CasePartyController::class, 'sync']);
 

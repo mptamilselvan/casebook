@@ -7,7 +7,7 @@
     ];
 @endphp
 
-<div class="w-72 bg-white dark:bg-[#14151B] border-r border-gray-200 dark:border-[#262833] flex flex-col shrink-0 z-20">
+<div class="w-72 h-screen bg-white dark:bg-[#14151B] border-r border-gray-200 dark:border-[#262833] flex flex-col shrink-0 z-20">
     <div class="p-4 flex items-center justify-between relative">
         <div class="flex items-center gap-3">
             <img src="{{ asset('images/casebook-logo.png') }}" alt="" class="w-9 h-9 object-contain">
@@ -20,9 +20,21 @@
             <a href="{{ route('plans.index') }}" class="{{ $menuItemClass }} text-sm">
                 <x-icon name="indian-rupee" class="w-4 h-4" /> Prices
             </a>
-            <button type="button" @click="settingsOpen = true; topMenuOpen = false" class="{{ $menuItemClass }} text-sm">
-                <x-icon name="settings" class="w-4 h-4" /> Settings
-            </button>
+            <a href="{{ route('people.index') }}" class="{{ $menuItemClass }} text-sm">
+                <x-icon name="users" class="w-4 h-4" /> People Management
+            </a>
+            <a href="{{ route('team.permissions.index') }}" class="{{ $menuItemClass }} text-sm">
+                <x-icon name="list-todo" class="w-4 h-4" /> Roles &amp; Permissions
+            </a>
+            @if (request()->routeIs('cases.index'))
+                <button type="button" @click="settingsOpen = true; topMenuOpen = false" class="{{ $menuItemClass }} text-sm">
+                    <x-icon name="settings" class="w-4 h-4" /> Settings
+                </button>
+            @else
+                <a href="{{ route('cases.index', ['settings' => 1]) }}" class="{{ $menuItemClass }} text-sm">
+                    <x-icon name="settings" class="w-4 h-4" /> Settings
+                </a>
+            @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="{{ $menuItemClass }} text-sm">Sign out</button>
@@ -47,17 +59,24 @@
     </div>
 
     <div class="px-4 pb-4 mt-2">
-        <button type="button" @click="openNewCase()" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 flex items-center justify-center gap-2 shadow-sm">
-            <x-icon name="plus" class="w-4 h-4" />
-            <span class="font-semibold text-sm">New Case</span>
-        </button>
+        @if (request()->routeIs('cases.index'))
+            <button type="button" @click="openNewCase()" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 flex items-center justify-center gap-2 shadow-sm">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span class="font-semibold text-sm">New Case</span>
+            </button>
+        @else
+            <a href="{{ route('cases.index', ['new' => 1]) }}" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 flex items-center justify-center gap-2 shadow-sm">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span class="font-semibold text-sm">New Case</span>
+            </a>
+        @endif
     </div>
 
     <nav class="flex-1 overflow-y-auto pb-4">
         <div class="px-3 space-y-0.5 mt-2">
             @foreach ($nav as $item)
-                <a :href="caseUrl(@js(route('cases.index', array_filter(['filter' => $item['label'], 'case' => $active?->id]))))"
-                   class="flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors {{ $filter === $item['label'] ? 'bg-blue-600/20 text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B] hover:text-gray-800 dark:hover:text-gray-200' }}">
+                <a :href="caseUrl(@js(route('cases.index', ['filter' => $item['label']])))"
+                   class="flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors {{ request()->routeIs('cases.index') && $filter === $item['label'] ? 'bg-blue-600/20 text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B] hover:text-gray-800 dark:hover:text-gray-200' }}">
                     <span class="flex items-center gap-3">
                         <x-icon name="{{ $item['icon'] }}" class="w-4 h-4" />
                         <span class="text-sm">{{ $item['label'] }}</span>
@@ -65,9 +84,21 @@
                     <span class="text-xs opacity-60">{{ $counts[$item['label']] }}</span>
                 </a>
             @endforeach
-            <a href="{{ route('plans.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B] hover:text-gray-800 dark:hover:text-gray-200">
+            @php
+                $menuOff = 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#20222B] hover:text-gray-800 dark:hover:text-gray-200';
+                $menuOn = 'bg-blue-600/20 text-blue-500 font-bold';
+            @endphp
+            <a href="{{ route('plans.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('plans.index') ? $menuOn : $menuOff }}">
                 <x-icon name="indian-rupee" class="w-4 h-4" />
                 <span class="text-sm">Prices</span>
+            </a>
+            <a href="{{ route('people.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('people.*') ? $menuOn : $menuOff }}">
+                <x-icon name="users" class="w-4 h-4" />
+                <span class="text-sm">People Management</span>
+            </a>
+            <a href="{{ route('team.permissions.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('team.permissions.*') ? $menuOn : $menuOff }}">
+                <x-icon name="list-todo" class="w-4 h-4" />
+                <span class="text-sm">Roles &amp; Permissions</span>
             </a>
         </div>
 
@@ -92,6 +123,17 @@
                                 <x-icon name="star" class="w-3 h-3 text-yellow-500 fill-current shrink-0" />
                             @endif
                             <h4 class="font-bold text-sm truncate flex-1 {{ $isActive ? 'text-blue-700 dark:text-blue-100' : '' }}">{{ $case->title }}</h4>
+                            @if ($case->is_pinned)
+                                <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase bg-yellow-500/10 text-yellow-500">Starred</span>
+                            @endif
+                            @php
+                                $priorityTone = match ($case->priority ?? 'medium') {
+                                    'high' => 'bg-red-100 text-red-700',
+                                    'low' => 'bg-emerald-100 text-emerald-800',
+                                    default => 'bg-amber-100 text-amber-800',
+                                };
+                            @endphp
+                            <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase {{ $priorityTone }}">{{ ucfirst($case->priority ?? 'medium') }}</span>
                         </div>
                         <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-1 truncate pr-4">{{ $case->parties_label }}</p>
                         <p class="text-gray-500 dark:text-gray-400 text-[10px] truncate pr-4 flex items-center mt-0.5">
@@ -122,14 +164,6 @@
                             <button type="button" @click="openEdit(@js(['id' => $case->id, 'title' => $case->title, 'court' => $case->court]))" class="{{ $menuItemClass }} text-xs">
                                 <x-icon name="square-pen" class="w-3 h-3" /> Edit Case Info
                             </button>
-                            <form method="POST" action="{{ route('cases.destroy', $case) }}" onsubmit="return confirm('Delete this case and its files?')">
-                                @csrf
-                                @method('DELETE')
-                                @include('casebook.partials.return-fields')
-                                <button type="submit" class="{{ $menuItemClass }} text-xs text-red-500">
-                                    <x-icon name="trash" class="w-3 h-3" /> Delete
-                                </button>
-                            </form>
                         </div>
                     </div>
                 @empty

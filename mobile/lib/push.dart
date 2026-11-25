@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
@@ -35,17 +37,22 @@ class CasebookPush {
     await OneSignal.Notifications.requestPermission(true);
   }
 
+  static String externalId(int userId) => 'casebook-$userId';
+
   static Future<void> login(int userId) async {
     if (!enabled) {
       return;
     }
-    await OneSignal.login(userId.toString());
+    // OneSignal rejects bare ids such as "1". Do not log out first: that
+    // leaves a local user the server does not have, and the next login waits
+    // on it until it times out.
+    unawaited(OneSignal.login(externalId(userId)));
   }
 
   static Future<void> logout() async {
     if (!enabled) {
       return;
     }
-    await OneSignal.logout();
+    unawaited(OneSignal.logout());
   }
 }

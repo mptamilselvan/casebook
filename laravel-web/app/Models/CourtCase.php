@@ -7,6 +7,7 @@ use App\Support\Usage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CourtCase extends Model
@@ -24,6 +25,7 @@ class CourtCase extends Model
         'case_year',
         'type',
         'status',
+        'priority',
         'next_hearing',
         'judge',
         'stage',
@@ -44,21 +46,40 @@ class CourtCase extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('owner', function (Builder $builder) {
-            $userId = auth()->id();
-            if ($userId === null) {
+            $user = auth()->user() ?? request()->user();
+            if ($user === null) {
                 return;
             }
 
-            $builder->where($builder->qualifyColumn('user_id'), $userId);
+            if ($user->owner_id) {
+                $builder->where($builder->qualifyColumn('user_id'), $user->owner_id)
+                    ->whereIn($builder->qualifyColumn('id'), function ($query) use ($user) {
+                        $query->select('case_id')
+                            ->from('case_user')
+                            ->where('user_id', $user->id);
+                    });
+
+                return;
+            }
+
+            $builder->where($builder->qualifyColumn('user_id'), $user->id);
         });
 
         static::creating(function (CourtCase $case) {
-            if ($userId = auth()->id()) {
-                $case->user_id = $userId;
+            $user = auth()->user() ?? request()->user();
+            if ($user === null) {
+                return;
             }
+
+            $case->user_id = $user->owner_id ?: $user->id;
         });
 
         static::created(function (CourtCase $case) {
+            $user = auth()->user() ?? request()->user();
+            if ($user && $user->owner_id && (int) $case->user_id === (int) $user->owner_id) {
+                $case->viewers()->syncWithoutDetaching([$user->id]);
+            }
+
             if ($case->user_id) {
                 Usage::change((int) $case->user_id, cases: 1);
             }
@@ -78,6 +99,11 @@ class CourtCase extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function viewers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'case_user', 'case_id', 'user_id');
     }
 
     public function caseParties(): HasMany

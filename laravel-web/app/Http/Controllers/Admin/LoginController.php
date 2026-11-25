@@ -17,7 +17,7 @@ class LoginController extends Controller
 {
     public function create(): View|RedirectResponse
     {
-        if (Auth::user()?->isAdmin()) {
+        if (Auth::user()?->isSuperAdmin()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -39,9 +39,9 @@ class LoginController extends Controller
             ]);
         }
 
-        if (! $user->isAdmin()) {
+        if (! $user->isSuperAdmin()) {
             throw ValidationException::withMessages([
-                'email' => 'Only an admin can sign in here.',
+                'email' => 'Only a superadmin can sign in here.',
             ]);
         }
 

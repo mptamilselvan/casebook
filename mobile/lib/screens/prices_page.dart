@@ -5,13 +5,17 @@ import '../api.dart';
 import '../models.dart';
 import '../theme.dart';
 
+enum BillingInterval { monthly, yearly }
+
 class PlanOffer {
   PlanOffer({
     required this.id,
     required this.name,
     required this.spaceLabel,
     required this.casesLabel,
-    required this.priceLabel,
+    required this.monthlyLabel,
+    required this.yearlyLabel,
+    required this.free,
     required this.current,
   });
 
@@ -19,7 +23,9 @@ class PlanOffer {
   final String name;
   final String spaceLabel;
   final String casesLabel;
-  final String priceLabel;
+  final String monthlyLabel;
+  final String yearlyLabel;
+  final bool free;
   final bool current;
 
   static List<PlanOffer> listFromJson(Map<String, dynamic> json) {
@@ -33,16 +39,57 @@ class PlanOffer {
   }
 
   factory PlanOffer.fromJson(Map<String, dynamic> json, Object? currentId) {
-    final price = json['price'] as Map?;
+    var monthly = '';
+    var yearly = '';
+    final prices = json['prices'];
+    if (prices is List) {
+      for (final item in prices) {
+        if (item is! Map) {
+          continue;
+        }
+        final label = item['label'] as String? ?? '';
+        if (item['interval'] == 'yearly') {
+          yearly = label;
+        } else {
+          monthly = label;
+        }
+      }
+    }
+    final legacy = json['price'];
+    if (monthly.isEmpty && legacy is Map) {
+      monthly = legacy['label'] as String? ?? '';
+    }
+    if (yearly.isEmpty) {
+      yearly = monthly;
+    }
+    final monthlyAmount = _amount(json, 'monthly');
+    final yearlyAmount = _amount(json, 'yearly');
     return PlanOffer(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String? ?? '',
       spaceLabel: json['space_label'] as String? ?? '',
       casesLabel: json['cases_label'] as String? ?? '',
-      priceLabel: price?['label'] as String? ?? '',
+      monthlyLabel: monthly,
+      yearlyLabel: yearly,
+      free: monthlyAmount == 0 && yearlyAmount == 0,
       current:
           currentId is num && currentId.toInt() == (json['id'] as num).toInt(),
     );
+  }
+
+  static int _amount(Map<String, dynamic> json, String interval) {
+    final prices = json['prices'];
+    if (prices is List) {
+      for (final item in prices) {
+        if (item is Map && item['interval'] == interval) {
+          return (item['amount'] as num?)?.toInt() ?? 0;
+        }
+      }
+    }
+    if (interval == 'monthly' && json['price'] is Map) {
+      return ((json['price'] as Map)['amount'] as num?)?.toInt() ?? 0;
+    }
+    return 0;
   }
 }
 
@@ -58,6 +105,9 @@ class PricesPage extends StatefulWidget {
 
 class _PricesPageState extends State<PricesPage> {
   List<PlanOffer> plans = const [];
+  String? currentInterval;
+  String? subscriptionStatus;
+  BillingInterval interval = BillingInterval.monthly;
   String? error;
   String? notice;
   bool loading = true;
@@ -82,8 +132,11 @@ class _PricesPageState extends State<PricesPage> {
       if (!mounted) {
         return;
       }
+      final json = body as Map<String, dynamic>;
       setState(() {
-        plans = PlanOffer.listFromJson(body as Map<String, dynamic>);
+        plans = PlanOffer.listFromJson(json);
+        currentInterval = json['current_interval'] as String?;
+        subscriptionStatus = json['current_subscription_status'] as String?;
         loading = false;
         error = null;
       });
@@ -105,7 +158,9 @@ class _PricesPageState extends State<PricesPage> {
       notice = null;
     });
     try {
-      final body = await widget.api.postJson('plans/${plan.id}/checkout', {});
+      final body = await widget.api.postJson('plans/${plan.id}/checkout', {
+        'interval': interval.name,
+      });
       if (body is! Map) {
         throw ApiException('Payment could not be started.');
       }
@@ -133,8 +188,10 @@ class _PricesPageState extends State<PricesPage> {
       PaymentSuccessResponse response,
     ) async {
       try {
+        final data = response.data;
         final verified = await widget.api.postJson('plans/verify', {
-          'razorpay_order_id': response.orderId,
+          'razorpay_subscription_id':
+              data?['razorpay_subscription_id'] ?? response.orderId,
           'razorpay_payment_id': response.paymentId,
           'razorpay_signature': response.signature,
         });
@@ -170,20 +227,58 @@ class _PricesPageState extends State<PricesPage> {
       }
       setState(() => applyingId = null);
     });
-    razorpay.open({
+    final options = <String, dynamic>{
       'key': body['key'],
-      'amount': body['amount'],
-      'currency': body['currency'] ?? 'INR',
       'name': body['name'] ?? 'Case Book',
       'description': body['description'] ?? '',
-      'order_id': body['order_id'],
       'prefill': {
         'email': body['email'] ?? '',
         'name': body['customer_name'] ?? '',
       },
       'theme': {'color': '#2563EB'},
-    });
+    };
+    if (body['subscription_id'] != null) {
+      options['subscription_id'] = body['subscription_id'];
+    } else {
+      options['order_id'] = body['order_id'];
+      options['amount'] = body['amount'];
+      options['currency'] = body['currency'] ?? 'INR';
+    }
+    razorpay.open(options);
     _razorpay = razorpay;
+  }
+
+  String _priceLabel(PlanOffer plan) {
+    if (plan.free || interval == BillingInterval.monthly) {
+      return plan.monthlyLabel;
+    }
+    return plan.yearlyLabel;
+  }
+
+  String _periodLabel(PlanOffer plan) {
+    if (plan.free) {
+      return '';
+    }
+    return interval == BillingInterval.yearly ? 'per year' : 'per month';
+  }
+
+  String _actionLabel(PlanOffer plan) {
+    if (plan.free) {
+      return 'Use Free';
+    }
+    final period = interval == BillingInterval.yearly ? 'year' : 'month';
+    return 'Subscribe · ${_priceLabel(plan)} / $period';
+  }
+
+  bool _canSubscribe(PlanOffer plan) {
+    if (!plan.current) {
+      return true;
+    }
+    if (plan.free) {
+      return false;
+    }
+    return !(currentInterval == interval.name &&
+        subscriptionStatus == 'active');
   }
 
   Future<void> _finish(Map<String, dynamic> body) async {
@@ -225,12 +320,31 @@ class _PricesPageState extends State<PricesPage> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               children: [
                 const Text(
-                  'Prices are in Indian rupees (INR).',
+                  'Prices are in Indian rupees (INR). Choose monthly or yearly. Paid plans renew until you cancel.',
                   style: TextStyle(color: casebookMuted, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Monthly'),
+                      selected: interval == BillingInterval.monthly,
+                      onSelected: (_) => setState(
+                        () => interval = BillingInterval.monthly,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text('Yearly'),
+                      selected: interval == BillingInterval.yearly,
+                      onSelected: (_) =>
+                          setState(() => interval = BillingInterval.yearly),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Apply opens Razorpay. You can pay by UPI, QR code, net banking, or debit and credit card.',
+                  'Subscribe opens Razorpay for the period you selected.',
                   style: TextStyle(color: casebookMuted, fontSize: 13),
                 ),
                 if (notice != null) ...[
@@ -248,8 +362,13 @@ class _PricesPageState extends State<PricesPage> {
                 for (final plan in plans) ...[
                   _PlanCard(
                     plan: plan,
+                    priceLabel: _priceLabel(plan),
+                    periodLabel: _periodLabel(plan),
+                    actionLabel: _actionLabel(plan),
                     applying: applyingId == plan.id,
-                    onApply: applyingId == null ? () => _apply(plan) : null,
+                    onApply: applyingId == null && _canSubscribe(plan)
+                        ? () => _apply(plan)
+                        : null,
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -260,9 +379,19 @@ class _PricesPageState extends State<PricesPage> {
 }
 
 class _PlanCard extends StatelessWidget {
-  const _PlanCard({required this.plan, required this.applying, this.onApply});
+  const _PlanCard({
+    required this.plan,
+    required this.priceLabel,
+    required this.periodLabel,
+    required this.actionLabel,
+    required this.applying,
+    this.onApply,
+  });
 
   final PlanOffer plan;
+  final String priceLabel;
+  final String periodLabel;
+  final String actionLabel;
   final bool applying;
   final VoidCallback? onApply;
 
@@ -327,7 +456,7 @@ class _PlanCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  plan.priceLabel,
+                  priceLabel,
                   style: const TextStyle(
                     color: casebookText,
                     fontSize: 32,
@@ -335,6 +464,13 @@ class _PlanCard extends StatelessWidget {
                     height: 1.1,
                   ),
                 ),
+                if (periodLabel.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    periodLabel,
+                    style: const TextStyle(color: casebookMuted, fontSize: 13),
+                  ),
+                ],
               ],
             ),
           ),
@@ -342,15 +478,13 @@ class _PlanCard extends StatelessWidget {
           Text(plan.spaceLabel, style: const TextStyle(color: casebookMuted)),
           const SizedBox(height: 4),
           Text(plan.casesLabel, style: const TextStyle(color: casebookMuted)),
-          if (!plan.current) ...[
+          if (onApply != null || applying) ...[
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: onApply,
-                child: Text(
-                  applying ? 'Please wait' : 'Apply · ${plan.priceLabel}',
-                ),
+                child: Text(applying ? 'Please wait' : actionLabel),
               ),
             ),
           ],

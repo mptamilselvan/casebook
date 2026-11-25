@@ -11,9 +11,10 @@ Future<void> openNewCase(BuildContext context, AppState state) {
 }
 
 class NewCasePage extends StatefulWidget {
-  const NewCasePage({super.key, required this.state});
+  const NewCasePage({super.key, required this.state, this.caseFile});
 
   final AppState state;
+  final CaseDetail? caseFile;
 
   @override
   State<NewCasePage> createState() => _NewCasePageState();
@@ -21,18 +22,31 @@ class NewCasePage extends StatefulWidget {
 
 class _NewCasePageState extends State<NewCasePage> {
   int step = 1;
-  String? selectedState;
-  String? selectedDistrict;
-  String? selectedCourt;
+  late String? selectedState = widget.caseFile?.state;
+  late String? selectedDistrict = widget.caseFile?.district;
+  late String? selectedCourt = widget.caseFile?.court;
   final courtOther = TextEditingController();
-  final number = TextEditingController();
-  final year = TextEditingController(text: DateTime.now().year.toString());
-  late String role1 =
-      widget.state.workspace?.party1Roles.keys.first ?? 'Petitioner';
-  late String role2 =
-      widget.state.workspace?.party2Roles.keys.first ?? 'Respondent';
-  final petitioners = [TextEditingController()];
-  final respondents = [TextEditingController()];
+  late final number = TextEditingController(
+    text: widget.caseFile?.caseNumber ?? '',
+  );
+  late final year = TextEditingController(
+    text: widget.caseFile?.caseYear ?? DateTime.now().year.toString(),
+  );
+  late final status = TextEditingController(
+    text: widget.caseFile?.status ?? 'Active',
+  );
+  late String role1 = _knownRole(
+    widget.caseFile?.party1Role,
+    widget.state.workspace?.party1Roles ?? {},
+    'Petitioner',
+  );
+  late String role2 = _knownRole(
+    widget.caseFile?.party2Role,
+    widget.state.workspace?.party2Roles ?? {},
+    'Respondent',
+  );
+  late final petitioners = _partyFields(1);
+  late final respondents = _partyFields(2);
   String? error;
   bool busy = false;
 
@@ -42,6 +56,7 @@ class _NewCasePageState extends State<NewCasePage> {
       courtOther,
       number,
       year,
+      status,
       ...petitioners,
       ...respondents,
     ]) {
@@ -50,23 +65,62 @@ class _NewCasePageState extends State<NewCasePage> {
     super.dispose();
   }
 
+  List<TextEditingController> _partyFields(int side) {
+    final names = [
+      for (final party in widget.caseFile?.parties ?? const <Party>[])
+        if (party.side == side) party.name,
+    ];
+    if (names.isEmpty) {
+      return [TextEditingController()];
+    }
+    return [for (final name in names) TextEditingController(text: name)];
+  }
+
+  String _knownRole(String? role, Map<String, String> roles, String fallback) {
+    if (role != null && roles.containsKey(role)) {
+      return role;
+    }
+    return roles.keys.firstOrNull ?? fallback;
+  }
+
+  String _savedTitle() {
+    final built = [
+      number.text.trim(),
+      year.text.trim(),
+    ].where((part) => part.isNotEmpty).join('/');
+    if (built.isNotEmpty) {
+      return built;
+    }
+    return widget.caseFile?.title ?? 'Untitled Case';
+  }
+
   Future<void> create() async {
     setState(() {
       busy = true;
       error = null;
     });
+    final editing = widget.caseFile;
+    final payload = {
+      'state': selectedState ?? '',
+      'district': selectedDistrict ?? '',
+      'court': _courtName(),
+      'case_number': number.text,
+      'case_year': year.text,
+      'party1_role': role1,
+      'party2_role': role2,
+      'petitioners': petitioners.map((item) => item.text).toList(),
+      'respondents': respondents.map((item) => item.text).toList(),
+    };
     try {
-      await widget.state.createCase({
-        'state': selectedState ?? '',
-        'district': selectedDistrict ?? '',
-        'court': _courtName(),
-        'case_number': number.text,
-        'case_year': year.text,
-        'party1_role': role1,
-        'party2_role': role2,
-        'petitioners': petitioners.map((item) => item.text).toList(),
-        'respondents': respondents.map((item) => item.text).toList(),
-      });
+      if (editing == null) {
+        await widget.state.createCase(payload);
+      } else {
+        await widget.state.updateCase(editing.id, {
+          ...payload,
+          'title': _savedTitle(),
+          'status': status.text,
+        });
+      }
       if (mounted) {
         Navigator.pop(context);
       }
@@ -95,7 +149,13 @@ class _NewCasePageState extends State<NewCasePage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: Text('Create New Case · Step $step of 2')),
+      appBar: AppBar(
+        title: Text(
+          widget.caseFile == null
+              ? 'Create New Case · Step $step of 2'
+              : 'Edit Case · Step $step of 2',
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -184,6 +244,13 @@ class _NewCasePageState extends State<NewCasePage> {
             ),
             const SizedBox(height: 12),
             TextField(controller: year, decoration: casebookField('Year')),
+            if (widget.caseFile != null) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: status,
+                decoration: casebookField('Status'),
+              ),
+            ],
             const SizedBox(height: 12),
             _dropdown(
               'Side 1 role',
@@ -226,7 +293,9 @@ class _NewCasePageState extends State<NewCasePage> {
             const SizedBox(height: 8),
             FilledButton(
               onPressed: busy ? null : create,
-              child: const Text('Create Case'),
+              child: Text(
+                widget.caseFile == null ? 'Create Case' : 'Save Changes',
+              ),
             ),
           ],
         ],
@@ -267,12 +336,100 @@ class _NewCasePageState extends State<NewCasePage> {
 }
 
 Future<void> editCase(BuildContext context, AppState state, CaseDetail item) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.white,
-    builder: (_) => _EditCaseForm(state: state, item: item),
+  return Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => NewCasePage(state: state, caseFile: item),
+    ),
   );
+}
+
+Future<bool> confirmCaseDelete(BuildContext context, String title) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierColor: const Color(0x99000000),
+    builder: (context) => Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEE2E2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.delete_outline, color: Color(0xFFDC2626)),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Delete this case?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: casebookText,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: casebookText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Documents, events, and files for this case will be removed.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: casebookMuted, height: 1.4),
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: casebookText,
+                      side: const BorderSide(color: casebookLine),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFDC2626),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Delete case'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  return result ?? false;
 }
 
 Future<bool> confirmDelete(BuildContext context, String message) async {
@@ -320,73 +477,6 @@ class _EventForm extends StatefulWidget {
 
   @override
   State<_EventForm> createState() => _EventFormState();
-}
-
-class _EditCaseForm extends StatefulWidget {
-  const _EditCaseForm({required this.state, required this.item});
-
-  final AppState state;
-  final CaseDetail item;
-
-  @override
-  State<_EditCaseForm> createState() => _EditCaseFormState();
-}
-
-class _EditCaseFormState extends State<_EditCaseForm> {
-  late final title = TextEditingController(text: widget.item.title);
-  late final court = TextEditingController(text: widget.item.court);
-  late final status = TextEditingController(
-    text: widget.item.status ?? 'Active',
-  );
-  bool busy = false;
-
-  @override
-  void dispose() {
-    title.dispose();
-    court.dispose();
-    status.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return formSheet(
-      context: context,
-      title: 'Edit Case',
-      busy: busy,
-      onSave: () async {
-        setState(() => busy = true);
-        try {
-          await widget.state.updateCase(
-            widget.item.id,
-            title.text,
-            court.text,
-            status: status.text,
-          );
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
-        } catch (error) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(error.toString())));
-          }
-        } finally {
-          if (mounted) {
-            setState(() => busy = false);
-          }
-        }
-      },
-      children: [
-        formLabel('Case Title / Number'),
-        TextField(controller: title),
-        formLabel('Court Name'),
-        TextField(controller: court),
-        formLabel('Status'),
-        TextField(controller: status),
-      ],
-    );
-  }
 }
 
 class _EventFormState extends State<_EventForm> {

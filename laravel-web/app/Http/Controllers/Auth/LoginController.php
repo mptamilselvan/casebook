@@ -30,9 +30,9 @@ class LoginController extends Controller
             ]);
         }
 
-        if ($result['user']->isAdmin()) {
+        if ($result['user']->isSuperAdmin()) {
             return back()->withErrors([
-                'email' => 'Admin accounts sign in with a password.',
+                'email' => 'Superadmin accounts sign in from the admin page.',
             ]);
         }
 

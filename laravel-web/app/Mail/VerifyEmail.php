@@ -27,6 +27,7 @@ class VerifyEmail extends Mailable
     {
         return new Content(
             view: 'mail.verify-email',
+            text: 'mail.verify-email-text',
             with: [
                 'url' => $this->verificationUrl(),
             ],

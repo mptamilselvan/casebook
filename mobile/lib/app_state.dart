@@ -107,17 +107,17 @@ class AppState extends ChangeNotifier {
     return created;
   }
 
-  Future<void> updateCase(
-    int id,
-    String title,
-    String court, {
-    String? status,
-  }) async {
-    await api.putJson('cases/$id', {
-      'title': title,
-      'court': court,
-      'status': ?status,
-    });
+  Future<void> updateCase(int id, Map<String, dynamic> payload) async {
+    final body = await api.putJson('cases/$id', payload);
+    final current = workspace;
+    if (body is Map<String, dynamic> && current != null) {
+      try {
+        workspace = current.withActive(CaseDetail.fromJson(body));
+        notifyListeners();
+      } catch (_) {
+        // The saved case is loaded again below.
+      }
+    }
     await load(caseId: id);
   }
 
@@ -129,6 +129,11 @@ class AppState extends ChangeNotifier {
 
   Future<void> togglePin(int id) async {
     await api.postJson('cases/$id/pin', {});
+    await load(caseId: id);
+  }
+
+  Future<void> updatePriority(int id, String priority) async {
+    await api.putJson('cases/$id/priority', {'priority': priority});
     await load(caseId: id);
   }
 

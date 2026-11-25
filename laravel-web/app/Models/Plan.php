@@ -35,8 +35,17 @@ class Plan extends Model
         return $this->hasMany(Price::class);
     }
 
-    public function inrPrice(): ?Price
+    public function inrPrice(?string $interval = null): ?Price
     {
+        $interval ??= Price::MONTHLY;
+        $match = $this->prices->first(
+            fn (Price $price) => $price->currency === Price::INR && $price->interval === $interval,
+        );
+
+        if ($match !== null || $interval !== Price::MONTHLY) {
+            return $match;
+        }
+
         return $this->prices->firstWhere('currency', Price::INR);
     }
 
@@ -45,7 +54,18 @@ class Plan extends Model
      */
     public function catalog(): array
     {
-        $price = $this->inrPrice();
+        $prices = collect(Price::INTERVALS)
+            ->map(fn (string $interval) => $this->inrPrice($interval))
+            ->filter()
+            ->map(fn (Price $price) => [
+                'id' => $price->id,
+                'interval' => $price->interval,
+                'amount' => $price->amount,
+                'currency' => $price->currency,
+                'label' => $price->label(),
+            ])
+            ->values();
+        $monthly = $prices->firstWhere('interval', Price::MONTHLY);
 
         return [
             'id' => $this->id,
@@ -57,12 +77,8 @@ class Plan extends Model
                 ? 'Unlimited cases'
                 : $this->cases_limit.' cases',
             'space_label' => $this->space_limit.' GB',
-            'price' => $price === null ? null : [
-                'id' => $price->id,
-                'amount' => $price->amount,
-                'currency' => $price->currency,
-                'label' => $price->label(),
-            ],
+            'price' => $monthly,
+            'prices' => $prices,
         ];
     }
 }

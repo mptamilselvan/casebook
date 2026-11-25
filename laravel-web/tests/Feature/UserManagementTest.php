@@ -22,7 +22,7 @@ class UserManagementTest extends TestCase
     {
         $admin = User::factory()->create([
             'email' => 'admin@casebook.test',
-            'role' => User::ROLE_ADMIN,
+            'role' => User::ROLE_SUPERADMIN,
             'created_at' => now(),
         ]);
         $match = User::factory()->create([
@@ -68,7 +68,7 @@ class UserManagementTest extends TestCase
     {
         $this->seed(PlanSeeder::class);
         $admin = User::factory()->create([
-            'role' => User::ROLE_ADMIN,
+            'role' => User::ROLE_SUPERADMIN,
         ]);
         $advocate = User::factory()->create([
             'email' => 'usage@casebook.test',
@@ -89,7 +89,7 @@ class UserManagementTest extends TestCase
     public function test_enable_and_disable_update_the_user(): void
     {
         $admin = User::factory()->create([
-            'role' => User::ROLE_ADMIN,
+            'role' => User::ROLE_SUPERADMIN,
         ]);
         $advocate = User::factory()->create([
             'email' => 'advocate@casebook.test',
@@ -118,7 +118,7 @@ class UserManagementTest extends TestCase
     public function test_an_admin_cannot_disable_their_own_account(): void
     {
         $admin = User::factory()->create([
-            'role' => User::ROLE_ADMIN,
+            'role' => User::ROLE_SUPERADMIN,
         ]);
 
         $this->actingAs($admin)

@@ -856,6 +856,9 @@ components:
           type: string
         status:
           type: string
+        priority:
+          type: string
+          enum: [low, medium, high]
         next_hearing:
           type: string
           format: date

@@ -3,7 +3,7 @@
 @section('admin')
 <div>
     <h2 class="text-2xl font-bold">Plans &amp; prices</h2>
-    <p class="mt-1 text-sm text-gray-500">Prices are in Indian rupees (INR). Leave cases blank for unlimited.</p>
+    <p class="mt-1 text-sm text-gray-500">Prices are in Indian rupees (INR), billed monthly or yearly. Leave cases blank for unlimited.</p>
 </div>
 
 @if (session('status'))
@@ -14,7 +14,8 @@
     @foreach ($plans as $plan)
         @php
             $editing = (int) session('editing_plan') === $plan->id;
-            $price = $plan->inrPrice();
+            $monthly = $plan->inrPrice('monthly');
+            $yearly = $plan->inrPrice('yearly');
             $field = function (string $key, mixed $default) use ($editing) {
                 return $editing ? old($key, $default) : $default;
             };
@@ -47,10 +48,18 @@
                 @enderror
             @endif
 
-            <label class="block mt-4 text-xs font-semibold text-gray-500" for="plan-price-{{ $plan->id }}">Price (INR)</label>
-            <input id="plan-price-{{ $plan->id }}" type="number" min="0" name="amount" value="{{ $field('amount', $price?->amount ?? 0) }}" class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-3 text-sm outline-none focus:border-blue-500">
+            <label class="block mt-4 text-xs font-semibold text-gray-500" for="plan-monthly-{{ $plan->id }}">Monthly price (INR)</label>
+            <input id="plan-monthly-{{ $plan->id }}" type="number" min="0" name="monthly_amount" value="{{ $field('monthly_amount', $monthly?->amount ?? 0) }}" class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-3 text-sm outline-none focus:border-blue-500">
             @if ($editing)
-                @error('amount')
+                @error('monthly_amount')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            @endif
+
+            <label class="block mt-4 text-xs font-semibold text-gray-500" for="plan-yearly-{{ $plan->id }}">Yearly price (INR)</label>
+            <input id="plan-yearly-{{ $plan->id }}" type="number" min="0" name="yearly_amount" value="{{ $field('yearly_amount', $yearly?->amount ?? 0) }}" class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-3 text-sm outline-none focus:border-blue-500">
+            @if ($editing)
+                @error('yearly_amount')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             @endif
