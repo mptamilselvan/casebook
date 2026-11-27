@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\RoleAccess;
 use App\View\Composers\CasebookSidebarComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -29,5 +30,13 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('casebook.partials.sidebar', CasebookSidebarComposer::class);
+        View::composer([
+            'casebook.index',
+            'casebook.partials.sidebar',
+            'casebook.partials.main',
+            'casebook.partials.modals',
+        ], function ($view) {
+            $view->with('can', RoleAccess::map(auth()->user()));
+        });
     }
 }

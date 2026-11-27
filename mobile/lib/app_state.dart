@@ -17,10 +17,15 @@ class AppState extends ChangeNotifier {
   final ApiClient api;
   UserAccount? user;
   Workspace? workspace;
-  String filter = 'All Cases';
+  String? mode;
+  String filter = 'All';
   String search = '';
   bool busy = false;
   String? error;
+
+  bool allows(String group, String action) {
+    return workspace?.allows(group, action) ?? true;
+  }
 
   List<CaseSummary> get visibleCases {
     final query = search.trim().toLowerCase();
@@ -38,11 +43,16 @@ class AppState extends ChangeNotifier {
       return false;
     }
     api.token = saved;
+    mode = prefs.getString('casebook_mode');
+    api.mode = mode;
     try {
       user = UserAccount.fromJson(
         await api.getJson('me') as Map<String, dynamic>,
       );
       await CasebookPush.login(user!.id);
+      if (mode == null) {
+        return true;
+      }
       await load(caseId: CasebookPush.takePendingCase());
       return true;
     } catch (_) {
@@ -57,7 +67,6 @@ class AppState extends ChangeNotifier {
     }) as Map<String, dynamic>;
     if (body['status'] == 'authenticated') {
       await _storeSession(body);
-      await load(caseId: CasebookPush.takePendingCase());
     }
     return body['status'] as String? ?? '';
   }
@@ -67,7 +76,24 @@ class AppState extends ChangeNotifier {
       'url': url.trim(),
     }) as Map<String, dynamic>;
     await _storeSession(body);
-    await load(caseId: CasebookPush.takePendingCase());
+  }
+
+  Future<void> chooseMode(String value) async {
+    mode = value;
+    api.mode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('casebook_mode', value);
+    notifyListeners();
+    await load(keepSelection: false);
+  }
+
+  Future<void> clearMode() async {
+    mode = null;
+    api.mode = null;
+    workspace = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('casebook_mode');
+    notifyListeners();
   }
 
   Future<void> load({int? caseId, bool keepSelection = true}) async {
@@ -103,7 +129,15 @@ class AppState extends ChangeNotifier {
     final created = CaseDetail.fromJson(
       await api.postJson('cases', payload) as Map<String, dynamic>,
     );
-    await load(caseId: created.id);
+    final createdMode = created.mode == 'office' ? 'office' : 'personal';
+    if (mode != createdMode) {
+      mode = createdMode;
+      api.mode = createdMode;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('casebook_mode', createdMode);
+    }
+    filter = 'All';
+    await load(caseId: created.id, keepSelection: false);
     return created;
   }
 
@@ -135,6 +169,18 @@ class AppState extends ChangeNotifier {
   Future<void> updatePriority(int id, String priority) async {
     await api.putJson('cases/$id/priority', {'priority': priority});
     await load(caseId: id);
+  }
+
+  Future<void> updateStatus(int id, String status) async {
+    await api.putJson('cases/$id/status', {'status': status});
+    await load(caseId: id);
+  }
+
+  Future<bool> updateMode(int id, String mode) async {
+    await api.putJson('cases/$id/mode', {'mode': mode});
+    final stays = (this.mode ?? 'personal') == mode;
+    await load(caseId: stays ? id : null, keepSelection: false);
+    return stays;
   }
 
   Future<void> updateHearing(int id, String? date) async {
@@ -233,19 +279,26 @@ class AppState extends ChangeNotifier {
   Future<void> _storeSession(Map<String, dynamic> body) async {
     api.token = body['token'] as String?;
     user = UserAccount.fromJson(body['user'] as Map<String, dynamic>);
+    mode = null;
+    api.mode = null;
+    workspace = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('casebook_token', api.token ?? '');
+    await prefs.remove('casebook_mode');
     await CasebookPush.login(user!.id);
     notifyListeners();
   }
 
   Future<void> clearSession() async {
     api.token = null;
+    api.mode = null;
     user = null;
     workspace = null;
+    mode = null;
     await CasebookPush.logout();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('casebook_token');
+    await prefs.remove('casebook_mode');
     notifyListeners();
   }
 }

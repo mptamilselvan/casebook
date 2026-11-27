@@ -51,10 +51,12 @@ class CasebookTopBar extends StatelessWidget {
     this.onSearchChanged,
     this.notifications = const [],
     this.subtitle,
+    this.menuIcon = Icons.menu,
   });
 
   final String title;
   final VoidCallback onMenu;
+  final IconData menuIcon;
   final VoidCallback? onAvatar;
   final String avatarLetter;
   final bool searching;
@@ -77,7 +79,7 @@ class CasebookTopBar extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onMenu,
-            icon: const Icon(Icons.menu, size: 26, color: casebookText),
+            icon: Icon(menuIcon, size: 26, color: casebookText),
           ),
           if (searching && searchController != null)
             Expanded(
@@ -324,6 +326,88 @@ class PriorityColors {
         return 'Low';
       default:
         return 'Medium';
+    }
+  }
+}
+
+class CaseStatus {
+  static const values = [
+    'pending',
+    'ongoing',
+    'stayed',
+    'disposed',
+    'dismissed',
+    'withdrawn',
+    'settled',
+  ];
+
+  static String normalize(String? status) {
+    switch (status?.trim().toLowerCase()) {
+      case 'active':
+      case 'ongoing':
+        return 'ongoing';
+      case 'stayed':
+      case 'disposed':
+      case 'dismissed':
+      case 'withdrawn':
+      case 'settled':
+      case 'pending':
+        return status!.trim().toLowerCase();
+      default:
+        return 'pending';
+    }
+  }
+
+  static String label(String? status) {
+    switch (normalize(status)) {
+      case 'ongoing':
+        return 'Ongoing';
+      case 'stayed':
+        return 'Stayed';
+      case 'disposed':
+        return 'Disposed';
+      case 'dismissed':
+        return 'Dismissed';
+      case 'withdrawn':
+        return 'Withdrawn';
+      case 'settled':
+        return 'Settled';
+      default:
+        return 'Pending';
+    }
+  }
+
+  static Color background(String? status) {
+    switch (normalize(status)) {
+      case 'ongoing':
+        return const Color(0xFFDBEAFE);
+      case 'stayed':
+      case 'withdrawn':
+        return const Color(0xFFF3F4F6);
+      case 'disposed':
+      case 'settled':
+        return const Color(0xFFD1FAE5);
+      case 'dismissed':
+        return const Color(0xFFFEE2E2);
+      default:
+        return const Color(0xFFFEF3C7);
+    }
+  }
+
+  static Color foreground(String? status) {
+    switch (normalize(status)) {
+      case 'ongoing':
+        return const Color(0xFF1D4ED8);
+      case 'stayed':
+      case 'withdrawn':
+        return const Color(0xFF4B5563);
+      case 'disposed':
+      case 'settled':
+        return const Color(0xFF047857);
+      case 'dismissed':
+        return const Color(0xFFB91C1C);
+      default:
+        return const Color(0xFFB45309);
     }
   }
 }

@@ -3,6 +3,7 @@
 namespace App\View\Composers;
 
 use App\Models\CourtCase;
+use App\Support\Casebook;
 use Illuminate\View\View;
 
 class CasebookSidebarComposer
@@ -22,19 +23,12 @@ class CasebookSidebarComposer
             return;
         }
 
-        $today = today();
-
         $view->with([
-            'filter' => 'All Cases',
+            'filter' => 'All',
             'active' => null,
             'activeTemplate' => null,
-            'cases' => CourtCase::query()->orderByDesc('is_pinned')->orderByDesc('updated_at')->get(),
-            'counts' => [
-                'All Cases' => CourtCase::query()->count(),
-                "Today's Hearings" => CourtCase::query()->whereDate('next_hearing', $today)->count(),
-                'Upcoming' => CourtCase::query()->whereDate('next_hearing', '>', $today)->count(),
-                'Starred' => CourtCase::query()->where('is_pinned', true)->count(),
-            ],
+            'cases' => Casebook::applyList(CourtCase::query(), 'All')->get(),
+            'counts' => Casebook::caseCounts(),
         ]);
     }
 }

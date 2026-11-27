@@ -62,7 +62,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    # Flutter skips asset filenames that start with "." — use assets/env.
     - assets/env
     - assets/img/
 

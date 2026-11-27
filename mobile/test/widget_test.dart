@@ -113,6 +113,20 @@ void main() {
     expect(find.text('Free'), findsOneWidget);
     expect(find.text('1.2 MB of 1 GB'), findsOneWidget);
     expect(find.text('1 of 10 cases'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Tomorrow'), findsOneWidget);
+    expect(find.text('Starred'), findsOneWidget);
+    expect(find.text('O.S. 10/2026'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+    expect(find.text('New Case'), findsOneWidget);
+    expect(find.text('Saved Templates'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('O.S. 10/2026'));
+    await tester.pumpAndSettle();
     expect(find.text('Set Hearing date'), findsOneWidget);
     expect(find.text('23 Nov 2026'), findsWidgets);
     expect(find.text('Hearing date'), findsNothing);
@@ -135,16 +149,11 @@ void main() {
     expect(find.text('Ramesh'), findsOneWidget);
     expect(find.text('+ Add Party'), findsWidgets);
 
+    await tester.ensureVisible(find.text('Tasks'));
     await tester.tap(find.text('Tasks'));
     await tester.pumpAndSettle();
     expect(find.text('Quick Notes / Tasks'), findsOneWidget);
     expect(find.text('Read the counter'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.menu));
-    await tester.pumpAndSettle();
-    expect(find.text('New Case'), findsOneWidget);
-    expect(find.text("Today's Cases"), findsOneWidget);
-    expect(find.text('Saved Templates'), findsOneWidget);
   });
 
   testWidgets('saving a party keeps the entered name', (tester) async {
@@ -204,6 +213,8 @@ void main() {
     );
     await tester.pump();
 
+    await tester.tap(find.text('O.S. 10/2026'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Parties'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('+ Add Party').first);
@@ -272,15 +283,20 @@ void main() {
     );
     await tester.pump();
 
+    await tester.tap(find.text('O.S. 10/2026'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Tasks'));
     await tester.tap(find.text('Tasks'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'File the counter.');
+    await tester.ensureVisible(find.text('Documents'));
     await tester.tap(find.text('Documents'));
     await tester.pumpAndSettle();
 
     expect(api.path, 'cases/1/tasks');
     expect(api.tasks, 'File the counter.');
 
+    await tester.ensureVisible(find.text('Tasks'));
     await tester.tap(find.text('Tasks'));
     await tester.pumpAndSettle();
     expect(find.text('File the counter.'), findsOneWidget);
@@ -350,6 +366,8 @@ void main() {
     );
     await tester.pump();
 
+    await tester.tap(find.text('O.S. 10/2026'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Edit Case'));

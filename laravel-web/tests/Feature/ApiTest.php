@@ -229,7 +229,7 @@ class ApiTest extends TestCase
             'court' => 'City Civil Court',
             'case_number' => 'O.S. 99',
             'case_year' => '2026',
-            'status' => 'Pending',
+            'status' => 'pending',
             'party1_role' => 'Petitioner',
             'party2_role' => 'Respondent',
             'petitioners' => ['Ramesh'],
@@ -237,7 +237,7 @@ class ApiTest extends TestCase
         ])->assertOk()
             ->assertJsonPath('title', 'O.S. 99/2026')
             ->assertJsonPath('court', 'City Civil Court')
-            ->assertJsonPath('status', 'Pending')
+            ->assertJsonPath('status', 'pending')
             ->assertJsonPath('parties.0.name', 'Ramesh');
 
         $case->refresh();

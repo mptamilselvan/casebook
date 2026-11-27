@@ -53,6 +53,7 @@ class LoginController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $request->session()->forget('case_mode');
 
         return redirect()->route('admin.dashboard');
     }

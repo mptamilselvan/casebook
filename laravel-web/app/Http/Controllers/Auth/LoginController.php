@@ -39,6 +39,7 @@ class LoginController extends Controller
         if ($result['verified']) {
             Auth::login($result['user']);
             $request->session()->regenerate();
+            $request->session()->forget('case_mode');
 
             return redirect()->intended(route('cases.index'));
         }

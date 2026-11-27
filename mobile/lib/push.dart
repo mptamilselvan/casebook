@@ -22,6 +22,9 @@ class CasebookPush {
       return;
     }
     OneSignal.initialize(appId);
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      event.notification.display();
+    });
     OneSignal.Notifications.addClickListener((event) {
       final raw = event.notification.additionalData?['case_id'];
       final id = raw is int ? raw : int.tryParse('${raw ?? ''}');
@@ -34,7 +37,6 @@ class CasebookPush {
       }
       onCaseOpened!(id);
     });
-    await OneSignal.Notifications.requestPermission(true);
   }
 
   static String externalId(int userId) => 'casebook-$userId';
@@ -43,6 +45,12 @@ class CasebookPush {
     if (!enabled) {
       return;
     }
+    // Ask after the first screen exists. A prompt during startup is dropped,
+    // so the phone never subscribes and the reminder stays inside the app.
+    try {
+      await OneSignal.Notifications.requestPermission(false);
+      await OneSignal.User.pushSubscription.optIn();
+    } catch (_) {}
     // OneSignal rejects bare ids such as "1". Do not log out first: that
     // leaves a local user the server does not have, and the next login waits
     // on it until it times out.

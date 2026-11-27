@@ -36,7 +36,7 @@ window.casebookPage = function (config) {
         petitioners: Array.isArray(old.petitioners) && old.petitioners.length ? old.petitioners : [''],
         respondents: Array.isArray(old.respondents) && old.respondents.length ? old.respondents : [''],
         editOpen: config.modal === 'edit-case',
-        edit: config.edit || { id: '', title: '', court: '' },
+        edit: config.edit || { id: '', title: '', court: '', mode: 'personal' },
         eventOpen: config.modal === 'event',
         docOpen: config.modal === 'document',
         eventForm: config.event || {
@@ -190,6 +190,7 @@ window.casebookPage = function (config) {
                 id: caseData.id,
                 title: caseData.title,
                 court: caseData.court,
+                mode: caseData.mode || 'personal',
             };
             this.editOpen = true;
             this.sidebarMenu = null;
@@ -225,16 +226,3 @@ window.casebookPage = function (config) {
 
 window.Alpine = Alpine;
 Alpine.start();
-
-const casebookPush = window.casebookPush;
-if (casebookPush && casebookPush.appId && casebookPush.userId) {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async (OneSignal) => {
-        await OneSignal.init({
-            appId: casebookPush.appId,
-            serviceWorkerPath: 'OneSignalSDKWorker.js',
-        });
-        await OneSignal.login('casebook-' + String(casebookPush.userId));
-        await OneSignal.Notifications.requestPermission();
-    });
-}

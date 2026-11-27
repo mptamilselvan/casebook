@@ -1,8 +1,29 @@
-# Flutter packages this file, not mobile/.env.
+# The app reads this file only.
 # Phone and Mac must be on the same Wi-Fi. 127.0.0.1 is the phone itself.
 # Android emulator: http://10.0.2.2:8000/api
-API_BASE_URL=http://192.168.1.4:8000/api
+API_BASE_URL=http://192.168.1.4:8001/api
 #API_BASE_URL=https://grabmedia.net/casebook/api
 
 # Public OneSignal app id. The REST API key stays in laravel-web/.env.
 ONESIGNAL_APP_ID=dae7d002-5e18-4660-914c-7530b4ea721b
+
+# Not read by the app. Uploads go to the Laravel API, which stores them in this bucket.
+HF_S3_ACCESS_KEY=HFAKd0fNfB0FuEskLaIlZtrV2uUlSzk
+HF_S3_SECRET_KEY=5cd511328969d303659ecadb5472e3d4601be2d4c9669165b44f4cf5ee2bc0bf
+HF_S3_BUCKET=casebook/advocate
+HF_S3_REGION=us-east-1
+HF_S3_ENDPOINT=https://casebook.s3.hf.co
+
+# Razorpay
+RAZORPAY_KEY_ID=rzp_test_TivuFtKtkSNxSH
+RAZORPAY_KEY_SECRET=vCHRxTwSIIH9B9iSwdqmHbe6
+RAZORPAY_WEBHOOK_SECRET=
+
+# UPI / Google Pay (India): register VPA with your bank or payment aggregator
+UPI_VPA=casebook@upi
+UPI_PAYEE_NAME="Case Book"
+UPI_CURRENCY=INR
+GOOGLE_PAY_UPI_VPA=
+PAYMENT_QR_EXPIRY_SECONDS=900
+PAYMENT_TRANSACTION_NOTE="Case Book {task_id}"
+UPI_WEBHOOK_SECRET=

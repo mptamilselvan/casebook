@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\RedirectsToCasebook;
 use App\Models\CaseEvent;
 use App\Models\CourtCase;
 use App\Support\Casebook;
+use App\Support\RoleAccess;
 use App\Support\Usage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,11 +17,14 @@ class CaseEventController extends Controller
 
     public function store(Request $request, CourtCase $case)
     {
+        RoleAccess::authorize($request->user(), 'EVENT', 'create');
+
         return $this->save($request, $case, new CaseEvent);
     }
 
     public function update(Request $request, CourtCase $case, CaseEvent $event)
     {
+        RoleAccess::authorize($request->user(), 'EVENT', 'edit');
         abort_unless($event->case_id === $case->id, 404);
 
         return $this->save($request, $case, $event);
@@ -28,6 +32,7 @@ class CaseEventController extends Controller
 
     public function destroy(Request $request, CourtCase $case, CaseEvent $event)
     {
+        RoleAccess::authorize($request->user(), 'EVENT', 'delete');
         abort_unless($event->case_id === $case->id, 404);
 
         if ($event->file_path) {
@@ -41,6 +46,7 @@ class CaseEventController extends Controller
 
     public function file(Request $request, CaseEvent $event)
     {
+        RoleAccess::authorize($request->user(), 'TIMELINE', 'view');
         abort_unless($event->file_path && Casebook::files()->exists($event->file_path), 404);
 
         $name = $event->file_name ?: basename($event->file_path);

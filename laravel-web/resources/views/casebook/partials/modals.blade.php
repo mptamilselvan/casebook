@@ -1,4 +1,4 @@
-@if ($active)
+@if ($active && $can['CASE']['delete'])
 <div x-show="deleteCaseOpen" x-cloak @click.self="deleteCaseOpen = false" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <form method="POST" action="{{ route('cases.destroy', $active) }}" @click.stop class="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden">
         @csrf
@@ -35,6 +35,7 @@
     </div>
 </div>
 
+@if ($can['CASE']['edit'])
 <div x-show="editOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <form method="POST" :action="`/cases/${edit.id}`" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-md shadow-2xl" @click.stop>
         @csrf
@@ -56,10 +57,19 @@
                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Court Name</label>
                 <input type="text" name="court" x-model="edit.court" class="{{ $inputClass }}">
             </div>
+            <div>
+                <label for="edit-case-mode" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Mode</label>
+                <select id="edit-case-mode" name="mode" x-model="edit.mode" class="{{ $inputClass }}">
+                    @foreach (\App\Enums\CaseMode::cases() as $mode)
+                        <option value="{{ $mode->value }}">{{ $mode->label() }}</option>
+                    @endforeach
+                </select>
+            </div>
             <button type="submit" class="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold" :disabled="!edit.title">Save Changes</button>
         </div>
     </form>
 </div>
+@endif
 
 <div x-show="viewerOpen" x-cloak class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-xl w-full max-w-4xl h-[80vh] flex flex-col" @click.stop>
@@ -79,6 +89,7 @@
     </div>
 </div>
 
+@if ($can['CASE']['create'])
 <div x-show="newCaseOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <form method="POST" action="{{ route('cases.store') }}" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" @click.stop @submit="if (modalStep === 1) { $event.preventDefault(); if (courtValue().trim() !== '') modalStep = 2 }">
         @csrf
@@ -134,6 +145,14 @@
                 <button type="button" @click="modalStep = 2" :disabled="courtValue().trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
             </div>
             <div x-show="modalStep === 2" x-cloak class="space-y-5">
+                <div>
+                    <label for="new-case-mode" class="block text-xs font-semibold text-gray-500 mb-1">Mode</label>
+                    <select id="new-case-mode" name="mode" class="{{ $inputClass }}">
+                        @foreach (\App\Enums\CaseMode::cases() as $mode)
+                            <option value="{{ $mode->value }}" @selected(old('mode', \App\Enums\CaseMode::current()?->value ?? 'personal') === $mode->value)>{{ $mode->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="flex items-end gap-3">
                     <div class="min-w-0 flex-1">
                         <label for="new-case-number" class="block text-xs font-semibold text-gray-500 mb-1">Case number</label>
@@ -178,8 +197,9 @@
         </div>
     </form>
 </div>
+@endif
 
-@if ($active)
+@if ($active && ($can['EVENT']['create'] || $can['EVENT']['edit']))
 <div x-show="eventOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <form method="POST" enctype="multipart/form-data" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-md shadow-2xl" :action="eventForm.id ? `/cases/{{ $active->id }}/events/${eventForm.id}` : @js(route('events.store', $active))" @click.stop>
         @csrf
@@ -224,7 +244,9 @@
         </div>
     </form>
 </div>
+@endif
 
+@if ($active && $can['DOCUMENT']['create'])
 <div x-show="docOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <form method="POST" action="{{ route('documents.store', $active) }}" enctype="multipart/form-data" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-md shadow-2xl" @click.stop>
         @csrf

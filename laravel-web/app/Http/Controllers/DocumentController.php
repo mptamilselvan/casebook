@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\RedirectsToCasebook;
 use App\Models\CourtCase;
 use App\Models\Document;
 use App\Support\Casebook;
+use App\Support\RoleAccess;
 use App\Support\Usage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,6 +17,8 @@ class DocumentController extends Controller
 
     public function store(Request $request, CourtCase $case)
     {
+        RoleAccess::authorize($request->user(), 'DOCUMENT', 'create');
+
         $validator = Validator::make($request->all(), [
             'folder' => ['required', 'in:'.implode(',', Casebook::FOLDERS)],
             'name' => ['nullable', 'string', 'max:255'],
@@ -57,6 +60,7 @@ class DocumentController extends Controller
 
     public function file(Request $request, Document $document)
     {
+        RoleAccess::authorize($request->user(), 'DOCUMENT', 'view');
         abort_unless($document->file_path && Casebook::files()->exists($document->file_path), 404);
 
         return $request->boolean('download')

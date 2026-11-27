@@ -67,6 +67,7 @@ class CaseSummary {
     this.priority = 'medium',
     this.type,
     this.userId,
+    this.mode = 'personal',
   });
 
   final int id;
@@ -85,6 +86,7 @@ class CaseSummary {
   final String priority;
   final String? type;
   final int? userId;
+  final String mode;
 
   factory CaseSummary.fromJson(Map<String, dynamic> json) {
     return CaseSummary(
@@ -104,6 +106,7 @@ class CaseSummary {
       priority: json['priority'] as String? ?? 'medium',
       type: json['type'] as String?,
       userId: json['user_id'] as int?,
+      mode: json['mode'] as String? ?? 'personal',
     );
   }
 
@@ -208,6 +211,7 @@ class CaseDetail extends CaseSummary {
     super.priority,
     super.type,
     super.userId,
+    super.mode,
     required this.tasks,
     required this.parties,
     required this.events,
@@ -238,6 +242,7 @@ class CaseDetail extends CaseSummary {
       priority: summary.priority,
       type: summary.type,
       userId: summary.userId,
+      mode: summary.mode,
       tasks: json['tasks'] as String? ?? '',
       parties: (json['parties'] as List? ?? [])
           .map((item) => Party.fromJson(item as Map<String, dynamic>))
@@ -337,6 +342,7 @@ class Workspace {
     required this.templates,
     this.locations = const [],
     this.notifications = const [],
+    this.permissions,
     this.active,
   });
 
@@ -352,11 +358,20 @@ class Workspace {
   final List<CaseSummary> cases;
   final List<CaseTemplate> templates;
   final List<AppNotification> notifications;
+  final Map<String, Map<String, bool>>? permissions;
   final CaseDetail? active;
+
+  bool allows(String group, String action) {
+    final grants = permissions;
+    if (grants == null) {
+      return true;
+    }
+    return grants[group]?[action] ?? false;
+  }
 
   factory Workspace.fromJson(Map<String, dynamic> json) {
     return Workspace(
-      filter: json['filter'] as String? ?? 'All Cases',
+      filter: json['filter'] as String? ?? 'All',
       today: json['today'] as String? ?? '',
       counts: (json['counts'] as Map? ?? {}).map(
         (key, value) => MapEntry(key.toString(), (value as num).toInt()),
@@ -388,6 +403,9 @@ class Workspace {
       notifications: (json['notifications'] as List? ?? [])
           .map((item) => AppNotification.fromJson(item as Map<String, dynamic>))
           .toList(),
+      permissions: json.containsKey('permissions')
+          ? _readPermissions(json['permissions'])
+          : null,
       active: json['case'] == null
           ? null
           : CaseDetail.fromJson(json['case'] as Map<String, dynamic>),
@@ -411,7 +429,24 @@ class Workspace {
       ],
       templates: templates,
       notifications: notifications,
+      permissions: permissions,
       active: detail,
     );
   }
+}
+
+Map<String, Map<String, bool>> _readPermissions(Object? raw) {
+  final grants = <String, Map<String, bool>>{};
+  if (raw is Map) {
+    raw.forEach((group, actions) {
+      final parsed = <String, bool>{};
+      if (actions is Map) {
+        actions.forEach((action, value) {
+          parsed[action.toString()] = value == true;
+        });
+      }
+      grants[group.toString()] = parsed;
+    });
+  }
+  return grants;
 }

@@ -9,7 +9,6 @@ use App\Models\Document;
 use App\Models\HearingReminder;
 use App\Models\Template;
 use App\Models\User;
-use App\Support\Usage;
 
 class CasebookData
 {
@@ -49,7 +48,7 @@ class CasebookData
             'case_number' => $case->case_number,
             'case_year' => $case->case_year,
             'type' => $case->type,
-            'status' => $case->status,
+            'status' => Casebook::status($case->status),
             'priority' => $case->priority ?: 'medium',
             'next_hearing' => $case->next_hearing?->toDateString(),
             'judge' => $case->judge,
@@ -57,12 +56,15 @@ class CasebookData
             'is_pinned' => (bool) $case->is_pinned,
             'party1_role' => $case->party1_role,
             'party2_role' => $case->party2_role,
+            'mode' => $case->mode ?: 'personal',
         ];
     }
 
     public static function caseDetail(CourtCase $case): array
     {
         $case->load(['caseParties', 'events', 'documents']);
+
+        $user = auth()->user() ?? request()->user();
 
         return [
             ...self::caseSummary($case),
@@ -73,8 +75,12 @@ class CasebookData
                 'name' => $party->name,
                 'sort_order' => $party->sort_order,
             ])->values(),
-            'events' => $case->events->map(fn (CaseEvent $event) => self::event($event))->values(),
-            'documents' => $case->documents->map(fn (Document $document) => self::document($document))->values(),
+            'events' => $user && ! RoleAccess::allows($user, 'TIMELINE', 'view')
+                ? []
+                : $case->events->map(fn (CaseEvent $event) => self::event($event))->values(),
+            'documents' => $user && ! RoleAccess::allows($user, 'DOCUMENT', 'view')
+                ? []
+                : $case->documents->map(fn (Document $document) => self::document($document))->values(),
         ];
     }
 

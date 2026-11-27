@@ -7,6 +7,7 @@ use App\Models\CaseEvent;
 use App\Models\CourtCase;
 use App\Support\Casebook;
 use App\Support\CasebookData;
+use App\Support\RoleAccess;
 use App\Support\Usage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
@@ -17,18 +18,22 @@ class CaseEventController extends Controller
 {
     public function store(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'EVENT', 'create');
+
         return response()->json($this->save($request, $case, new CaseEvent), 201);
     }
 
     public function update(Request $request, CourtCase $case, CaseEvent $event): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'EVENT', 'edit');
         abort_unless($event->case_id === $case->id, 404);
 
         return response()->json($this->save($request, $case, $event));
     }
 
-    public function destroy(CourtCase $case, CaseEvent $event): JsonResponse
+    public function destroy(Request $request, CourtCase $case, CaseEvent $event): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'EVENT', 'delete');
         abort_unless($event->case_id === $case->id, 404);
 
         if ($event->file_path) {
@@ -40,8 +45,9 @@ class CaseEventController extends Controller
         return response()->json(CasebookData::caseDetail($case));
     }
 
-    public function file(CaseEvent $event): StreamedResponse
+    public function file(Request $request, CaseEvent $event): StreamedResponse
     {
+        RoleAccess::authorize($request->user(), 'TIMELINE', 'view');
         abort_unless($event->file_path && Casebook::files()->exists($event->file_path), 404);
 
         $name = $event->file_name ?: basename($event->file_path);

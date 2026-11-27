@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CaseController;
+use App\Http\Controllers\CaseModeController;
 use App\Http\Controllers\CaseEventController;
 use App\Http\Controllers\CasePartyController;
 use App\Http\Controllers\DocumentController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\RazorpayWebhookController;
 use App\Http\Controllers\TeamPermissionController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Middleware\EnsureCaseMode;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsEnabled;
@@ -63,6 +65,10 @@ Route::get('/email/verify/{id}/{hash}', EmailVerificationController::class)
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::middleware(['auth', EnsureEmailIsVerified::class, EnsureUserIsEnabled::class])->group(function () {
+    Route::get('/mode', [CaseModeController::class, 'create'])->name('mode.create');
+    Route::post('/mode', [CaseModeController::class, 'store'])->name('mode.store');
+
+    Route::middleware(EnsureCaseMode::class)->group(function () {
     Route::get('/', [CaseController::class, 'index'])->name('cases.index');
     Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
     Route::get('/people', [PersonController::class, 'index'])->name('people.index');
@@ -79,6 +85,8 @@ Route::middleware(['auth', EnsureEmailIsVerified::class, EnsureUserIsEnabled::cl
     Route::post('/cases/{case}/pin', [CaseController::class, 'togglePin'])->name('cases.pin');
     Route::post('/cases/{case}/hearing', [CaseController::class, 'updateHearing'])->name('cases.hearing');
     Route::post('/cases/{case}/priority', [CaseController::class, 'updatePriority'])->name('cases.priority');
+    Route::post('/cases/{case}/status', [CaseController::class, 'updateStatus'])->name('cases.status');
+    Route::post('/cases/{case}/mode', [CaseController::class, 'updateMode'])->name('cases.mode');
     Route::post('/cases/{case}/tasks', [CaseController::class, 'updateTasks'])->name('cases.tasks');
     Route::post('/cases/{case}/parties', [CasePartyController::class, 'sync'])->name('parties.sync');
 
@@ -93,4 +101,5 @@ Route::middleware(['auth', EnsureEmailIsVerified::class, EnsureUserIsEnabled::cl
     Route::post('/templates', [TemplateController::class, 'store'])->name('templates.store');
     Route::put('/templates/{template}', [TemplateController::class, 'update'])->name('templates.update');
     Route::get('/templates/{template}/export', [TemplateController::class, 'export'])->name('templates.export');
+    });
 });

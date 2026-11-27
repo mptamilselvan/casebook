@@ -7,6 +7,7 @@ use App\Models\CourtCase;
 use App\Models\Document;
 use App\Support\Casebook;
 use App\Support\CasebookData;
+use App\Support\RoleAccess;
 use App\Support\Usage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,8 @@ class DocumentController extends Controller
 {
     public function store(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'DOCUMENT', 'create');
+
         $data = $request->validate([
             'folder' => ['required', 'in:'.implode(',', Casebook::FOLDERS)],
             'name' => ['nullable', 'string', 'max:255'],
@@ -45,15 +48,17 @@ class DocumentController extends Controller
         return response()->json(CasebookData::document($document), 201);
     }
 
-    public function file(Document $document): StreamedResponse
+    public function file(Request $request, Document $document): StreamedResponse
     {
+        RoleAccess::authorize($request->user(), 'DOCUMENT', 'view');
         abort_unless($document->file_path && Casebook::files()->exists($document->file_path), 404);
 
         return Casebook::files()->response($document->file_path, $document->name);
     }
 
-    public function destroy(CourtCase $case, Document $document): JsonResponse
+    public function destroy(Request $request, CourtCase $case, Document $document): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'DOCUMENT', 'delete');
         abort_unless($document->case_id === $case->id, 404);
 
         if ($document->file_path && Casebook::files()->exists($document->file_path)) {

@@ -40,6 +40,7 @@ class ApiClient {
 
   final String baseUrl;
   String? token;
+  String? mode;
 
   Map<String, String> _headers({bool json = true, String method = 'GET'}) {
     return {
@@ -47,6 +48,7 @@ class ApiClient {
       if (json) 'Content-Type': 'application/json',
       if (!json) 'Accept': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
+      if (mode != null && mode!.isNotEmpty) 'X-Case-Mode': mode!,
       // The live host rejects PUT and DELETE before they reach Laravel.
       if (_spoof(method)) 'X-HTTP-Method-Override': method,
     };

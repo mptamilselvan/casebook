@@ -7,6 +7,9 @@
     </button>
     <div x-show="notificationsOpen" x-cloak @click.stop class="absolute right-0 top-11 overflow-y-auto {{ $menuClass }}" style="width:20rem;max-height:24rem">
         <p class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Notifications</p>
+        @if (config('services.onesignal.app_id'))
+            <button type="button" id="casebook-enable-push" onclick="window.casebookEnablePush && window.casebookEnablePush()" class="w-full text-left px-4 py-2 text-sm font-semibold text-blue-600 border-t border-gray-100">Enable browser notifications</button>
+        @endif
         @forelse ($notifications as $notification)
             <div class="px-4 py-3 border-t border-gray-100 dark:border-[#262833]">
                 <p class="text-xs text-gray-500">{{ $notification['date'] }}</p>

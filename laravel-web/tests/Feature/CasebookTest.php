@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\CaseMode;
 use App\Models\Court;
 use App\Models\CourtCase;
 use App\Models\District;
@@ -52,7 +53,7 @@ class CasebookTest extends TestCase
         $case = CourtCase::query()->first();
 
         $response->assertRedirect(route('cases.index', [
-            'filter' => 'All Cases',
+            'filter' => 'All',
             'tab' => 'Timeline',
             'case' => $case->id,
         ]));
@@ -64,6 +65,38 @@ class CasebookTest extends TestCase
             'state' => 'Tamil Nadu',
         ]);
         $this->assertDatabaseCount('case_parties', 2);
+    }
+
+    public function test_a_new_case_opens_on_its_own_page(): void
+    {
+        $response = $this->post(route('cases.store'), [
+            'state' => 'Tamil Nadu',
+            'district' => 'Chennai',
+            'court' => 'Madras High Court',
+            'case_number' => 'O.S. 44',
+            'case_year' => '2026',
+            'party1_role' => 'Plaintiff',
+            'party2_role' => 'Defendant',
+            'petitioners' => ['Ramesh Kumar'],
+            'respondents' => ['State of TN'],
+            'filter' => 'Today',
+            'mode' => CaseMode::Office->value,
+        ]);
+
+        $case = CourtCase::query()->where('title', 'O.S. 44/2026')->first();
+
+        $response->assertRedirect(route('cases.index', [
+            'filter' => 'All',
+            'tab' => 'Timeline',
+            'case' => $case->id,
+        ]));
+        $this->assertSame(CaseMode::Office->value, session('case_mode'));
+
+        $this->followRedirects($response)
+            ->assertOk()
+            ->assertSee('O.S. 44/2026')
+            ->assertSee('Next Hearing')
+            ->assertSee('Office mode');
     }
 
     public function test_a_typed_court_is_added_for_that_district(): void
@@ -171,7 +204,7 @@ class CasebookTest extends TestCase
             'tab' => 'Parties',
             'case' => $case->id,
         ])->assertRedirect(route('cases.index', [
-            'filter' => 'All Cases',
+            'filter' => 'All',
             'tab' => 'Parties',
             'case' => $case->id,
         ]));
@@ -195,6 +228,17 @@ class CasebookTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('high', $case->fresh()->priority);
+
+        $this->post(route('cases.status', $case), [
+            'status' => 'stayed',
+            'case' => $case->id,
+        ])->assertRedirect();
+
+        $this->assertSame('stayed', $case->fresh()->status);
+        $this->get('/?case='.$case->id)
+            ->assertOk()
+            ->assertSee('Status')
+            ->assertSee('value="stayed" selected', false);
 
         $this->get('/?case='.$case->id)
             ->assertOk()
@@ -244,6 +288,97 @@ class CasebookTest extends TestCase
             ->assertDontSee('Past hearing')
             ->assertDontSee('Starred hearing');
 
+        CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Tomorrow hearing',
+            'court' => 'Madras High Court',
+            'next_hearing' => today()->addDay()->toDateString(),
+        ]);
+
+        $this->get(route('cases.index', ['filter' => 'Tomorrow']))
+            ->assertOk()
+            ->assertSee('Tomorrow hearing')
+            ->assertDontSee('Future hearing')
+            ->assertSee('>Today<', false)
+            ->assertSee('>Tomorrow<', false);
+
         $this->assertTrue($starred->fresh()->is_pinned);
+    }
+
+    public function test_personal_and_office_modes_keep_their_own_cases(): void
+    {
+        $personal = CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Home dispute',
+            'court' => 'City Court',
+            'mode' => CaseMode::Personal->value,
+        ]);
+        CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Firm dispute',
+            'court' => 'City Court',
+            'mode' => CaseMode::Office->value,
+        ]);
+
+        $this->get(route('cases.index', ['case' => $personal->id]))
+            ->assertOk()
+            ->assertSee('Home dispute')
+            ->assertSee('Personal mode')
+            ->assertSee('id="case-mode"', false)
+            ->assertSee('value="personal" selected', false)
+            ->assertDontSee('Firm dispute');
+
+        $this->post(route('cases.mode', $personal), [
+            'mode' => CaseMode::Office->value,
+            'case' => $personal->id,
+        ])->assertRedirect(route('cases.index', [
+            'filter' => 'All',
+            'tab' => 'Timeline',
+        ]));
+        $this->assertSame(CaseMode::Office->value, $personal->fresh()->mode);
+
+        Sanctum::actingAs($this->user);
+        $this->putJson('/api/cases/'.$personal->id.'/mode', [
+            'mode' => CaseMode::Personal->value,
+        ])->assertOk()->assertJsonPath('mode', CaseMode::Personal->value);
+        $this->assertSame(CaseMode::Personal->value, $personal->fresh()->mode);
+
+        $this->put(route('cases.update', $personal), [
+            'title' => 'Home dispute revised',
+            'court' => 'City Court',
+            'mode' => CaseMode::Office->value,
+        ])->assertRedirect(route('cases.index', [
+            'filter' => 'All',
+            'tab' => 'Timeline',
+        ]));
+        $this->assertSame(CaseMode::Office->value, $personal->fresh()->mode);
+        $this->get(route('cases.index'))
+            ->assertOk()
+            ->assertDontSee('Home dispute');
+
+        $this->session(['case_mode' => CaseMode::Office->value]);
+
+        $this->get(route('cases.index'))
+            ->assertOk()
+            ->assertSee('Firm dispute')
+            ->assertSee('Office mode')
+            ->assertSee('Home dispute revised');
+
+        $this->post(route('cases.store'), [
+            'state' => 'Tamil Nadu',
+            'district' => 'Chennai',
+            'court' => 'City Court',
+            'case_number' => 'Office',
+            'case_year' => '2026',
+            'party1_role' => 'Petitioner',
+            'party2_role' => 'Respondent',
+            'petitioners' => ['Firm'],
+            'respondents' => ['Client'],
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('cases', [
+            'title' => 'Office/2026',
+            'mode' => CaseMode::Office->value,
+        ]);
     }
 }

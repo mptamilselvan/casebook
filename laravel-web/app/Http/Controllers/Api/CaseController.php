@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\CaseMode;
 use App\Http\Controllers\Controller;
 use App\Models\CourtCase;
 use App\Models\Template;
 use App\Support\Casebook;
 use App\Support\CasebookData;
 use App\Support\IndiaLocations;
+use App\Support\RoleAccess;
 use App\Support\Usage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,13 +22,11 @@ class CaseController extends Controller
     {
         $filter = Casebook::filter($request->query('filter'));
         $today = today();
+        $can = RoleAccess::map($request->user());
 
-        $cases = CourtCase::query()
-            ->when($filter === "Today's Hearings", fn ($query) => $query->whereDate('next_hearing', $today))
-            ->when($filter === 'Upcoming', fn ($query) => $query->whereDate('next_hearing', '>', $today)->orderBy('next_hearing'))
-            ->when($filter === 'Starred', fn ($query) => $query->where('is_pinned', true)->orderByDesc('updated_at'))
-            ->when($filter === 'All Cases', fn ($query) => $query->orderByDesc('is_pinned')->orderByDesc('updated_at'))
-            ->get();
+        $cases = $can['CASE']['view']
+            ? Casebook::applyList(CourtCase::query(), $filter)->get()
+            : collect();
 
         $active = $cases->firstWhere('id', $request->integer('case')) ?? $cases->first();
 
@@ -34,12 +35,10 @@ class CaseController extends Controller
         return response()->json([
             'filter' => $filter,
             'today' => $today->toDateString(),
-            'counts' => [
-                'All Cases' => CourtCase::query()->count(),
-                "Today's Hearings" => CourtCase::query()->whereDate('next_hearing', $today)->count(),
-                'Upcoming' => CourtCase::query()->whereDate('next_hearing', '>', $today)->count(),
-                'Starred' => CourtCase::query()->where('is_pinned', true)->count(),
-            ],
+            'counts' => $can['CASE']['view']
+                ? Casebook::caseCounts()
+                : array_fill_keys(Casebook::FILTERS, 0),
+            'permissions' => $can,
             'filters' => Casebook::FILTERS,
             'tabs' => Casebook::TABS,
             'party1_roles' => Casebook::PARTY_1,
@@ -54,13 +53,17 @@ class CaseController extends Controller
         ]);
     }
 
-    public function show(CourtCase $case): JsonResponse
+    public function show(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'view');
+
         return response()->json(CasebookData::caseDetail($case));
     }
 
     public function store(Request $request): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'create');
+
         $data = $request->validate([
             'state' => ['required', 'string', 'max:100'],
             'district' => ['required', 'string', 'max:100'],
@@ -69,6 +72,7 @@ class CaseController extends Controller
             'case_year' => ['nullable', 'string', 'max:10'],
             'party1_role' => ['required', 'in:'.implode(',', array_keys(Casebook::PARTY_1))],
             'party2_role' => ['required', 'in:'.implode(',', array_keys(Casebook::PARTY_2))],
+            'mode' => ['nullable', Rule::enum(CaseMode::class)],
             'petitioners' => ['nullable', 'array'],
             'petitioners.*' => ['nullable', 'string', 'max:255'],
             'respondents' => ['nullable', 'array'],
@@ -84,7 +88,7 @@ class CaseController extends Controller
         $year = trim((string) ($data['case_year'] ?? ''));
         $title = trim($number.'/'.$year, '/');
 
-        $case = CourtCase::query()->create([
+        $attributes = [
             'user_id' => $request->user()->id,
             'title' => $title !== '' ? $title : 'Untitled Case',
             'state' => $data['state'] ?? null,
@@ -93,7 +97,7 @@ class CaseController extends Controller
             'case_number' => $number !== '' ? $number : null,
             'case_year' => $year !== '' ? $year : null,
             'type' => 'New Filing',
-            'status' => 'Active',
+            'status' => 'pending',
             'judge' => 'Unassigned',
             'stage' => 'Drafting Phase',
             'is_pinned' => false,
@@ -101,7 +105,11 @@ class CaseController extends Controller
             'party1_role' => $data['party1_role'],
             'party2_role' => $data['party2_role'],
             'parties_label' => '',
-        ]);
+        ];
+        if (filled($data['mode'] ?? null)) {
+            $attributes['mode'] = $data['mode'];
+        }
+        $case = CourtCase::query()->create($attributes);
 
         $this->storeParties($case, $data['petitioners'] ?? [], 1);
         $this->storeParties($case, $data['respondents'] ?? [], 2);
@@ -112,16 +120,19 @@ class CaseController extends Controller
 
     public function update(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'edit');
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'court' => ['required', 'string', 'max:255'],
-            'status' => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'in:'.implode(',', array_keys(Casebook::STATUSES))],
             'state' => ['nullable', 'string', 'max:100'],
             'district' => ['nullable', 'string', 'max:100'],
             'case_number' => ['nullable', 'string', 'max:100'],
             'case_year' => ['nullable', 'string', 'max:10'],
             'party1_role' => ['nullable', 'in:'.implode(',', array_keys(Casebook::PARTY_1))],
             'party2_role' => ['nullable', 'in:'.implode(',', array_keys(Casebook::PARTY_2))],
+            'mode' => ['nullable', Rule::enum(CaseMode::class)],
             'petitioners' => ['nullable', 'array'],
             'petitioners.*' => ['nullable', 'string', 'max:255'],
             'respondents' => ['nullable', 'array'],
@@ -154,6 +165,7 @@ class CaseController extends Controller
             'case_year' => $year !== '' ? $year : null,
             'party1_role' => $data['party1_role'] ?? $case->party1_role,
             'party2_role' => $data['party2_role'] ?? $case->party2_role,
+            'mode' => filled($data['mode'] ?? null) ? $data['mode'] : $case->mode,
         ]);
 
         if ($request->exists('petitioners') || $request->exists('respondents')) {
@@ -168,8 +180,10 @@ class CaseController extends Controller
         return response()->json(CasebookData::caseDetail($case));
     }
 
-    public function destroy(CourtCase $case): JsonResponse
+    public function destroy(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'delete');
+
         $case->load(['documents', 'events']);
         $case->deleteStoredFiles();
         $case->delete();
@@ -177,8 +191,13 @@ class CaseController extends Controller
         return response()->json(['status' => 'deleted']);
     }
 
-    public function togglePin(CourtCase $case): JsonResponse
+    public function togglePin(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorizeAny($request->user(), [
+            ['STAR_CASE', 'edit'],
+            ['PIN_CASE', 'edit'],
+        ]);
+
         $case->update(['is_pinned' => ! $case->is_pinned]);
 
         return response()->json(CasebookData::caseDetail($case));
@@ -186,6 +205,8 @@ class CaseController extends Controller
 
     public function updatePriority(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'PROMOTE_CASE', 'edit');
+
         $data = $request->validate([
             'priority' => ['required', 'in:low,medium,high'],
         ]);
@@ -195,8 +216,36 @@ class CaseController extends Controller
         return response()->json(CasebookData::caseDetail($case));
     }
 
+    public function updateStatus(Request $request, CourtCase $case): JsonResponse
+    {
+        RoleAccess::authorize($request->user(), 'CASE', 'edit');
+
+        $data = $request->validate([
+            'status' => ['required', 'in:'.implode(',', array_keys(Casebook::STATUSES))],
+        ]);
+
+        $case->update(['status' => $data['status']]);
+
+        return response()->json(CasebookData::caseDetail($case));
+    }
+
+    public function updateMode(Request $request, CourtCase $case): JsonResponse
+    {
+        RoleAccess::authorize($request->user(), 'CASE', 'edit');
+
+        $data = $request->validate([
+            'mode' => ['required', Rule::enum(CaseMode::class)],
+        ]);
+
+        $case->update(['mode' => $data['mode']]);
+
+        return response()->json(CasebookData::caseDetail($case));
+    }
+
     public function updateHearing(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'edit');
+
         $data = $request->validate([
             'next_hearing' => ['nullable', 'date'],
         ]);
@@ -210,6 +259,8 @@ class CaseController extends Controller
 
     public function updateTasks(Request $request, CourtCase $case): JsonResponse
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'edit');
+
         $data = $request->validate([
             'tasks' => ['nullable', 'string', 'max:20000'],
         ]);

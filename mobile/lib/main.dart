@@ -6,11 +6,11 @@ import 'app_state.dart';
 import 'push.dart';
 import 'screens/casebook_page.dart';
 import 'screens/login_page.dart';
+import 'screens/mode_page.dart';
 import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Flutter does not package files named ".env", so the app loads assets/env.
   await dotenv.load(fileName: 'assets/env', isOptional: true);
   await CasebookPush.start();
   runApp(CasebookApp(state: AppState(ApiClient())));
@@ -51,15 +51,8 @@ class _CasebookAppState extends State<CasebookApp> {
       theme: casebookTheme(),
       home: !ready
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : signedIn
-          ? CasebookPage(
-              state: widget.state,
-              onSignedOut: () => setState(() {
-                signedIn = false;
-                pendingEmail = null;
-              }),
-            )
-          : LoginPage(
+          : !signedIn
+          ? LoginPage(
               state: widget.state,
               pendingEmail: pendingEmail,
               onAuthenticated: () => setState(() {
@@ -68,6 +61,24 @@ class _CasebookAppState extends State<CasebookApp> {
               }),
               onVerificationSent: (email) =>
                   setState(() => pendingEmail = email),
+            )
+          : widget.state.mode == null
+          ? ModePage(
+              state: widget.state,
+              onChosen: () => setState(() {}),
+            )
+          : CasebookPage(
+              state: widget.state,
+              onSignedOut: () => setState(() {
+                signedIn = false;
+                pendingEmail = null;
+              }),
+              onSwitchMode: () async {
+                await widget.state.clearMode();
+                if (mounted) {
+                  setState(() {});
+                }
+              },
             ),
     );
   }

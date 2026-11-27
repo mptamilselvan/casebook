@@ -7,6 +7,7 @@ use App\Models\CourtCase;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\RoleAccess;
 use App\Support\TeamDirectory;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -276,5 +277,83 @@ class TeamTest extends TestCase
             ->get(route('cases.index'))
             ->assertOk()
             ->assertDontSee('Shared hearing');
+    }
+
+    public function test_case_actions_follow_the_person_role(): void
+    {
+        $owner = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $shared = CourtCase::query()->create([
+            'user_id' => $owner->id,
+            'title' => 'Shared hearing',
+            'court' => 'City Court',
+        ]);
+        $shared->events()->create([
+            'event_date' => '2026-11-27',
+            'title' => 'Hidden filing',
+        ]);
+        $shared->documents()->create([
+            'name' => 'Hidden brief',
+            'folder' => 'Pleadings',
+        ]);
+        $junior = User::factory()->create([
+            'role' => User::ROLE_MEMBER,
+            'owner_id' => $owner->id,
+        ]);
+        $junior->assignedCases()->sync([$shared->id]);
+
+        $viewCase = Permission::query()->where('group', 'CASE')->where('action', 'view')->first();
+        $member = Role::query()->where('slug', User::ROLE_MEMBER)->first();
+        TeamDirectory::savePermissions($owner, $member->id, [$viewCase->id]);
+        RoleAccess::flush();
+
+        $this->actingAs($owner)
+            ->get(route('cases.index', ['case' => $shared->id]))
+            ->assertOk()
+            ->assertSee('New Case')
+            ->assertSee('Add Event')
+            ->assertSee('Upload Document')
+            ->assertSee('Hidden filing')
+            ->assertSee('Hidden brief');
+
+        $this->actingAs($junior)
+            ->get(route('cases.index', ['case' => $shared->id]))
+            ->assertOk()
+            ->assertSee('Shared hearing')
+            ->assertSee('Parties')
+            ->assertDontSee('New Case')
+            ->assertDontSee('Add Event')
+            ->assertDontSee('Upload Document')
+            ->assertDontSee('Edit Case Info')
+            ->assertDontSee('Delete case')
+            ->assertDontSee('Add Party')
+            ->assertDontSee('Hidden filing')
+            ->assertDontSee('Hidden brief');
+
+        $this->actingAs($junior)->post(route('cases.store'), [])->assertForbidden();
+        $this->actingAs($junior)->delete(route('cases.destroy', $shared))->assertForbidden();
+        $this->actingAs($junior)->post(route('cases.pin', $shared))->assertForbidden();
+        $this->actingAs($junior)->post(route('cases.hearing', $shared), [])->assertForbidden();
+        $this->actingAs($junior)->post(route('events.store', $shared), [])->assertForbidden();
+        $this->actingAs($junior)->post(route('documents.store', $shared), [])->assertForbidden();
+
+        $this->actingAs($junior, 'sanctum')
+            ->getJson('/api/casebook')
+            ->assertOk()
+            ->assertJsonCount(1, 'cases')
+            ->assertJsonPath('permissions.CASE.view', true)
+            ->assertJsonPath('permissions.CASE.create', false)
+            ->assertJsonPath('permissions.EVENT.create', false)
+            ->assertJsonPath('permissions.DOCUMENT.view', false)
+            ->assertJsonPath('permissions.TIMELINE.view', false)
+            ->assertJsonPath('case.events', [])
+            ->assertJsonPath('case.documents', []);
+
+        $this->actingAs($junior, 'sanctum')->postJson('/api/cases', [])->assertForbidden();
+        $this->actingAs($junior, 'sanctum')->deleteJson('/api/cases/'.$shared->id)->assertForbidden();
+        $this->actingAs($junior, 'sanctum')->postJson('/api/cases/'.$shared->id.'/pin', [])->assertForbidden();
+        $this->actingAs($junior, 'sanctum')->postJson('/api/cases/'.$shared->id.'/events', [])->assertForbidden();
+        $this->actingAs($junior, 'sanctum')->postJson('/api/cases/'.$shared->id.'/documents', [])->assertForbidden();
+
+        $this->assertTrue(CourtCase::query()->whereKey($shared->id)->exists());
     }
 }

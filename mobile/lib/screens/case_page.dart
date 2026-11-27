@@ -15,20 +15,20 @@ class CasePage extends StatefulWidget {
     required this.onChanged,
     required this.onMenu,
     required this.onAccount,
+    this.onBack,
   });
 
   final AppState state;
   final VoidCallback onChanged;
   final VoidCallback onMenu;
   final VoidCallback onAccount;
+  final VoidCallback? onBack;
 
   @override
   State<CasePage> createState() => _CasePageState();
 }
 
 class _CasePageState extends State<CasePage> {
-  static const tabs = ['Timeline', 'Documents', 'Parties', 'Tasks', 'Settings'];
-
   final page = PageController();
   final searchBox = TextEditingController();
   int tab = 0;
@@ -36,6 +36,18 @@ class _CasePageState extends State<CasePage> {
   String query = '';
 
   CaseDetail? get active => widget.state.workspace?.active;
+
+  List<String> get visibleTabs {
+    bool allow(String group, String action) =>
+        widget.state.allows(group, action);
+    return [
+      if (allow('TIMELINE', 'view')) 'Timeline',
+      if (allow('DOCUMENT', 'view')) 'Documents',
+      'Parties',
+      'Tasks',
+      if (allow('CASE', 'delete')) 'Settings',
+    ];
+  }
 
   @override
   void dispose() {
@@ -73,6 +85,55 @@ class _CasePageState extends State<CasePage> {
     }
   }
 
+  Widget _tabPage(String label, CaseDetail item) {
+    switch (label) {
+      case 'Timeline':
+        return _Timeline(
+          state: widget.state,
+          item: item,
+          query: query,
+          onOpenFile: _openFile,
+          canCreate: widget.state.allows('EVENT', 'create'),
+          canEdit: widget.state.allows('EVENT', 'edit'),
+          canDelete: widget.state.allows('EVENT', 'delete'),
+        );
+      case 'Documents':
+        return _Documents(
+          state: widget.state,
+          item: item,
+          query: query,
+          onRun: _run,
+          onOpenFile: _openFile,
+          canCreate: widget.state.allows('DOCUMENT', 'create'),
+          canDelete: widget.state.allows('DOCUMENT', 'delete'),
+        );
+      case 'Tasks':
+        return _Tasks(
+          state: widget.state,
+          item: item,
+          active: visibleTabs[tab] == 'Tasks',
+          canEdit: widget.state.allows('CASE', 'edit'),
+          onRun: _run,
+        );
+      case 'Settings':
+        return _Settings(
+          item: item,
+          onDelete: () async {
+            final confirmed = await confirmCaseDelete(context, item.title);
+            if (confirmed) {
+              await _run(widget.state.deleteCase(item.id));
+            }
+          },
+        );
+      default:
+        return _Parties(
+          state: widget.state,
+          item: item,
+          canEdit: widget.state.allows('CASE', 'edit'),
+        );
+    }
+  }
+
   Future<void> _setHearing(CaseDetail item) async {
     final initial = DateTime.tryParse(item.nextHearing ?? '') ?? DateTime.now();
     final picked = await showDatePicker(
@@ -101,6 +162,11 @@ class _CasePageState extends State<CasePage> {
   @override
   Widget build(BuildContext context) {
     final item = active;
+    final labels = visibleTabs;
+    if (labels.isNotEmpty && tab >= labels.length) {
+      tab = 0;
+    }
+    final current = labels.isEmpty ? '' : labels[tab];
 
     return ColoredBox(
       color: Colors.white,
@@ -108,13 +174,14 @@ class _CasePageState extends State<CasePage> {
         children: [
           CasebookTopBar(
             title: 'Case Book',
-            onMenu: widget.onMenu,
+            onMenu: widget.onBack ?? widget.onMenu,
+            menuIcon: widget.onBack == null ? Icons.menu : Icons.arrow_back,
             onAvatar: widget.onAccount,
             avatarLetter: avatarLetter(widget.state),
             notifications: widget.state.workspace?.notifications ?? const [],
             searching: searching,
             searchController: searchBox,
-            searchHint: 'Search in ${tabs[tab]}...',
+            searchHint: current.isEmpty ? 'Search' : 'Search in $current...',
             onStartSearch: item == null
                 ? null
                 : () => setState(() => searching = true),
@@ -138,53 +205,58 @@ class _CasePageState extends State<CasePage> {
           else ...[
             _CaseHeader(
               item: item,
-              onSetHearing: () => _setHearing(item),
-              onPriority: (value) =>
-                  _run(widget.state.updatePriority(item.id, value)),
-              onEdit: () async {
-                await editCase(context, widget.state, item);
-                widget.onChanged();
-              },
-              onToggleStar: () => _run(widget.state.togglePin(item.id)),
+              onSetHearing: widget.state.allows('CASE', 'edit')
+                  ? () => _setHearing(item)
+                  : null,
+              onPriority: widget.state.allows('PROMOTE_CASE', 'edit')
+                  ? (value) => _run(widget.state.updatePriority(item.id, value))
+                  : null,
+              onStatus: widget.state.allows('CASE', 'edit')
+                  ? (value) => _run(widget.state.updateStatus(item.id, value))
+                  : null,
+              onMode: widget.state.allows('CASE', 'edit')
+                  ? (value) async {
+                      try {
+                        final stays = await widget.state.updateMode(
+                          item.id,
+                          value,
+                        );
+                        if (!mounted) {
+                          return;
+                        }
+                        widget.onChanged();
+                        if (!stays) {
+                          widget.onBack?.call();
+                        }
+                      } on Exception catch (error) {
+                        if (!context.mounted) {
+                          return;
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(error.toString())),
+                        );
+                      }
+                    }
+                  : null,
+              onEdit: widget.state.allows('CASE', 'edit')
+                  ? () async {
+                      await editCase(context, widget.state, item);
+                      widget.onChanged();
+                    }
+                  : null,
+              onToggleStar:
+                  widget.state.allows('STAR_CASE', 'edit') ||
+                      widget.state.allows('PIN_CASE', 'edit')
+                  ? () => _run(widget.state.togglePin(item.id))
+                  : null,
             ),
-            _TabBar(labels: tabs, index: tab, onTap: _goTo),
+            _TabBar(labels: labels, index: tab, onTap: _goTo),
             Expanded(
               child: PageView(
                 controller: page,
                 onPageChanged: (index) => setState(() => tab = index),
                 children: [
-                  _Timeline(
-                    state: widget.state,
-                    item: item,
-                    query: query,
-                    onOpenFile: _openFile,
-                  ),
-                  _Documents(
-                    state: widget.state,
-                    item: item,
-                    query: query,
-                    onRun: _run,
-                    onOpenFile: _openFile,
-                  ),
-                  _Parties(state: widget.state, item: item),
-                  _Tasks(
-                    state: widget.state,
-                    item: item,
-                    active: tab == 3,
-                    onRun: _run,
-                  ),
-                  _Settings(
-                    item: item,
-                    onDelete: () async {
-                      final confirmed = await confirmCaseDelete(
-                        context,
-                        item.title,
-                      );
-                      if (confirmed) {
-                        await _run(widget.state.deleteCase(item.id));
-                      }
-                    },
-                  ),
+                  for (final label in labels) _tabPage(label, item),
                 ],
               ),
             ),
@@ -274,15 +346,19 @@ class _CaseHeader extends StatelessWidget {
     required this.item,
     required this.onSetHearing,
     required this.onPriority,
+    required this.onStatus,
+    required this.onMode,
     required this.onEdit,
     required this.onToggleStar,
   });
 
   final CaseDetail item;
-  final VoidCallback onSetHearing;
-  final ValueChanged<String> onPriority;
-  final VoidCallback onEdit;
-  final VoidCallback onToggleStar;
+  final VoidCallback? onSetHearing;
+  final ValueChanged<String>? onPriority;
+  final ValueChanged<String>? onStatus;
+  final ValueChanged<String>? onMode;
+  final VoidCallback? onEdit;
+  final VoidCallback? onToggleStar;
 
   @override
   Widget build(BuildContext context) {
@@ -342,35 +418,40 @@ class _CaseHeader extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextButton(
-                        onPressed: onSetHearing,
-                        style: TextButton.styleFrom(
-                          foregroundColor: casebookPurple,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          textStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                      if (onSetHearing != null)
+                        TextButton(
+                          onPressed: onSetHearing,
+                          style: TextButton.styleFrom(
+                            foregroundColor: casebookPurple,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
+                          child: const Text('Set Hearing date'),
                         ),
-                        child: const Text('Set Hearing date'),
-                      ),
-                      PopupMenuButton<String>(
-                        color: Colors.white,
-                        icon: const Icon(Icons.more_vert, color: casebookMuted),
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            onEdit();
-                          }
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Text('Edit Case'),
+                      if (onEdit != null)
+                        PopupMenuButton<String>(
+                          color: Colors.white,
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: casebookMuted,
                           ),
-                        ],
-                      ),
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              onEdit!();
+                            }
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit Case'),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                   if (item.nextHearing != null)
@@ -403,52 +484,109 @@ class _CaseHeader extends StatelessWidget {
                   foreground: casebookText,
                   expand: true,
                 ),
-                _Tag(
-                  label: item.status ?? 'Active',
-                  background: const Color(0xFFFEF3C7),
-                  foreground: casebookAmber,
-                ),
-                PopupMenuButton<String>(
-                  onSelected: onPriority,
-                  color: Colors.white,
-                  padding: EdgeInsets.zero,
-                  itemBuilder: (_) => [
-                    for (final value in ['low', 'medium', 'high'])
-                      PopupMenuItem(
-                        value: value,
-                        child: Text(
-                          PriorityColors.label(value),
-                          style: TextStyle(
-                            color: PriorityColors.foreground(value),
-                            backgroundColor: PriorityColors.background(value),
-                            fontWeight: FontWeight.w800,
+                if (onStatus != null)
+                  PopupMenuButton<String>(
+                    onSelected: onStatus,
+                    color: Colors.white,
+                    padding: EdgeInsets.zero,
+                    itemBuilder: (_) => [
+                      for (final value in CaseStatus.values)
+                        PopupMenuItem(
+                          value: value,
+                          child: Text(
+                            CaseStatus.label(value),
+                            style: TextStyle(
+                              color: CaseStatus.foreground(value),
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                    ],
+                    child: _Tag(
+                      label: CaseStatus.label(item.status),
+                      background: CaseStatus.background(item.status),
+                      foreground: CaseStatus.foreground(item.status),
                     ),
-                    decoration: BoxDecoration(
-                      color: PriorityColors.background(item.priority),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      PriorityColors.label(item.priority),
-                      style: TextStyle(
-                        color: PriorityColors.foreground(item.priority),
-                        backgroundColor: PriorityColors.background(
-                          item.priority,
-                        ),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                  )
+                else
+                  _Tag(
+                    label: CaseStatus.label(item.status),
+                    background: CaseStatus.background(item.status),
+                    foreground: CaseStatus.foreground(item.status),
                   ),
-                ),
-                _StarButton(starred: item.isPinned, onPressed: onToggleStar),
+                if (onPriority != null)
+                  PopupMenuButton<String>(
+                    onSelected: onPriority,
+                    color: Colors.white,
+                    padding: EdgeInsets.zero,
+                    itemBuilder: (_) => [
+                      for (final value in ['low', 'medium', 'high'])
+                        PopupMenuItem(
+                          value: value,
+                          child: Text(
+                            PriorityColors.label(value),
+                            style: TextStyle(
+                              color: PriorityColors.foreground(value),
+                              backgroundColor: PriorityColors.background(value),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                    ],
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: PriorityColors.background(item.priority),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        PriorityColors.label(item.priority),
+                        style: TextStyle(
+                          color: PriorityColors.foreground(item.priority),
+                          backgroundColor: PriorityColors.background(
+                            item.priority,
+                          ),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  _Tag(
+                    label: PriorityColors.label(item.priority),
+                    background: PriorityColors.background(item.priority),
+                    foreground: PriorityColors.foreground(item.priority),
+                  ),
+                if (onMode != null)
+                  PopupMenuButton<String>(
+                    onSelected: onMode,
+                    color: Colors.white,
+                    padding: EdgeInsets.zero,
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 'personal', child: Text('Personal')),
+                      PopupMenuItem(value: 'office', child: Text('Office')),
+                    ],
+                    child: _Tag(
+                      label: item.mode == 'office' ? 'Office' : 'Personal',
+                      background: const Color(0xFFF3F4F6),
+                      foreground: const Color(0xFF4B5563),
+                    ),
+                  )
+                else
+                  _Tag(
+                    label: item.mode == 'office' ? 'Office' : 'Personal',
+                    background: const Color(0xFFF3F4F6),
+                    foreground: const Color(0xFF4B5563),
+                  ),
+                if (onToggleStar != null || item.isPinned)
+                  _StarButton(
+                    starred: item.isPinned,
+                    onPressed: onToggleStar,
+                  ),
               ],
             ),
           ),
@@ -512,7 +650,7 @@ class _StarButton extends StatelessWidget {
   const _StarButton({required this.starred, required this.onPressed});
 
   final bool starred;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -656,12 +794,18 @@ class _Timeline extends StatefulWidget {
     required this.item,
     required this.query,
     required this.onOpenFile,
+    required this.canCreate,
+    required this.canEdit,
+    required this.canDelete,
   });
 
   final AppState state;
   final CaseDetail item;
   final String query;
   final Future<void> Function(String? path, String filename) onOpenFile;
+  final bool canCreate;
+  final bool canEdit;
+  final bool canDelete;
 
   @override
   State<_Timeline> createState() => _TimelineState();
@@ -686,11 +830,12 @@ class _TimelineState extends State<_Timeline> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
-        PurpleButton(
-          icon: Icons.add,
-          label: 'Add Event',
-          onPressed: () => openEventForm(context, state, item),
-        ),
+        if (widget.canCreate)
+          PurpleButton(
+            icon: Icons.add,
+            label: 'Add Event',
+            onPressed: () => openEventForm(context, state, item),
+          ),
         if (events.isEmpty)
           const Padding(
             padding: EdgeInsets.only(top: 12),
@@ -806,20 +951,42 @@ class _TimelineState extends State<_Timeline> {
                                           ],
                                         ),
                                       ),
-                                      IconButton(
-                                        visualDensity: VisualDensity.compact,
-                                        onPressed: () => openEventForm(
-                                          context,
-                                          state,
-                                          item,
-                                          event: event,
+                                      if (widget.canEdit)
+                                        IconButton(
+                                          visualDensity: VisualDensity.compact,
+                                          onPressed: () => openEventForm(
+                                            context,
+                                            state,
+                                            item,
+                                            event: event,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit_outlined,
+                                            size: 18,
+                                            color: casebookMuted,
+                                          ),
                                         ),
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                          size: 18,
-                                          color: casebookMuted,
+                                      if (widget.canDelete)
+                                        IconButton(
+                                          visualDensity: VisualDensity.compact,
+                                          onPressed: () async {
+                                            final confirmed = await confirmDelete(
+                                              context,
+                                              'Delete this event?',
+                                            );
+                                            if (confirmed) {
+                                              await state.deleteEvent(
+                                                item.id,
+                                                event.id,
+                                              );
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            size: 18,
+                                            color: casebookDanger,
+                                          ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                   if (event.fileName != null)
@@ -888,6 +1055,8 @@ class _Documents extends StatefulWidget {
     required this.query,
     required this.onRun,
     required this.onOpenFile,
+    required this.canCreate,
+    required this.canDelete,
   });
 
   final AppState state;
@@ -895,6 +1064,8 @@ class _Documents extends StatefulWidget {
   final String query;
   final Future<void> Function(Future<void> action) onRun;
   final Future<void> Function(String? path, String filename) onOpenFile;
+  final bool canCreate;
+  final bool canDelete;
 
   @override
   State<_Documents> createState() => _DocumentsState();
@@ -918,11 +1089,12 @@ class _DocumentsState extends State<_Documents> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
-        PurpleButton(
-          icon: Icons.upload,
-          label: 'Add Document',
-          onPressed: () => openDocumentForm(context, state, item),
-        ),
+        if (widget.canCreate)
+          PurpleButton(
+            icon: Icons.upload,
+            label: 'Add Document',
+            onPressed: () => openDocumentForm(context, state, item),
+          ),
         if (documents.isEmpty)
           const Text(
             'No documents uploaded to this case.',
@@ -972,22 +1144,25 @@ class _DocumentsState extends State<_Documents> {
                         color: casebookBlue,
                       ),
                     ),
-                  IconButton(
-                    onPressed: () async {
-                      final confirmed = await confirmDelete(
-                        context,
-                        'Delete this document?',
-                      );
-                      if (confirmed) {
-                        await onRun(state.deleteDocument(item.id, document.id));
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: casebookDanger,
+                  if (widget.canDelete)
+                    IconButton(
+                      onPressed: () async {
+                        final confirmed = await confirmDelete(
+                          context,
+                          'Delete this document?',
+                        );
+                        if (confirmed) {
+                          await onRun(
+                            state.deleteDocument(item.id, document.id),
+                          );
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: casebookDanger,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -1006,10 +1181,15 @@ class _DocumentsState extends State<_Documents> {
 }
 
 class _Parties extends StatelessWidget {
-  const _Parties({required this.state, required this.item});
+  const _Parties({
+    required this.state,
+    required this.item,
+    required this.canEdit,
+  });
 
   final AppState state;
   final CaseDetail item;
+  final bool canEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -1065,41 +1245,43 @@ class _Parties extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => openPartyForm(
-                    context,
-                    state,
-                    item,
-                    side: side,
-                    party: party,
+                if (canEdit)
+                  IconButton(
+                    onPressed: () => openPartyForm(
+                      context,
+                      state,
+                      item,
+                      side: side,
+                      party: party,
+                    ),
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: casebookMuted,
+                    ),
                   ),
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: casebookMuted,
-                  ),
-                ),
               ],
             ),
           ),
-        SizedBox(
-          width: double.infinity,
-          child: TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFFF3F4F6),
-              foregroundColor: casebookText,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+        if (canEdit)
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFF3F4F6),
+                foregroundColor: casebookText,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () => openPartyForm(context, state, item, side: side),
+              child: const Text(
+                '+ Add Party',
+                style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
-            onPressed: () => openPartyForm(context, state, item, side: side),
-            child: const Text(
-              '+ Add Party',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
           ),
-        ),
       ],
     );
   }
@@ -1110,12 +1292,14 @@ class _Tasks extends StatefulWidget {
     required this.state,
     required this.item,
     required this.active,
+    required this.canEdit,
     required this.onRun,
   });
 
   final AppState state;
   final CaseDetail item;
   final bool active;
+  final bool canEdit;
   final Future<void> Function(Future<void> action) onRun;
 
   @override
@@ -1191,6 +1375,9 @@ class _TasksState extends State<_Tasks> {
   }
 
   Future<void> _save() async {
+    if (!widget.canEdit) {
+      return;
+    }
     final value = tasks.text;
     if (value == widget.item.tasks || value == _posted) {
       return;
@@ -1220,6 +1407,7 @@ class _TasksState extends State<_Tasks> {
             key: fieldKey,
             controller: tasks,
             focusNode: focus,
+            readOnly: !widget.canEdit,
             minLines: 8,
             maxLines: 14,
             onTapOutside: (_) {

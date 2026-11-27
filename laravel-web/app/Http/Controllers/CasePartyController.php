@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\RedirectsToCasebook;
 use App\Models\CourtCase;
 use App\Support\Casebook;
+use App\Support\RoleAccess;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -14,6 +15,8 @@ class CasePartyController extends Controller
 
     public function sync(Request $request, CourtCase $case)
     {
+        RoleAccess::authorize($request->user(), 'CASE', 'edit');
+
         $data = $request->validate([
             'party1_role' => ['required', Rule::in(array_keys(Casebook::PARTY_1))],
             'party2_role' => ['required', Rule::in(array_keys(Casebook::PARTY_2))],

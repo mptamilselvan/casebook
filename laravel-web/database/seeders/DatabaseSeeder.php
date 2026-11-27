@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             PermissionSeeder::class,
             SuperAdminUserSeeder::class,
+            SearchIndexSeeder::class,
         ]);
     }
 }

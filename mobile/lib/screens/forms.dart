@@ -5,9 +5,10 @@ import '../app_state.dart';
 import '../models.dart';
 import '../theme.dart';
 
-Future<void> openNewCase(BuildContext context, AppState state) {
-  return Navigator.of(context)
-      .push(MaterialPageRoute(builder: (_) => NewCasePage(state: state)));
+Future<CaseDetail?> openNewCase(BuildContext context, AppState state) {
+  return Navigator.of(context).push<CaseDetail>(
+    MaterialPageRoute(builder: (_) => NewCasePage(state: state)),
+  );
 }
 
 class NewCasePage extends StatefulWidget {
@@ -32,9 +33,6 @@ class _NewCasePageState extends State<NewCasePage> {
   late final year = TextEditingController(
     text: widget.caseFile?.caseYear ?? DateTime.now().year.toString(),
   );
-  late final status = TextEditingController(
-    text: widget.caseFile?.status ?? 'Active',
-  );
   late String role1 = _knownRole(
     widget.caseFile?.party1Role,
     widget.state.workspace?.party1Roles ?? {},
@@ -45,6 +43,7 @@ class _NewCasePageState extends State<NewCasePage> {
     widget.state.workspace?.party2Roles ?? {},
     'Respondent',
   );
+  late String caseMode = _caseMode(widget.caseFile?.mode ?? widget.state.mode);
   late final petitioners = _partyFields(1);
   late final respondents = _partyFields(2);
   String? error;
@@ -56,7 +55,6 @@ class _NewCasePageState extends State<NewCasePage> {
       courtOther,
       number,
       year,
-      status,
       ...petitioners,
       ...respondents,
     ]) {
@@ -74,6 +72,10 @@ class _NewCasePageState extends State<NewCasePage> {
       return [TextEditingController()];
     }
     return [for (final name in names) TextEditingController(text: name)];
+  }
+
+  String _caseMode(String? value) {
+    return value == 'office' ? 'office' : 'personal';
   }
 
   String _knownRole(String? role, Map<String, String> roles, String fallback) {
@@ -108,21 +110,24 @@ class _NewCasePageState extends State<NewCasePage> {
       'case_year': year.text,
       'party1_role': role1,
       'party2_role': role2,
+      'mode': caseMode,
       'petitioners': petitioners.map((item) => item.text).toList(),
       'respondents': respondents.map((item) => item.text).toList(),
     };
     try {
       if (editing == null) {
-        await widget.state.createCase(payload);
+        final created = await widget.state.createCase(payload);
+        if (mounted) {
+          Navigator.pop(context, created);
+        }
       } else {
         await widget.state.updateCase(editing.id, {
           ...payload,
           'title': _savedTitle(),
-          'status': status.text,
         });
-      }
-      if (mounted) {
-        Navigator.pop(context);
+        if (mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (failure) {
       setState(() => error = failure.toString());
@@ -238,19 +243,26 @@ class _NewCasePageState extends State<NewCasePage> {
               child: const Text('Next'),
             ),
           ] else ...[
+            DropdownButtonFormField<String>(
+              initialValue: caseMode,
+              decoration: casebookField('Mode'),
+              items: const [
+                DropdownMenuItem(value: 'personal', child: Text('Personal')),
+                DropdownMenuItem(value: 'office', child: Text('Office')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => caseMode = value);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: number,
               decoration: casebookField('Case number'),
             ),
             const SizedBox(height: 12),
             TextField(controller: year, decoration: casebookField('Year')),
-            if (widget.caseFile != null) ...[
-              const SizedBox(height: 12),
-              TextField(
-                controller: status,
-                decoration: casebookField('Status'),
-              ),
-            ],
             const SizedBox(height: 12),
             _dropdown(
               'Side 1 role',
@@ -587,7 +599,7 @@ class _EventFormState extends State<_EventForm> {
               filename ?? widget.event?.fileName ?? 'Select Attached Document',
           onPressed: _pickFile,
         ),
-        if (widget.event != null)
+        if (widget.event != null && widget.state.allows('EVENT', 'delete'))
           TextButton(
             onPressed: busy
                 ? null

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CaseMode;
 use App\Support\Casebook;
 use App\Support\Usage;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,7 @@ class CourtCase extends Model
         'tasks',
         'party1_role',
         'party2_role',
+        'mode',
     ];
 
     protected function casts(): array
@@ -65,6 +67,15 @@ class CourtCase extends Model
             $builder->where($builder->qualifyColumn('user_id'), $user->id);
         });
 
+        static::addGlobalScope('mode', function (Builder $builder) {
+            $mode = CaseMode::current();
+            if ($mode === null) {
+                return;
+            }
+
+            $builder->where($builder->qualifyColumn('mode'), $mode->value);
+        });
+
         static::creating(function (CourtCase $case) {
             $user = auth()->user() ?? request()->user();
             if ($user === null) {
@@ -72,6 +83,9 @@ class CourtCase extends Model
             }
 
             $case->user_id = $user->owner_id ?: $user->id;
+            if (! filled($case->mode)) {
+                $case->mode = CaseMode::current()?->value ?? CaseMode::Personal->value;
+            }
         });
 
         static::created(function (CourtCase $case) {

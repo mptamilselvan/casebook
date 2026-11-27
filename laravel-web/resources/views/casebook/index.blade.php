@@ -15,8 +15,8 @@
         'modalStep' => (int) session('modal_step', 1),
         'templateId' => $activeTemplate?->id,
         'edit' => session('edit_case'),
-        'eventHaystacks' => $active ? $active->events->map(fn ($event) => strtolower($event->title.' '.$event->description))->values() : [],
-        'documentHaystacks' => $active ? $active->documents->map(fn ($document) => strtolower($document->name.' '.$document->folder))->values() : [],
+        'eventHaystacks' => $active && $can['TIMELINE']['view'] ? $active->events->map(fn ($event) => strtolower($event->title.' '.$event->description))->values() : [],
+        'documentHaystacks' => $active && $can['DOCUMENT']['view'] ? $active->documents->map(fn ($document) => strtolower($document->name.' '.$document->folder))->values() : [],
         'event' => session('modal') === 'event' ? [
             'id' => old('event_id', ''),
             'date' => old('event_date', $today),
@@ -42,7 +42,7 @@
     ];
 @endphp
 
-<div x-data="casebookPage(@js($alpine))" x-init="const params = new URLSearchParams(window.location.search); if (params.get('new') === '1') openNewCase(); if (params.get('settings') === '1') settingsOpen = true" @click="topMenuOpen = false; centerMenuOpen = false; notificationsOpen = false; sidebarMenu = null; eventMenu = null" class="flex h-screen w-full bg-white text-gray-800 font-sans overflow-hidden">
+<div x-data="casebookPage(@js($alpine))" x-init="const params = new URLSearchParams(window.location.search); if (params.get('new') === '1' && @js($can['CASE']['create'])) openNewCase(); if (params.get('settings') === '1') settingsOpen = true" @click="topMenuOpen = false; centerMenuOpen = false; notificationsOpen = false; sidebarMenu = null; eventMenu = null" class="flex h-screen w-full bg-white text-gray-800 font-sans overflow-hidden">
     @include('casebook.partials.sidebar')
     @include('casebook.partials.main')
     @include('casebook.partials.modals')

@@ -42,6 +42,14 @@ class AuthTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $this->get(route('cases.index'))
+            ->assertRedirect(route('mode.create'));
+        $this->get(route('mode.create'))
+            ->assertOk()
+            ->assertSee('Personal')
+            ->assertSee('Office');
+        $this->post(route('mode.store'), ['mode' => 'personal'])
+            ->assertRedirect(route('cases.index'));
+        $this->get(route('cases.index'))
             ->assertOk()
             ->assertSee('Case Book')
             ->assertSee('New Case');
@@ -119,7 +127,12 @@ class AuthTest extends TestCase
         $this->assertNotNull($user->fresh()->email_verified_at);
         $this->assertAuthenticatedAs($user);
         $this->get(route('cases.index'))
+            ->assertRedirect(route('mode.create'));
+        $this->post(route('mode.store'), ['mode' => 'office'])
+            ->assertRedirect(route('cases.index'));
+        $this->get(route('cases.index'))
             ->assertOk()
+            ->assertSee('Office mode')
             ->assertSee('New Case');
     }
 

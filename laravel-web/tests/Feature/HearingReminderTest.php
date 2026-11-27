@@ -107,4 +107,17 @@ class HearingReminderTest extends TestCase
             ->assertJsonPath('notifications.0.title', $title)
             ->assertJsonPath('notifications.0.date', $sent->format('d M Y'));
     }
+
+    public function test_the_browser_registers_push_for_this_site(): void
+    {
+        config(['services.onesignal.app_id' => 'app-id']);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertOk()
+            ->assertSee('OneSignalSDKWorker.js', false)
+            ->assertSee('serviceWorkerParam', false)
+            ->assertSee('Enable browser notifications', false);
+    }
 }
