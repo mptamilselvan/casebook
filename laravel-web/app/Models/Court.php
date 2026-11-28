@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Court extends Model
 {
-    protected $fillable = ['state_id', 'district_id', 'name'];
+    protected $fillable = ['state_id', 'district_id', 'area_id', 'name'];
 
     public function state(): BelongsTo
     {
@@ -17,5 +17,10 @@ class Court extends Model
     public function district(): BelongsTo
     {
         return $this->belongsTo(District::class);
+    }
+
+    public function area(): BelongsTo
+    {
+        return $this->belongsTo(Area::class);
     }
 }

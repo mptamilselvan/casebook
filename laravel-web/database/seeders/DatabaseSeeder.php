@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             SuperAdminUserSeeder::class,
             SearchIndexSeeder::class,
+            CaseTypeSeeder::class,
         ]);
     }
 }

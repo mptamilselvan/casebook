@@ -63,11 +63,12 @@ class _ModePageState extends State<ModePage> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Choose personal or office',
+                    'Which mode would you like to use?',
                     style: TextStyle(color: casebookMuted, fontSize: 14),
                   ),
                   const SizedBox(height: 24),
                   _ModeButton(
+                    icon: Icons.person_outline,
                     title: 'Personal',
                     detail: 'Show personal cases only',
                     busy: busy,
@@ -75,6 +76,7 @@ class _ModePageState extends State<ModePage> {
                   ),
                   const SizedBox(height: 12),
                   _ModeButton(
+                    icon: Icons.business_center_outlined,
                     title: 'Office',
                     detail: 'Show office cases only',
                     busy: busy,
@@ -96,12 +98,14 @@ class _ModePageState extends State<ModePage> {
 
 class _ModeButton extends StatelessWidget {
   const _ModeButton({
+    required this.icon,
     required this.title,
     required this.detail,
     required this.busy,
     required this.onTap,
   });
 
+  final IconData icon;
   final String title;
   final String detail;
   final bool busy;
@@ -120,22 +124,34 @@ class _ModeButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: casebookText,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              Icon(icon, color: casebookBlue, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: casebookText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      detail,
+                      style: const TextStyle(
+                        color: casebookMuted,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                detail,
-                style: const TextStyle(color: casebookMuted, fontSize: 13),
-              ),
+              const Icon(Icons.chevron_right, color: casebookMuted),
             ],
           ),
         ),

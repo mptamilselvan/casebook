@@ -41,7 +41,7 @@ class _CasePageState extends State<CasePage> {
     bool allow(String group, String action) =>
         widget.state.allows(group, action);
     return [
-      if (allow('TIMELINE', 'view')) 'Timeline',
+      if (allow('TIMELINE', 'view')) 'Case history',
       if (allow('DOCUMENT', 'view')) 'Documents',
       'Parties',
       'Tasks',
@@ -87,7 +87,7 @@ class _CasePageState extends State<CasePage> {
 
   Widget _tabPage(String label, CaseDetail item) {
     switch (label) {
-      case 'Timeline':
+      case 'Case history':
         return _Timeline(
           state: widget.state,
           item: item,
@@ -176,6 +176,7 @@ class _CasePageState extends State<CasePage> {
             title: 'Case Book',
             onMenu: widget.onBack ?? widget.onMenu,
             menuIcon: widget.onBack == null ? Icons.menu : Icons.arrow_back,
+            menuLabel: widget.onBack == null ? null : 'Cases',
             onAvatar: widget.onAccount,
             avatarLetter: avatarLetter(widget.state),
             notifications: widget.state.workspace?.notifications ?? const [],
@@ -249,6 +250,9 @@ class _CasePageState extends State<CasePage> {
                       widget.state.allows('PIN_CASE', 'edit')
                   ? () => _run(widget.state.togglePin(item.id))
                   : null,
+              onSavePeople: item.team == null
+                  ? null
+                  : (ids) => _run(widget.state.updatePeople(item.id, ids)),
             ),
             _TabBar(labels: labels, index: tab, onTap: _goTo),
             Expanded(
@@ -341,6 +345,141 @@ class _AccountLine extends StatelessWidget {
   }
 }
 
+class _AssignedPeople extends StatefulWidget {
+  const _AssignedPeople({required this.item, required this.onSave});
+
+  final CaseDetail item;
+  final ValueChanged<List<int>>? onSave;
+
+  @override
+  State<_AssignedPeople> createState() => _AssignedPeopleState();
+}
+
+class _AssignedPeopleState extends State<_AssignedPeople> {
+  bool editing = false;
+  late Set<int> selected = {
+    for (final person in widget.item.assignees) person.id,
+  };
+
+  @override
+  void didUpdateWidget(covariant _AssignedPeople oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = widget.item.assignees.map((person) => person.id).join(',');
+    final previous = oldWidget.item.assignees
+        .map((person) => person.id)
+        .join(',');
+    if (oldWidget.item.id != widget.item.id || next != previous) {
+      selected = {for (final person in widget.item.assignees) person.id};
+      editing = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final team = widget.item.team;
+    final canChange = widget.onSave != null && team != null && team.isNotEmpty;
+    final shown = editing && team != null ? team : widget.item.assignees;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'People',
+              style: TextStyle(
+                color: casebookMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (canChange)
+              TextButton(
+                onPressed: () => setState(() => editing = !editing),
+                style: TextButton.styleFrom(
+                  foregroundColor: casebookBlue,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: Text(editing ? 'Cancel' : 'Change'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        if (shown.isEmpty)
+          const Text(
+            'None',
+            style: TextStyle(color: casebookMuted, fontSize: 13),
+          )
+        else
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final person in shown)
+                GestureDetector(
+                  onTap: !editing
+                      ? null
+                      : () => setState(() {
+                          if (!selected.add(person.id)) {
+                            selected.remove(person.id);
+                          }
+                        }),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: editing && selected.contains(person.id)
+                          ? casebookBlue
+                          : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: editing && selected.contains(person.id)
+                            ? casebookBlue
+                            : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    child: Text(
+                      person.email,
+                      style: TextStyle(
+                        color: editing && selected.contains(person.id)
+                            ? Colors.white
+                            : casebookText,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        if (editing && widget.onSave != null)
+          TextButton(
+            onPressed: () => widget.onSave!(selected.toList()),
+            style: TextButton.styleFrom(
+              foregroundColor: casebookBlue,
+              padding: const EdgeInsets.only(top: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            child: const Text('Save people'),
+          ),
+      ],
+    );
+  }
+}
+
 class _CaseHeader extends StatelessWidget {
   const _CaseHeader({
     required this.item,
@@ -350,6 +489,7 @@ class _CaseHeader extends StatelessWidget {
     required this.onMode,
     required this.onEdit,
     required this.onToggleStar,
+    required this.onSavePeople,
   });
 
   final CaseDetail item;
@@ -359,6 +499,7 @@ class _CaseHeader extends StatelessWidget {
   final ValueChanged<String>? onMode;
   final VoidCallback? onEdit;
   final VoidCallback? onToggleStar;
+  final ValueChanged<List<int>>? onSavePeople;
 
   @override
   Widget build(BuildContext context) {
@@ -408,6 +549,67 @@ class _CaseHeader extends StatelessWidget {
                             ),
                           ),
                         ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Counsel',
+                              style: TextStyle(
+                                color: casebookMuted,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            if (item.counsel.isEmpty)
+                              const Text(
+                                'None',
+                                style: TextStyle(
+                                  color: casebookMuted,
+                                  fontSize: 13,
+                                ),
+                              )
+                            else
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: [
+                                  for (final name in item.counsel)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF3F4F6),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: const Color(0xFFE5E7EB),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        name,
+                                        style: const TextStyle(
+                                          color: casebookText,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: _AssignedPeople(
+                          item: item,
+                          onSave: onSavePeople,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -477,6 +679,12 @@ class _CaseHeader extends StatelessWidget {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                if (item.caseTypeLabel != null)
+                  _Tag(
+                    label: item.caseTypeLabel!,
+                    background: const Color(0xFFF3F4F6),
+                    foreground: casebookText,
+                  ),
                 _Tag(
                   icon: Icons.account_balance,
                   label: item.court,

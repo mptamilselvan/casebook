@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Area;
 use App\Models\Court;
 use App\Models\District;
 use App\Models\State;
@@ -12,7 +13,7 @@ class IndiaLocations
      * States, their districts, and the courts that belong to each district.
      * High courts are listed with every district in that state.
      *
-     * @return list<array{name: string, districts: list<array{name: string, courts: list<string>}>}>
+     * @return list<array{name: string, districts: list<array{name: string, courts: list<string>, areas: list<array{name: string, courts: list<string>}>}>}>
      */
     public static function tree(): array
     {
@@ -20,6 +21,8 @@ class IndiaLocations
             ->with([
                 'districts' => fn ($query) => $query->orderBy('name'),
                 'districts.courts' => fn ($query) => $query->orderBy('name'),
+                'districts.areas' => fn ($query) => $query->orderBy('name'),
+                'districts.areas.courts' => fn ($query) => $query->orderBy('name'),
                 'courts' => fn ($query) => $query->orderBy('name'),
             ])
             ->orderBy('name')
@@ -35,10 +38,14 @@ class IndiaLocations
                         return [
                             'name' => $district->name,
                             'courts' => $highCourts
-                                ->merge($district->courts->pluck('name'))
+                                ->merge($district->courts->whereNull('area_id')->pluck('name'))
                                 ->unique()
                                 ->values()
                                 ->all(),
+                            'areas' => $district->areas->map(fn (Area $area) => [
+                                'name' => $area->name,
+                                'courts' => $area->courts->pluck('name')->values()->all(),
+                            ])->values()->all(),
                         ];
                     })->values()->all(),
                 ];
@@ -47,7 +54,7 @@ class IndiaLocations
             ->all();
     }
 
-    public static function rememberCourt(string $stateName, string $districtName, string $courtName): void
+    public static function rememberCourt(string $stateName, string $districtName, string $courtName, ?string $areaName = null): void
     {
         $courtName = trim($courtName);
         if ($courtName === '') {
@@ -59,6 +66,10 @@ class IndiaLocations
         if ($state === null || $district === null) {
             return;
         }
+
+        $area = filled($areaName)
+            ? $district->areas()->where('name', $areaName)->first()
+            : null;
 
         $known = Court::query()
             ->where('state_id', $state->id)
@@ -75,6 +86,7 @@ class IndiaLocations
         Court::query()->create([
             'state_id' => $state->id,
             'district_id' => $district->id,
+            'area_id' => $area?->id,
             'name' => $courtName,
         ]);
     }

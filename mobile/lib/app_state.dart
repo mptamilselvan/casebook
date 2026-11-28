@@ -188,6 +188,11 @@ class AppState extends ChangeNotifier {
     await load(caseId: id);
   }
 
+  Future<void> updatePeople(int id, List<int> userIds) async {
+    await api.putJson('cases/$id/people', {'user_ids': userIds});
+    await load(caseId: id);
+  }
+
   Future<void> updateTasks(int id, String tasks) async {
     await api.putJson('cases/$id/tasks', {'tasks': tasks});
     await load(caseId: id);

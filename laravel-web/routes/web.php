@@ -87,6 +87,7 @@ Route::middleware(['auth', EnsureEmailIsVerified::class, EnsureUserIsEnabled::cl
     Route::post('/cases/{case}/priority', [CaseController::class, 'updatePriority'])->name('cases.priority');
     Route::post('/cases/{case}/status', [CaseController::class, 'updateStatus'])->name('cases.status');
     Route::post('/cases/{case}/mode', [CaseController::class, 'updateMode'])->name('cases.mode');
+    Route::post('/cases/{case}/people', [CaseController::class, 'updatePeople'])->name('cases.people');
     Route::post('/cases/{case}/tasks', [CaseController::class, 'updateTasks'])->name('cases.tasks');
     Route::post('/cases/{case}/parties', [CasePartyController::class, 'sync'])->name('parties.sync');
 

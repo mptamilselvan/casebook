@@ -130,7 +130,7 @@ void main() {
     expect(find.text('Set Hearing date'), findsOneWidget);
     expect(find.text('23 Nov 2026'), findsWidgets);
     expect(find.text('Hearing date'), findsNothing);
-    expect(find.text('Timeline'), findsOneWidget);
+    expect(find.text('Case history'), findsOneWidget);
     expect(find.text('Documents'), findsOneWidget);
     expect(find.text('Parties'), findsOneWidget);
     expect(find.text('Tasks'), findsOneWidget);

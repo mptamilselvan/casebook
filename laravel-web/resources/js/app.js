@@ -21,20 +21,26 @@ window.casebookPage = function (config) {
         locations: config.locations || [],
         state: old.state || '',
         district: old.district || '',
+        area: old.area || '',
         stateQuery: old.state || '',
         districtQuery: old.district || '',
+        areaQuery: old.area || '',
         courtQuery: '',
         stateMenu: false,
         districtMenu: false,
+        areaMenu: false,
         courtMenu: false,
         courtChoice: '',
         courtOther: '',
         caseNumber: old.case_number || '',
         caseYear: String(old.case_year || new Date().getFullYear()),
+        caseTypeId: String(old.case_type_id || ''),
+        courtType: old.court_type || '',
         p1Role: old.p1 || 'Petitioner',
         p2Role: old.p2 || 'Respondent',
         petitioners: Array.isArray(old.petitioners) && old.petitioners.length ? old.petitioners : [''],
         respondents: Array.isArray(old.respondents) && old.respondents.length ? old.respondents : [''],
+        counsel: Array.isArray(old.counsel) ? old.counsel.filter((name) => String(name || '').trim() !== '') : [],
         editOpen: config.modal === 'edit-case',
         edit: config.edit || { id: '', title: '', court: '', mode: 'personal' },
         eventOpen: config.modal === 'event',
@@ -91,8 +97,27 @@ window.casebookPage = function (config) {
         stateDistricts() {
             return (this.locations.find((item) => item.name === this.state) || {}).districts || [];
         },
+        districtAreas() {
+            return (this.stateDistricts().find((item) => item.name === this.district) || {}).areas || [];
+        },
+        courtReady() {
+            if (this.district === '') {
+                return false;
+            }
+            return this.districtAreas().length === 0 || this.area !== '';
+        },
         stateCourts() {
-            return (this.stateDistricts().find((item) => item.name === this.district) || {}).courts || [];
+            const district = this.stateDistricts().find((item) => item.name === this.district) || {};
+            const base = district.courts || [];
+            const areas = district.areas || [];
+            if (areas.length === 0) {
+                return base;
+            }
+            const area = areas.find((item) => item.name === this.area);
+            if (!area) {
+                return [];
+            }
+            return base.concat(area.courts || []);
         },
         filteredStates() {
             const query = this.stateQuery.trim().toLowerCase();
@@ -101,6 +126,10 @@ window.casebookPage = function (config) {
         filteredDistricts() {
             const query = this.districtQuery.trim().toLowerCase();
             return this.stateDistricts().filter((item) => query === '' || item.name.toLowerCase().includes(query));
+        },
+        filteredAreas() {
+            const query = this.areaQuery.trim().toLowerCase();
+            return this.districtAreas().filter((item) => query === '' || item.name.toLowerCase().includes(query));
         },
         filteredCourts() {
             const query = this.courtQuery.trim().toLowerCase();
@@ -131,6 +160,14 @@ window.casebookPage = function (config) {
             this.districtQuery = name;
             this.districtMenu = false;
             this.selectDistrict();
+            this.areaQuery = '';
+            this.courtQuery = '';
+        },
+        chooseArea(name) {
+            this.area = name;
+            this.areaQuery = name;
+            this.areaMenu = false;
+            this.selectArea();
             this.courtQuery = '';
         },
         chooseCourt(name) {
@@ -143,10 +180,16 @@ window.casebookPage = function (config) {
         },
         selectState() {
             this.district = '';
+            this.area = '';
             this.courtChoice = '';
             this.courtOther = '';
         },
         selectDistrict() {
+            this.area = '';
+            this.courtChoice = '';
+            this.courtOther = '';
+        },
+        selectArea() {
             this.courtChoice = '';
             this.courtOther = '';
         },
@@ -169,11 +212,14 @@ window.casebookPage = function (config) {
             this.respondents = [''];
             this.state = '';
             this.district = '';
+            this.area = '';
             this.stateQuery = '';
             this.districtQuery = '';
+            this.areaQuery = '';
             this.courtQuery = '';
             this.stateMenu = false;
             this.districtMenu = false;
+            this.areaMenu = false;
             this.courtMenu = false;
             this.courtChoice = '';
             this.courtOther = '';
@@ -220,6 +266,23 @@ window.casebookPage = function (config) {
         },
         caseUrl(base) {
             return base + (base.includes('?') ? '&' : '?') + 'tab=' + encodeURIComponent(this.tab);
+        },
+        counselChoices() {
+            const names = [...this.petitioners, ...this.respondents]
+                .map((name) => String(name || '').trim())
+                .filter((name) => name !== '');
+            return [...new Set(names)];
+        },
+        toggleCounsel(name) {
+            if (this.counsel.includes(name)) {
+                this.counsel = this.counsel.filter((item) => item !== name);
+                return;
+            }
+            this.counsel = [...this.counsel, name];
+        },
+        selectedCounsel() {
+            const choices = this.counselChoices();
+            return this.counsel.filter((name) => choices.includes(name));
         },
     };
 };

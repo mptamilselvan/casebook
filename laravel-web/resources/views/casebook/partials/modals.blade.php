@@ -91,7 +91,7 @@
 
 @if ($can['CASE']['create'])
 <div x-show="newCaseOpen" x-cloak class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <form method="POST" action="{{ route('cases.store') }}" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" @click.stop @submit="if (modalStep === 1) { $event.preventDefault(); if (courtValue().trim() !== '') modalStep = 2 }">
+    <form method="POST" action="{{ route('cases.store') }}" class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" @click.stop @submit="if (modalStep === 1) { $event.preventDefault(); if (caseTypeId !== '' && courtType !== '' && courtValue().trim() !== '') modalStep = 2 }">
         @csrf
         @include('casebook.partials.return-fields')
         <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-[#262833]">
@@ -108,10 +108,20 @@
             <div x-show="modalStep === 1" class="space-y-5">
                 <input type="hidden" name="state" :value="state">
                 <input type="hidden" name="district" :value="district">
+                <input type="hidden" name="area" :value="area">
                 <input type="hidden" name="court" :value="courtValue()">
+                <div>
+                    <label for="new-case-type" class="block text-xs font-semibold text-gray-500 mb-1">Case type</label>
+                    <select id="new-case-type" name="case_type_id" x-model="caseTypeId" class="{{ $inputClass }}">
+                        <option value="">Select case type</option>
+                        @foreach ($caseTypes as $caseType)
+                            <option value="{{ $caseType->id }}">{{ $caseType->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="relative" @click.outside.capture="stateMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) stateMenu = false">
                     <label for="new-case-state" class="block text-xs font-semibold text-gray-500 mb-1">State</label>
-                    <input id="new-case-state" type="text" x-model="stateQuery" @focus="stateMenu = true; districtMenu = false; courtMenu = false" @input="stateMenu = true; if (stateQuery !== state) { state = ''; selectState(); districtQuery = ''; courtQuery = ''; }" placeholder="Search state" autocomplete="off" class="{{ $inputClass }}">
+                    <input id="new-case-state" type="text" x-model="stateQuery" @focus="stateMenu = true; districtMenu = false; areaMenu = false; courtMenu = false" @input="stateMenu = true; if (stateQuery !== state) { state = ''; selectState(); districtQuery = ''; areaQuery = ''; courtQuery = ''; }" placeholder="Search state" autocomplete="off" class="{{ $inputClass }}">
                     <div x-show="stateMenu" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
                         <template x-for="item in filteredStates()" :key="item.name">
                             <button type="button" @click="chooseState(item.name)" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="item.name"></button>
@@ -121,7 +131,7 @@
                 </div>
                 <div class="relative" @click.outside.capture="districtMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) districtMenu = false">
                     <label for="new-case-district" class="block text-xs font-semibold text-gray-500 mb-1">District</label>
-                    <input id="new-case-district" type="text" x-model="districtQuery" @focus="if (state !== '') { districtMenu = true; stateMenu = false; courtMenu = false }" @input="districtMenu = true; if (districtQuery !== district) { district = ''; selectDistrict(); courtQuery = ''; }" :disabled="state === ''" placeholder="Search district" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
+                    <input id="new-case-district" type="text" x-model="districtQuery" @focus="if (state !== '') { districtMenu = true; stateMenu = false; areaMenu = false; courtMenu = false }" @input="districtMenu = true; if (districtQuery !== district) { district = ''; selectDistrict(); areaQuery = ''; courtQuery = ''; }" :disabled="state === ''" placeholder="Search district" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
                     <div x-show="districtMenu && state !== ''" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
                         <template x-for="item in filteredDistricts()" :key="item.name">
                             <button type="button" @click="chooseDistrict(item.name)" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="item.name"></button>
@@ -129,10 +139,20 @@
                         <p x-show="filteredDistricts().length === 0" class="px-3 py-2 text-sm text-gray-500">No matches</p>
                     </div>
                 </div>
+                <div class="relative" @click.outside.capture="areaMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) areaMenu = false">
+                    <label for="new-case-area" class="block text-xs font-semibold text-gray-500 mb-1">Area</label>
+                    <input id="new-case-area" type="text" x-model="areaQuery" @focus="if (district !== '' && districtAreas().length > 0) { areaMenu = true; stateMenu = false; districtMenu = false; courtMenu = false }" @input="areaMenu = true; if (areaQuery !== area) { area = ''; selectArea(); courtQuery = ''; }" :disabled="district === '' || districtAreas().length === 0" placeholder="Search area" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
+                    <div x-show="areaMenu && districtAreas().length > 0" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <template x-for="item in filteredAreas()" :key="item.name">
+                            <button type="button" @click="chooseArea(item.name)" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="item.name"></button>
+                        </template>
+                        <p x-show="filteredAreas().length === 0" class="px-3 py-2 text-sm text-gray-500">No matches</p>
+                    </div>
+                </div>
                 <div class="relative" @click.outside.capture="courtMenu = false" @focusout="if (!$el.contains($event.relatedTarget)) courtMenu = false">
                     <label for="new-case-court" class="block text-xs font-semibold text-gray-500 mb-1">Court</label>
-                    <input id="new-case-court" type="text" x-model="courtQuery" @focus="if (district !== '') { courtMenu = true; stateMenu = false; districtMenu = false }" @input="courtMenu = true; if (courtQuery !== courtChoice) { courtChoice = ''; courtOther = ''; }" :disabled="district === ''" placeholder="Search court" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
-                    <div x-show="courtMenu && district !== ''" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                    <input id="new-case-court" type="text" x-model="courtQuery" @focus="if (courtReady()) { courtMenu = true; stateMenu = false; districtMenu = false; areaMenu = false }" @input="courtMenu = true; if (courtQuery !== courtChoice) { courtChoice = ''; courtOther = ''; }" :disabled="!courtReady()" placeholder="Search court" autocomplete="off" class="{{ $inputClass }} disabled:opacity-50">
+                    <div x-show="courtMenu && courtReady()" x-cloak class="absolute z-30 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
                         <template x-for="name in filteredCourts()" :key="name">
                             <button type="button" @click="chooseCourt(name); if (name === 'Other') { $nextTick(() => $refs.newCourt?.focus()) }" class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100" x-text="name"></button>
                         </template>
@@ -142,7 +162,16 @@
                         <input id="new-case-court-other" type="text" x-ref="newCourt" x-model="courtOther" placeholder="Enter the court name" class="{{ $inputClass }}">
                     </div>
                 </div>
-                <button type="button" @click="modalStep = 2" :disabled="courtValue().trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
+                <div>
+                    <label for="new-case-court-type" class="block text-xs font-semibold text-gray-500 mb-1">Court type</label>
+                    <select id="new-case-court-type" name="court_type" x-model="courtType" class="{{ $inputClass }}">
+                        <option value="">Select court type</option>
+                        @foreach (\App\Support\Casebook::COURT_TYPES as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="button" @click="if (caseTypeId !== '' && courtType !== '' && courtValue().trim() !== '') modalStep = 2" :disabled="caseTypeId === '' || courtType === '' || courtValue().trim() === ''" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold disabled:opacity-50">Next Details <x-icon name="chevron-right" class="w-4 h-4 inline" /></button>
             </div>
             <div x-show="modalStep === 2" x-cloak class="space-y-5">
                 <div>
@@ -153,15 +182,20 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="flex items-end gap-3">
+                <div class="flex items-end gap-2">
                     <div class="min-w-0 flex-1">
                         <label for="new-case-number" class="block text-xs font-semibold text-gray-500 mb-1">Case number</label>
                         <input id="new-case-number" type="text" name="case_number" x-model="caseNumber" placeholder="O.S. 124" class="{{ $inputClass }}">
                     </div>
+                    <span class="pb-3 text-lg font-bold text-gray-500">/</span>
                     <div class="shrink-0" style="width: 5rem">
                         <label for="new-case-year" class="block text-xs font-semibold text-gray-500 mb-1">Year</label>
                         <input id="new-case-year" type="text" name="case_year" x-model="caseYear" inputmode="numeric" maxlength="4" class="{{ $inputClass }} text-center" style="width: 5rem">
                     </div>
+                </div>
+                <div>
+                    <label for="new-case-hearing" class="block text-xs font-semibold text-gray-500 mb-1">Next hearing date</label>
+                    <input id="new-case-hearing" type="date" name="next_hearing" value="{{ old('next_hearing') }}" class="{{ $inputClass }}">
                 </div>
                 <div class="bg-white dark:bg-[#1A1C23] p-4 rounded-xl border border-gray-200 dark:border-[#262833]">
                     <div class="space-y-3">
@@ -191,6 +225,18 @@
                             </div>
                         </template>
                     </div>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 mb-2">Counsel</p>
+                    <p x-show="counselChoices().length === 0" class="text-sm text-gray-500">Enter party names to assign counsel.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="name in counselChoices()" :key="name">
+                            <button type="button" @click="toggleCounsel(name)" class="rounded border px-2 py-1 text-sm" :class="selectedCounsel().includes(name) ? 'bg-blue-600 text-white border-blue-500' : 'bg-gray-100 text-gray-800 border-gray-200'" x-text="name"></button>
+                        </template>
+                    </div>
+                    <template x-for="name in selectedCounsel()" :key="'counsel-' + name">
+                        <input type="hidden" name="counsel[]" :value="name">
+                    </template>
                 </div>
                 <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold">Create Case File</button>
             </div>

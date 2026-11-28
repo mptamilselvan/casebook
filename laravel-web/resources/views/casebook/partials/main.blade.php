@@ -1,7 +1,10 @@
 <div :class="draftFullscreen ? 'absolute inset-0 z-50' : 'flex-1'" class="flex flex-col min-w-0 bg-white relative">
     @if ($active)
         <header x-show="!draftFullscreen" class="h-16 border-b border-gray-200 dark:border-[#262833] flex items-center justify-between px-6 gap-4">
-            <a href="{{ route('cases.index', ['filter' => $filter]) }}" class="text-sm font-semibold text-blue-600 shrink-0">Cases</a>
+            <a href="{{ route('cases.index', ['filter' => $filter]) }}" class="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 shrink-0">
+                <x-icon name="chevron-left" class="w-5 h-5" />
+                Cases
+            </a>
             <div class="flex-1 max-w-xl relative">
                 <x-icon name="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" />
                 <input type="text" x-model="searchMain" placeholder="Search documents, drafting, hearings..." class="w-full bg-white dark:bg-[#14151B] border border-gray-300 dark:border-[#2A2D39] rounded-md py-1.5 pl-9 pr-3 text-sm outline-none focus:border-blue-500">
@@ -49,7 +52,50 @@
                             </span>
                         </div>
                         <p class="text-lg mb-3">{{ $active->parties_label }}</p>
+                        <div class="mb-3">
+                            <p class="text-xs font-semibold text-gray-500 mb-1">Counsel</p>
+                            <div class="flex flex-wrap gap-2">
+                                @forelse ($active->counsel ?? [] as $name)
+                                    <span class="rounded border border-gray-200 bg-gray-100 px-2 py-1 text-sm">{{ $name }}</span>
+                                @empty
+                                    <span class="text-sm text-gray-500">None</span>
+                                @endforelse
+                            </div>
+                        </div>
+                        <div class="mb-3" x-data="{ editingPeople: false }">
+                            <div class="flex items-center gap-2 mb-1">
+                                <p class="text-xs font-semibold text-gray-500">People</p>
+                                @if ($canAssignPeople && $team->isNotEmpty())
+                                    <button type="button" @click="editingPeople = !editingPeople" class="text-xs font-semibold text-blue-600">Change</button>
+                                @endif
+                            </div>
+                            <div x-show="!editingPeople" class="flex flex-wrap gap-2">
+                                @forelse ($active->viewers as $person)
+                                    <span class="rounded border border-gray-200 bg-gray-100 px-2 py-1 text-sm">{{ $person->email }}</span>
+                                @empty
+                                    <span class="text-sm text-gray-500">None</span>
+                                @endforelse
+                            </div>
+                            @if ($canAssignPeople && $team->isNotEmpty())
+                                <form x-show="editingPeople" x-cloak method="POST" action="{{ route('cases.people', $active) }}">
+                                    @csrf
+                                    @include('casebook.partials.return-fields')
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach ($team as $person)
+                                            <label class="inline-flex items-center gap-2 rounded border border-gray-200 bg-gray-100 px-2 py-1 text-sm">
+                                                <input type="checkbox" name="user_ids[]" value="{{ $person->id }}" @checked($active->viewers->contains('id', $person->id)) class="w-4 h-4">
+                                                {{ $person->email }}
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    <button type="submit" class="mt-2 text-xs font-semibold text-white bg-blue-600 rounded px-2 py-1">Save people</button>
+                                </form>
+                            @endif
+                        </div>
                         <div class="flex flex-wrap items-center gap-2">
+                            @if ($active->caseType)
+                                <span class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] text-xs px-2.5 py-1 rounded-full">{{ $active->caseType->label() }}</span>
+                            @endif
                             <span class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-[#262833] text-xs px-2.5 py-1 rounded-full">{{ $active->court }}</span>
                             @php
                                 $priorityTone = match ($active->priority ?? 'medium') {
@@ -156,7 +202,7 @@
                     <div class="flex gap-6 overflow-x-auto no-scrollbar">
                         @foreach (['Timeline' => $can['TIMELINE']['view'], 'Documents' => $can['DOCUMENT']['view'], 'Templates' => true, 'Parties' => true, 'Tasks' => true] as $item => $visible)
                             @if ($visible)
-                            <button type="button" @click="tab = '{{ $item }}'; draftFullscreen = false" class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" :class="tab === '{{ $item }}' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-blue-400'">{{ $item }}</button>
+                            <button type="button" @click="tab = '{{ $item }}'; draftFullscreen = false" class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" :class="tab === '{{ $item }}' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-blue-400'">{{ $item === 'Timeline' ? 'Case history' : $item }}</button>
                             @endif
                         @endforeach
                     </div>
@@ -423,76 +469,72 @@
                 <x-icon name="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-500 dark:text-gray-400" />
                 <input type="text" x-model="searchSidebar" placeholder="Search cases..." class="w-full bg-white dark:bg-[#1A1C23] border border-gray-300 dark:border-[#2A2D39] rounded-md py-1.5 pl-9 pr-3 text-sm outline-none">
             </div>
-            <div class="border border-gray-200 dark:border-[#262833] rounded-2xl overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 dark:bg-[#16181D] text-left text-gray-500">
-                        <tr>
-                            <th class="px-4 py-3 font-semibold">Case</th>
-                            <th class="px-4 py-3 font-semibold">Parties</th>
-                            <th class="px-4 py-3 font-semibold">Court</th>
-                            <th class="px-4 py-3 font-semibold">Hearing</th>
-                            <th class="px-4 py-3 font-semibold">Priority</th>
-                            <th class="px-4 py-3 font-semibold"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($cases as $case)
+            <div class="space-y-3">
+                @forelse ($cases as $case)
+                    @php
+                        $haystack = strtolower($case->title.' '.$case->parties_label.' '.$case->court);
+                        $priorityTone = match ($case->priority ?? 'medium') {
+                            'high' => 'bg-red-100 text-red-700',
+                            'low' => 'bg-emerald-100 text-emerald-800',
+                            default => 'bg-amber-100 text-amber-800',
+                        };
+                    @endphp
+                    <div data-case-row data-hay="{{ $haystack }}" x-show="matches($el.dataset.hay)"
+                        @click="window.location = caseUrl(@js(route('cases.index', ['filter' => $filter, 'case' => $case->id])))"
+                        class="flex items-center gap-4 rounded-xl border border-gray-200 dark:border-[#262833] bg-white dark:bg-[#1A1C23] p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20222B]">
+                        <x-icon name="briefcase" class="w-5 h-5 text-blue-500 shrink-0" />
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold truncate">{{ $case->title }}</span>
+                                @if ($case->is_pinned)
+                                    <x-icon name="star" class="w-4 h-4 text-yellow-500 fill-current shrink-0" />
+                                @endif
+                            </div>
+                            @if ($case->parties_label)
+                                <p class="mt-1 text-sm text-gray-500 truncate">{{ $case->parties_label }}</p>
+                            @endif
+                            <p class="mt-1 text-xs text-gray-500 truncate">{{ $case->court }}</p>
                             @php
-                                $haystack = strtolower($case->title.' '.$case->parties_label.' '.$case->court);
-                                $priorityTone = match ($case->priority ?? 'medium') {
-                                    'high' => 'bg-red-100 text-red-700',
-                                    'low' => 'bg-emerald-100 text-emerald-800',
-                                    default => 'bg-amber-100 text-amber-800',
-                                };
+                                $caseStatus = \App\Support\Casebook::status($case->status);
+                                [$statusBg, $statusFg] = \App\Support\Casebook::statusColor($caseStatus);
+                                $hearingLabel = $case->next_hearing
+                                    ? ($case->next_hearing->isToday() ? 'Today' : $case->next_hearing->toDateString())
+                                    : 'No hearing';
+                                $hearingTone = $case->next_hearing?->isToday() ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600';
                             @endphp
-                            <tr data-case-row data-hay="{{ $haystack }}" x-show="matches($el.dataset.hay)"
-                                @click="window.location = caseUrl(@js(route('cases.index', ['filter' => $filter, 'case' => $case->id])))"
-                                class="border-t border-gray-200 dark:border-[#262833] cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20222B]">
-                                <td class="px-4 py-3">
-                                    <span class="font-bold">{{ $case->title }}</span>
-                                    @if ($case->is_pinned)
-                                        <span class="ml-2 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase bg-yellow-500/10 text-yellow-500">Starred</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-gray-500">{{ $case->parties_label }}</td>
-                                <td class="px-4 py-3 text-gray-500">{{ $case->court }}</td>
-                                <td class="px-4 py-3 {{ $case->next_hearing?->isToday() ? 'text-red-500 font-semibold' : 'text-gray-500' }}">
-                                    {{ $case->next_hearing ? ($case->next_hearing->isToday() ? 'Today' : $case->next_hearing->toDateString()) : '—' }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span class="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase {{ $priorityTone }}">{{ ucfirst($case->priority ?? 'medium') }}</span>
-                                </td>
-                                <td class="px-4 py-3 relative" @click.stop>
-                                    @if ($can['CASE']['edit'] || $can['STAR_CASE']['edit'] || $can['PIN_CASE']['edit'])
-                                        <button type="button" @click.stop="sidebarMenu = sidebarMenu === {{ $case->id }} ? null : {{ $case->id }}; topMenuOpen = false; centerMenuOpen = false; eventMenu = null; notificationsOpen = false" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#20222B]">
-                                            <x-icon name="ellipsis-vertical" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                <span class="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase {{ $priorityTone }}">{{ ucfirst($case->priority ?? 'medium') }}</span>
+                                <span class="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase" style="background: {{ $statusBg }}; color: {{ $statusFg }}">{{ \App\Support\Casebook::STATUSES[$caseStatus] }}</span>
+                                <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $hearingTone }}">{{ $hearingLabel }}</span>
+                            </div>
+                        </div>
+                        <div class="relative shrink-0" @click.stop>
+                            @if ($can['CASE']['edit'] || $can['STAR_CASE']['edit'] || $can['PIN_CASE']['edit'])
+                                <button type="button" @click.stop="sidebarMenu = sidebarMenu === {{ $case->id }} ? null : {{ $case->id }}; topMenuOpen = false; centerMenuOpen = false; eventMenu = null; notificationsOpen = false" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#20222B]">
+                                    <x-icon name="ellipsis-vertical" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                </button>
+                                <div x-show="sidebarMenu === {{ $case->id }}" x-cloak @click.stop class="absolute right-0 top-8 w-36 {{ $menuClass }}">
+                                    @if ($can['STAR_CASE']['edit'] || $can['PIN_CASE']['edit'])
+                                    <form method="POST" action="{{ route('cases.pin', $case) }}">
+                                        @csrf
+                                        @include('casebook.partials.return-fields')
+                                        <button type="submit" class="{{ $menuItemClass }} text-xs">
+                                            <x-icon name="pin" class="w-3 h-3" /> {{ $case->is_pinned ? 'Unstar Case' : 'Star Case' }}
                                         </button>
-                                        <div x-show="sidebarMenu === {{ $case->id }}" x-cloak @click.stop class="absolute right-4 top-10 w-36 {{ $menuClass }}">
-                                            @if ($can['STAR_CASE']['edit'] || $can['PIN_CASE']['edit'])
-                                            <form method="POST" action="{{ route('cases.pin', $case) }}">
-                                                @csrf
-                                                @include('casebook.partials.return-fields')
-                                                <button type="submit" class="{{ $menuItemClass }} text-xs">
-                                                    <x-icon name="pin" class="w-3 h-3" /> {{ $case->is_pinned ? 'Unstar Case' : 'Star Case' }}
-                                                </button>
-                                            </form>
-                                            @endif
-                                            @if ($can['CASE']['edit'])
-                                            <button type="button" @click="openEdit(@js(['id' => $case->id, 'title' => $case->title, 'court' => $case->court, 'mode' => $case->mode]))" class="{{ $menuItemClass }} text-xs">
-                                                <x-icon name="square-pen" class="w-3 h-3" /> Edit Case Info
-                                            </button>
-                                            @endif
-                                        </div>
+                                    </form>
                                     @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr class="border-t border-gray-200 dark:border-[#262833]">
-                                <td colspan="6" class="px-4 py-8 text-center text-gray-500 italic">No cases in this list.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                    @if ($can['CASE']['edit'])
+                                    <button type="button" @click="openEdit(@js(['id' => $case->id, 'title' => $case->title, 'court' => $case->court, 'mode' => $case->mode]))" class="{{ $menuItemClass }} text-xs">
+                                        <x-icon name="square-pen" class="w-3 h-3" /> Edit Case Info
+                                    </button>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <p class="px-4 py-8 text-center text-gray-500 italic">No cases in this list.</p>
+                @endforelse
             </div>
         </div>
     @endif

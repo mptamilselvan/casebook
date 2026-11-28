@@ -227,10 +227,11 @@ class _Menu extends StatelessWidget {
   Widget build(BuildContext context) {
     final workspace = state.workspace!;
 
-    return Padding(
+    final inOffice = state.mode == 'office';
+
+    return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      child: Column(
-        children: [
+      children: [
           Row(
             children: [
               const Expanded(
@@ -278,34 +279,86 @@ class _Menu extends StatelessWidget {
                   icon: Icons.currency_rupee,
                   label: 'Prices',
                   selected: false,
+                  accent: const Color(0xFFCA8A04),
                   onTap: onPrices,
                 ),
                 _StatRow(
                   icon: Icons.group_outlined,
                   label: 'People Management',
                   selected: false,
+                  accent: const Color(0xFF059669),
                   onTap: onPeople,
                 ),
                 _StatRow(
                   icon: Icons.checklist,
                   label: 'Roles & Permissions',
                   selected: false,
+                  accent: const Color(0xFF7C3AED),
                   onTap: onPermissions,
                 ),
-                if (onSwitchMode != null)
-                  _StatRow(
-                    icon: Icons.swap_horiz,
-                    label: state.mode == 'office'
-                        ? 'Switch to Personal'
-                        : 'Switch to Office',
-                    selected: false,
-                    onTap: onSwitchMode!,
-                  ),
               ],
             ),
           ),
+          if (onSwitchMode != null)
+            Material(
+              color: const Color(0xFFEFF6FF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Color(0xFFBFDBFE)),
+              ),
+              child: InkWell(
+                onTap: onSwitchMode,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: casebookBlue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.swap_horiz,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              inOffice ? 'Office mode' : 'Personal mode',
+                              style: const TextStyle(
+                                color: casebookMuted,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              inOffice
+                                  ? 'Switch to Personal'
+                                  : 'Switch to Office',
+                              style: const TextStyle(
+                                color: casebookBlue,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: casebookBlue),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
-      ),
     );
   }
 }
@@ -443,7 +496,17 @@ class _CaseListTabs extends StatelessWidget {
   final String filter;
   final ValueChanged<String> onFilter;
 
-  static const labels = ['All', 'Today', 'Tomorrow', 'Upcoming', 'Starred'];
+  static const labels = [
+    'All',
+    'Today',
+    'Tomorrow',
+    'Upcoming',
+    'Starred',
+    'Unscheduled',
+    'District court',
+    'High court',
+    'Supreme court',
+  ];
 
   bool _selected(String label) {
     return switch (label) {
@@ -518,7 +581,7 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? (accent ?? casebookPurple) : casebookMuted;
+    final color = accent ?? (selected ? casebookPurple : casebookMuted);
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -596,8 +659,14 @@ class _CaseTile extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          PriorityLabel(priority: item.priority),
+                          if (item.isPinned) ...[
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.star,
+                              size: 18,
+                              color: Color(0xFFEAB308),
+                            ),
+                          ],
                         ],
                       ),
                       if (item.partiesLabel.isNotEmpty)
@@ -613,12 +682,88 @@ class _CaseTile extends StatelessWidget {
                             ),
                           ),
                         ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          _ListChip(
+                            label: PriorityColors.label(item.priority),
+                            background: PriorityColors.background(item.priority),
+                            foreground: PriorityColors.foreground(item.priority),
+                          ),
+                          _ListChip(
+                            label: CaseStatus.label(item.status),
+                            background: CaseStatus.background(item.status),
+                            foreground: CaseStatus.foreground(item.status),
+                          ),
+                          _ListChip(
+                            label: _hearingLabel(item.nextHearing),
+                            background: _hearingIsToday(item.nextHearing)
+                                ? const Color(0xFFFEE2E2)
+                                : const Color(0xFFF3F4F6),
+                            foreground: _hearingIsToday(item.nextHearing)
+                                ? const Color(0xFFB91C1C)
+                                : const Color(0xFF4B5563),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+String _hearingLabel(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'No hearing';
+  }
+  if (_hearingIsToday(value)) {
+    return 'Today';
+  }
+  return formatDay(value);
+}
+
+bool _hearingIsToday(String? value) {
+  final date = DateTime.tryParse(value ?? '');
+  if (date == null) {
+    return false;
+  }
+  final now = DateTime.now();
+  return date.year == now.year && date.month == now.month && date.day == now.day;
+}
+
+class _ListChip extends StatelessWidget {
+  const _ListChip({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
@@ -1075,13 +1220,15 @@ class _DayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : casebookText;
-    final countColor = count == 0
-        ? (selected ? Colors.white70 : casebookMuted)
-        : (selected ? Colors.white : casebookPurple);
+    final hasCases = count > 0;
+    final foreground = hasCases || selected ? Colors.white : casebookText;
 
     return Material(
-      color: selected ? casebookPurple : const Color(0xFFF7F5FB),
+      color: hasCases
+          ? const Color(0xFF006400)
+          : selected
+          ? casebookPurple
+          : const Color(0xFFF7F5FB),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -1097,15 +1244,17 @@ class _DayCell extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              '$count',
-              style: TextStyle(
-                color: countColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+            if (hasCases) ...[
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

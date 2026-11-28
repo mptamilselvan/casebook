@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Enums\CaseMode;
 use App\Http\Controllers\Concerns\RedirectsToCasebook;
+use App\Models\CaseType;
 use App\Models\CourtCase;
 use App\Models\Template;
+use App\Models\User;
 use App\Support\Casebook;
 use App\Support\CasebookData;
 use App\Support\IndiaLocations;
 use App\Support\RoleAccess;
+use App\Support\TeamDirectory;
 use App\Support\Usage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -40,7 +43,17 @@ class CaseController extends Controller
         $active = $request->filled('case')
             ? $cases->firstWhere('id', $request->integer('case'))
             : null;
-        $active?->load(['caseParties', 'events', 'documents']);
+        $active?->load([
+            'caseParties',
+            'events',
+            'documents',
+            'viewers' => fn ($query) => $query->orderBy('email'),
+            'caseType',
+        ]);
+        $canAssignPeople = $active !== null && (int) $request->user()->id === (int) $active->user_id;
+        $team = $canAssignPeople
+            ? User::query()->where('owner_id', $active->user_id)->orderBy('email')->get()
+            : collect();
 
         $templates = Template::query()->orderBy('title')->get();
         $activeTemplate = Template::query()->find($request->integer('template')) ?? $templates->first();
@@ -61,6 +74,9 @@ class CaseController extends Controller
             'folders' => Casebook::FOLDERS,
             'locations' => IndiaLocations::tree(),
             'notifications' => CasebookData::notifications(),
+            'team' => $team,
+            'canAssignPeople' => $canAssignPeople,
+            'caseTypes' => CaseType::query()->orderBy('sort_order')->orderBy('code')->get(),
         ]);
     }
 
@@ -71,9 +87,13 @@ class CaseController extends Controller
         $validator = Validator::make($request->all(), [
             'state' => ['required', 'string', 'max:100'],
             'district' => ['required', 'string', 'max:100'],
+            'area' => ['nullable', 'string', 'max:100'],
             'court' => ['required', 'string', 'max:255'],
+            'case_type_id' => ['nullable', 'integer', 'exists:case_types,id'],
+            'court_type' => ['nullable', 'in:'.implode(',', array_keys(Casebook::COURT_TYPES))],
             'case_number' => ['nullable', 'string', 'max:100'],
             'case_year' => ['nullable', 'string', 'max:10'],
+            'next_hearing' => ['nullable', 'date'],
             'party1_role' => ['required', 'in:'.implode(',', array_keys(Casebook::PARTY_1))],
             'party2_role' => ['required', 'in:'.implode(',', array_keys(Casebook::PARTY_2))],
             'mode' => ['nullable', Rule::enum(CaseMode::class)],
@@ -81,6 +101,8 @@ class CaseController extends Controller
             'petitioners.*' => ['nullable', 'string', 'max:255'],
             'respondents' => ['nullable', 'array'],
             'respondents.*' => ['nullable', 'string', 'max:255'],
+            'counsel' => ['nullable', 'array'],
+            'counsel.*' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($validator->fails()) {
@@ -88,7 +110,7 @@ class CaseController extends Controller
                 ->withErrors($validator)
                 ->withInput()
                 ->with('modal', 'new-case')
-                ->with('modal_step', $validator->errors()->hasAny(['court', 'state', 'district']) ? 1 : 2);
+                ->with('modal_step', $validator->errors()->hasAny(['court', 'state', 'district', 'case_type_id', 'court_type']) ? 1 : 2);
         }
 
         if ($reason = Usage::caseBlockReason($request->user())) {
@@ -100,7 +122,7 @@ class CaseController extends Controller
         }
 
         $data = $validator->validated();
-        IndiaLocations::rememberCourt($data['state'], $data['district'], $data['court']);
+        IndiaLocations::rememberCourt($data['state'], $data['district'], $data['court'], $data['area'] ?? null);
         $number = trim((string) ($data['case_number'] ?? ''));
         $year = trim((string) ($data['case_year'] ?? ''));
         $title = trim($number.'/'.$year, '/');
@@ -110,9 +132,13 @@ class CaseController extends Controller
             'title' => $title !== '' ? $title : 'Untitled Case',
             'state' => $data['state'] ?? null,
             'district' => $data['district'] ?? null,
+            'area' => filled($data['area'] ?? null) ? $data['area'] : null,
             'court' => $data['court'],
+            'case_type_id' => $data['case_type_id'] ?? null,
+            'court_type' => $data['court_type'] ?? null,
             'case_number' => $number !== '' ? $number : null,
             'case_year' => $year !== '' ? $year : null,
+            'next_hearing' => $data['next_hearing'] ?? null,
             'type' => 'New Filing',
             'status' => 'pending',
             'judge' => 'Unassigned',
@@ -122,6 +148,7 @@ class CaseController extends Controller
             'party1_role' => $data['party1_role'],
             'party2_role' => $data['party2_role'],
             'parties_label' => '',
+            'counsel' => Casebook::counselList($data['counsel'] ?? [], array_merge($data['petitioners'] ?? [], $data['respondents'] ?? [])),
         ];
         if (filled($data['mode'] ?? null)) {
             $attributes['mode'] = $data['mode'];
@@ -260,6 +287,22 @@ class CaseController extends Controller
         $case->update([
             'next_hearing' => $data['next_hearing'] ?? null,
         ]);
+
+        return $this->redirectToCase($request, $case);
+    }
+
+    public function updatePeople(Request $request, CourtCase $case)
+    {
+        $data = $request->validate([
+            'user_ids' => ['nullable', 'array'],
+            'user_ids.*' => ['integer'],
+        ]);
+
+        TeamDirectory::syncCasePeople(
+            $request->user(),
+            $case,
+            collect($data['user_ids'] ?? [])->map(fn ($id) => (int) $id)->all(),
+        );
 
         return $this->redirectToCase($request, $case);
     }

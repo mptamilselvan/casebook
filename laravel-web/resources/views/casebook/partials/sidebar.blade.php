@@ -49,7 +49,6 @@
         <p class="text-xs text-gray-500">{{ $casesLine }}</p>
         @if ($mode = \App\Enums\CaseMode::current())
             <p class="text-sm font-semibold mt-2">{{ $mode->label() }} mode</p>
-            <a href="{{ route('mode.create') }}" class="text-xs font-semibold text-blue-600">Switch mode</a>
         @endif
     </div>
 
@@ -76,22 +75,40 @@
                 $menuOn = 'bg-blue-600/20 text-blue-500 font-bold';
             @endphp
             <a href="{{ route('cases.index', ['filter' => $filter ?? 'All']) }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('cases.index') ? $menuOn : $menuOff }}">
-                <x-icon name="briefcase" class="w-4 h-4" />
+                <x-icon name="briefcase" class="w-4 h-4" style="color:#2563EB" />
                 <span class="text-sm">Cases</span>
             </a>
             <a href="{{ route('plans.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('plans.index') ? $menuOn : $menuOff }}">
-                <x-icon name="indian-rupee" class="w-4 h-4" />
+                <x-icon name="indian-rupee" class="w-4 h-4" style="color:#CA8A04" />
                 <span class="text-sm">Prices</span>
             </a>
             <a href="{{ route('people.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('people.*') ? $menuOn : $menuOff }}">
-                <x-icon name="users" class="w-4 h-4" />
+                <x-icon name="users" class="w-4 h-4" style="color:#059669" />
                 <span class="text-sm">People Management</span>
             </a>
             <a href="{{ route('team.permissions.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md {{ request()->routeIs('team.permissions.*') ? $menuOn : $menuOff }}">
-                <x-icon name="list-todo" class="w-4 h-4" />
+                <x-icon name="list-todo" class="w-4 h-4" style="color:#7C3AED" />
                 <span class="text-sm">Roles &amp; Permissions</span>
             </a>
         </div>
+
+        @if ($switchMode = \App\Enums\CaseMode::current())
+            @php
+                $switchTo = $switchMode === \App\Enums\CaseMode::Office ? \App\Enums\CaseMode::Personal : \App\Enums\CaseMode::Office;
+            @endphp
+            <div class="px-3 mt-4">
+                <a href="{{ route('mode.create') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg border" style="background:#EFF6FF;border-color:#BFDBFE">
+                    <span class="flex items-center justify-center rounded-lg shrink-0" style="width:2rem;height:2rem;background:#2563EB;color:#fff">
+                        <x-icon name="arrow-left-right" class="w-4 h-4" />
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-xs text-gray-500">{{ $switchMode->label() }} mode</span>
+                        <span class="block text-sm font-semibold" style="color:#1D4ED8">Switch to {{ $switchTo->label() }}</span>
+                    </span>
+                    <x-icon name="chevron-right" class="w-4 h-4 shrink-0" style="color:#2563EB" />
+                </a>
+            </div>
+        @endif
 
     </nav>
 </div>

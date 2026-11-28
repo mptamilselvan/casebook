@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Area;
 use App\Models\Court;
 use App\Models\District;
 use App\Models\State;
@@ -40,6 +41,38 @@ class IndiaLocationSeeder extends Seeder
                         Court::query()->firstOrCreate([
                             'state_id' => $state->id,
                             'district_id' => $district->id,
+                            'name' => $name,
+                        ]);
+                    }
+                }
+            }
+        });
+
+        $areas = json_decode(
+            file_get_contents(database_path('seeders/data/india-areas.json')),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+
+        DB::transaction(function () use ($areas) {
+            foreach ($areas as $row) {
+                $state = State::query()->where('name', $row['state'])->first();
+                $district = $state?->districts()->where('name', $row['district'])->first();
+                if ($district === null) {
+                    continue;
+                }
+
+                foreach ($row['areas'] as $areaData) {
+                    $area = Area::query()->firstOrCreate([
+                        'district_id' => $district->id,
+                        'name' => $areaData['name'],
+                    ]);
+
+                    foreach ($areaData['courts'] as $name) {
+                        Court::query()->firstOrCreate([
+                            'state_id' => $state->id,
+                            'district_id' => $district->id,
+                            'area_id' => $area->id,
                             'name' => $name,
                         ]);
                     }

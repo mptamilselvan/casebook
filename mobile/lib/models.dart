@@ -59,6 +59,7 @@ class CaseSummary {
     this.nextHearing,
     this.state,
     this.district,
+    this.area,
     this.caseNumber,
     this.caseYear,
     this.party1Role,
@@ -68,6 +69,8 @@ class CaseSummary {
     this.type,
     this.userId,
     this.mode = 'personal',
+    this.counsel = const [],
+    this.courtType,
   });
 
   final int id;
@@ -78,6 +81,7 @@ class CaseSummary {
   final String? nextHearing;
   final String? state;
   final String? district;
+  final String? area;
   final String? caseNumber;
   final String? caseYear;
   final String? party1Role;
@@ -87,6 +91,8 @@ class CaseSummary {
   final String? type;
   final int? userId;
   final String mode;
+  final List<String> counsel;
+  final String? courtType;
 
   factory CaseSummary.fromJson(Map<String, dynamic> json) {
     return CaseSummary(
@@ -98,6 +104,7 @@ class CaseSummary {
       nextHearing: json['next_hearing'] as String?,
       state: json['state'] as String?,
       district: json['district'] as String?,
+      area: json['area'] as String?,
       caseNumber: json['case_number'] as String?,
       caseYear: json['case_year'] as String?,
       party1Role: json['party1_role'] as String?,
@@ -107,6 +114,11 @@ class CaseSummary {
       type: json['type'] as String?,
       userId: json['user_id'] as int?,
       mode: json['mode'] as String? ?? 'personal',
+      counsel: [
+        for (final name in json['counsel'] as List? ?? const [])
+          if (name is String && name.trim().isNotEmpty) name,
+      ],
+      courtType: json['court_type'] as String?,
     );
   }
 
@@ -203,6 +215,7 @@ class CaseDetail extends CaseSummary {
     super.nextHearing,
     super.state,
     super.district,
+    super.area,
     super.caseNumber,
     super.caseYear,
     super.party1Role,
@@ -212,16 +225,26 @@ class CaseDetail extends CaseSummary {
     super.type,
     super.userId,
     super.mode,
+    super.counsel,
+    super.courtType,
+    this.caseTypeId,
+    this.caseTypeLabel,
     required this.tasks,
     required this.parties,
     required this.events,
     required this.documents,
+    this.assignees = const [],
+    this.team,
   });
 
   final String tasks;
   final List<Party> parties;
   final List<CaseEvent> events;
   final List<CaseDocument> documents;
+  final List<CasePerson> assignees;
+  final List<CasePerson>? team;
+  final int? caseTypeId;
+  final String? caseTypeLabel;
 
   factory CaseDetail.fromJson(Map<String, dynamic> json) {
     final summary = CaseSummary.fromJson(json);
@@ -234,6 +257,7 @@ class CaseDetail extends CaseSummary {
       nextHearing: summary.nextHearing,
       state: summary.state,
       district: summary.district,
+      area: summary.area,
       caseNumber: summary.caseNumber,
       caseYear: summary.caseYear,
       party1Role: summary.party1Role,
@@ -243,6 +267,8 @@ class CaseDetail extends CaseSummary {
       type: summary.type,
       userId: summary.userId,
       mode: summary.mode,
+      counsel: summary.counsel,
+      courtType: summary.courtType,
       tasks: json['tasks'] as String? ?? '',
       parties: (json['parties'] as List? ?? [])
           .map((item) => Party.fromJson(item as Map<String, dynamic>))
@@ -253,6 +279,38 @@ class CaseDetail extends CaseSummary {
       documents: (json['documents'] as List? ?? [])
           .map((item) => CaseDocument.fromJson(item as Map<String, dynamic>))
           .toList(),
+      assignees: [
+        for (final item in json['assignees'] as List? ?? const [])
+          CasePerson.fromJson(item as Map<String, dynamic>),
+      ],
+      team: json['team'] == null
+          ? null
+          : [
+              for (final item in json['team'] as List)
+                CasePerson.fromJson(item as Map<String, dynamic>),
+            ],
+      caseTypeId: (json['case_type'] as Map?)?['id'] as int?,
+      caseTypeLabel: (json['case_type'] as Map?)?['label'] as String?,
+    );
+  }
+}
+
+class CasePerson {
+  const CasePerson({
+    required this.id,
+    required this.email,
+    required this.roleName,
+  });
+
+  final int id;
+  final String email;
+  final String roleName;
+
+  factory CasePerson.fromJson(Map<String, dynamic> json) {
+    return CasePerson(
+      id: json['id'] as int,
+      email: json['email'] as String? ?? '',
+      roleName: json['role_name'] as String? ?? '',
     );
   }
 }
@@ -280,17 +338,37 @@ class CaseTemplate {
   }
 }
 
-class CourtPlace {
-  CourtPlace({required this.name, required this.courts});
+class AreaPlace {
+  AreaPlace({required this.name, required this.courts});
 
   final String name;
   final List<String> courts;
+
+  factory AreaPlace.fromJson(Map<String, dynamic> json) {
+    return AreaPlace(
+      name: json['name'] as String? ?? '',
+      courts: (json['courts'] as List? ?? [])
+          .map((item) => item.toString())
+          .toList(),
+    );
+  }
+}
+
+class CourtPlace {
+  CourtPlace({required this.name, required this.courts, this.areas = const []});
+
+  final String name;
+  final List<String> courts;
+  final List<AreaPlace> areas;
 
   factory CourtPlace.fromJson(Map<String, dynamic> json) {
     return CourtPlace(
       name: json['name'] as String? ?? '',
       courts: (json['courts'] as List? ?? [])
           .map((item) => item.toString())
+          .toList(),
+      areas: (json['areas'] as List? ?? [])
+          .map((item) => AreaPlace.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -328,6 +406,31 @@ class AppNotification {
   }
 }
 
+class CaseKind {
+  const CaseKind({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.category,
+  });
+
+  final int id;
+  final String code;
+  final String name;
+  final String category;
+
+  String get label => '$code - $name';
+
+  factory CaseKind.fromJson(Map<String, dynamic> json) {
+    return CaseKind(
+      id: json['id'] as int,
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+    );
+  }
+}
+
 class Workspace {
   Workspace({
     required this.filter,
@@ -341,6 +444,7 @@ class Workspace {
     required this.cases,
     required this.templates,
     this.locations = const [],
+    this.caseTypes = const [],
     this.notifications = const [],
     this.permissions,
     this.active,
@@ -355,6 +459,7 @@ class Workspace {
   final Map<String, String> party2Roles;
   final List<String> folders;
   final List<StatePlace> locations;
+  final List<CaseKind> caseTypes;
   final List<CaseSummary> cases;
   final List<CaseTemplate> templates;
   final List<AppNotification> notifications;
@@ -394,6 +499,9 @@ class Workspace {
       locations: (json['locations'] as List? ?? [])
           .map((item) => StatePlace.fromJson(item as Map<String, dynamic>))
           .toList(),
+      caseTypes: (json['case_types'] as List? ?? [])
+          .map((item) => CaseKind.fromJson(item as Map<String, dynamic>))
+          .toList(),
       cases: (json['cases'] as List? ?? [])
           .map((item) => CaseSummary.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -423,6 +531,7 @@ class Workspace {
       party2Roles: party2Roles,
       folders: folders,
       locations: locations,
+      caseTypes: caseTypes,
       cases: [
         for (final item in cases)
           if (item.id == detail.id) detail else item,

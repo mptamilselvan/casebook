@@ -3,12 +3,16 @@
 namespace Tests\Feature;
 
 use App\Enums\CaseMode;
+use App\Models\Area;
+use App\Models\CaseType;
 use App\Models\Court;
 use App\Models\CourtCase;
 use App\Models\District;
 use App\Models\State;
 use App\Models\User;
 use App\Support\Casebook;
+use App\Support\IndiaLocations;
+use Database\Seeders\CaseTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,21 +35,28 @@ class CasebookTest extends TestCase
 
     public function test_casebook_page_loads(): void
     {
-        $this->get('/')->assertOk()->assertSee('Case Book')->assertSee('New Case');
+        $this->get('/')->assertOk()->assertSee('Case Book')->assertSee('New Case')->assertSee('id="new-case-hearing"', false);
     }
 
     public function test_advocate_can_create_a_case_with_parties(): void
     {
+        $this->seed(CaseTypeSeeder::class);
+        $type = CaseType::query()->where('code', 'O.S.')->firstOrFail();
+
         $response = $this->post(route('cases.store'), [
             'state' => 'Tamil Nadu',
             'district' => 'Chennai',
             'court' => 'Madras High Court',
+            'case_type_id' => $type->id,
+            'court_type' => 'high',
             'case_number' => 'O.S. 10',
             'case_year' => '2026',
+            'next_hearing' => '2026-12-01',
             'party1_role' => 'Plaintiff',
             'party2_role' => 'Defendant',
             'petitioners' => ['Ramesh Kumar'],
             'respondents' => ['State of TN'],
+            'counsel' => ['Ramesh Kumar', 'Not a party'],
             'filter' => 'All Cases',
             'tab' => 'Timeline',
         ]);
@@ -64,7 +75,33 @@ class CasebookTest extends TestCase
             'parties_label' => 'Ramesh Kumar vs. State of TN',
             'state' => 'Tamil Nadu',
         ]);
+        $this->assertSame('2026-12-01', $case->next_hearing->toDateString());
+        $this->assertSame($type->id, $case->case_type_id);
+        $this->assertSame('high', $case->court_type);
+        $this->assertSame(15, CaseType::query()->count());
         $this->assertDatabaseCount('case_parties', 2);
+        $this->assertSame(['Ramesh Kumar'], $case->fresh()->counsel);
+
+        $this->get(route('cases.index', ['filter' => 'All', 'case' => $case->id]))
+            ->assertOk()
+            ->assertSee('Counsel')
+            ->assertSee('Ramesh Kumar')
+            ->assertSee('O.S. - Original Suit')
+            ->assertDontSee('Not a party');
+
+        $this->get(route('cases.index', ['filter' => 'All']))
+            ->assertOk()
+            ->assertSee('District court')
+            ->assertSee('High court')
+            ->assertSee('Supreme court');
+
+        $this->get(route('cases.index', ['filter' => 'High court']))
+            ->assertOk()
+            ->assertSee('O.S. 10/2026');
+
+        $this->get(route('cases.index', ['filter' => 'District court']))
+            ->assertOk()
+            ->assertDontSee('O.S. 10/2026');
     }
 
     public function test_a_new_case_opens_on_its_own_page(): void
@@ -302,6 +339,21 @@ class CasebookTest extends TestCase
             ->assertSee('>Today<', false)
             ->assertSee('>Tomorrow<', false);
 
+        CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Open hearing',
+            'court' => 'Madras High Court',
+        ]);
+
+        $this->get(route('cases.index', ['filter' => 'Unscheduled']))
+            ->assertOk()
+            ->assertSee('>Unscheduled<', false)
+            ->assertSee('Past hearing')
+            ->assertSee('Starred hearing')
+            ->assertSee('Open hearing')
+            ->assertDontSee('Future hearing')
+            ->assertDontSee('Tomorrow hearing');
+
         $this->assertTrue($starred->fresh()->is_pinned);
     }
 
@@ -380,5 +432,79 @@ class CasebookTest extends TestCase
             'title' => 'Office/2026',
             'mode' => CaseMode::Office->value,
         ]);
+    }
+
+    public function test_an_area_loads_its_own_courts(): void
+    {
+        $state = State::query()->create(['name' => 'Tamil Nadu']);
+        $district = District::query()->create([
+            'state_id' => $state->id,
+            'name' => 'Chennai',
+        ]);
+        Court::query()->create([
+            'state_id' => $state->id,
+            'district_id' => $district->id,
+            'name' => 'District Court, Chennai',
+        ]);
+        $area = Area::query()->create([
+            'district_id' => $district->id,
+            'name' => 'Egmore',
+        ]);
+        Court::query()->create([
+            'state_id' => $state->id,
+            'district_id' => $district->id,
+            'area_id' => $area->id,
+            'name' => 'Egmore Court',
+        ]);
+
+        $chennai = collect(IndiaLocations::tree()[0]['districts'])->firstWhere('name', 'Chennai');
+        $this->assertSame(['Egmore'], array_column($chennai['areas'], 'name'));
+        $this->assertContains('District Court, Chennai', $chennai['courts']);
+        $this->assertNotContains('Egmore Court', $chennai['courts']);
+        $this->assertSame(['Egmore Court'], $chennai['areas'][0]['courts']);
+
+        $this->get(route('cases.index'))
+            ->assertOk()
+            ->assertSee('id="new-case-area"', false);
+    }
+
+    public function test_the_case_owner_can_change_the_assigned_people(): void
+    {
+        $junior = User::factory()->create([
+            'owner_id' => $this->user->id,
+            'email' => 'junior@firm.test',
+        ]);
+        $elder = User::factory()->create([
+            'owner_id' => $this->user->id,
+            'email' => 'elder@firm.test',
+        ]);
+        $outsider = User::factory()->create(['email' => 'outsider@firm.test']);
+        $case = CourtCase::query()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Assigned hearing',
+            'court' => 'City Court',
+        ]);
+        $case->viewers()->attach($junior->id);
+
+        $this->get(route('cases.index', ['case' => $case->id]))
+            ->assertOk()
+            ->assertSee('Case history')
+            ->assertSee('junior@firm.test')
+            ->assertSee('Change');
+
+        $this->actingAs($junior)
+            ->post(route('cases.people', $case), ['user_ids' => [$elder->id]])
+            ->assertForbidden();
+
+        $this->actingAs($this->user)
+            ->post(route('cases.people', $case), [
+                'user_ids' => [$elder->id, $outsider->id],
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(
+            [$elder->id],
+            $case->viewers()->pluck('users.id')->map(fn ($id) => (int) $id)->all(),
+        );
     }
 }

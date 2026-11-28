@@ -52,11 +52,13 @@ class CasebookTopBar extends StatelessWidget {
     this.notifications = const [],
     this.subtitle,
     this.menuIcon = Icons.menu,
+    this.menuLabel,
   });
 
   final String title;
   final VoidCallback onMenu;
   final IconData menuIcon;
+  final String? menuLabel;
   final VoidCallback? onAvatar;
   final String avatarLetter;
   final bool searching;
@@ -77,10 +79,34 @@ class CasebookTopBar extends StatelessWidget {
             ? CrossAxisAlignment.center
             : CrossAxisAlignment.start,
         children: [
-          IconButton(
-            onPressed: onMenu,
-            icon: Icon(menuIcon, size: 26, color: casebookText),
-          ),
+          if (menuLabel != null)
+            TextButton(
+              onPressed: onMenu,
+              style: TextButton.styleFrom(
+                foregroundColor: casebookBlue,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(menuIcon, size: 22, color: casebookBlue),
+                  const SizedBox(width: 2),
+                  Text(
+                    menuLabel!,
+                    style: const TextStyle(
+                      color: casebookBlue,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            IconButton(
+              onPressed: onMenu,
+              icon: Icon(menuIcon, size: 26, color: casebookText),
+            ),
           if (searching && searchController != null)
             Expanded(
               child: Container(

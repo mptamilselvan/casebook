@@ -21,9 +21,11 @@ class CourtCase extends Model
         'parties_label',
         'state',
         'district',
+        'area',
         'court',
         'case_number',
         'case_year',
+        'case_type_id',
         'type',
         'status',
         'priority',
@@ -35,6 +37,8 @@ class CourtCase extends Model
         'party1_role',
         'party2_role',
         'mode',
+        'counsel',
+        'court_type',
     ];
 
     protected function casts(): array
@@ -42,6 +46,7 @@ class CourtCase extends Model
         return [
             'next_hearing' => 'date',
             'is_pinned' => 'boolean',
+            'counsel' => 'array',
         ];
     }
 
@@ -113,6 +118,11 @@ class CourtCase extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function caseType(): BelongsTo
+    {
+        return $this->belongsTo(CaseType::class);
     }
 
     public function viewers(): BelongsToMany

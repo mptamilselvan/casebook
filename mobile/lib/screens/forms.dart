@@ -25,6 +25,7 @@ class _NewCasePageState extends State<NewCasePage> {
   int step = 1;
   late String? selectedState = widget.caseFile?.state;
   late String? selectedDistrict = widget.caseFile?.district;
+  late String? selectedArea = widget.caseFile?.area;
   late String? selectedCourt = widget.caseFile?.court;
   final courtOther = TextEditingController();
   late final number = TextEditingController(
@@ -33,6 +34,7 @@ class _NewCasePageState extends State<NewCasePage> {
   late final year = TextEditingController(
     text: widget.caseFile?.caseYear ?? DateTime.now().year.toString(),
   );
+  final hearing = TextEditingController();
   late String role1 = _knownRole(
     widget.caseFile?.party1Role,
     widget.state.workspace?.party1Roles ?? {},
@@ -44,6 +46,11 @@ class _NewCasePageState extends State<NewCasePage> {
     'Respondent',
   );
   late String caseMode = _caseMode(widget.caseFile?.mode ?? widget.state.mode);
+  late int? caseTypeId = widget.caseFile?.caseTypeId;
+  late String? courtType = widget.caseFile?.courtType;
+  late final Set<String> selectedCounsel = {
+    for (final name in widget.caseFile?.counsel ?? const <String>[]) name,
+  };
   late final petitioners = _partyFields(1);
   late final respondents = _partyFields(2);
   String? error;
@@ -55,6 +62,7 @@ class _NewCasePageState extends State<NewCasePage> {
       courtOther,
       number,
       year,
+      hearing,
       ...petitioners,
       ...respondents,
     ]) {
@@ -105,12 +113,18 @@ class _NewCasePageState extends State<NewCasePage> {
     final payload = {
       'state': selectedState ?? '',
       'district': selectedDistrict ?? '',
+      'area': selectedArea ?? '',
       'court': _courtName(),
+      if (caseTypeId != null) 'case_type_id': caseTypeId,
+      if (courtType != null) 'court_type': courtType,
       'case_number': number.text,
       'case_year': year.text,
+      if (editing == null && hearing.text.trim().isNotEmpty)
+        'next_hearing': hearing.text.trim(),
       'party1_role': role1,
       'party2_role': role2,
       'mode': caseMode,
+      'counsel': _partyNames().where(selectedCounsel.contains).toList(),
       'petitioners': petitioners.map((item) => item.text).toList(),
       'respondents': respondents.map((item) => item.text).toList(),
     };
@@ -143,14 +157,28 @@ class _NewCasePageState extends State<NewCasePage> {
     final roles1 = widget.state.workspace?.party1Roles ?? {};
     final roles2 = widget.state.workspace?.party2Roles ?? {};
     final places = widget.state.workspace?.locations ?? const <StatePlace>[];
+    final types = widget.state.workspace?.caseTypes ?? const <CaseKind>[];
     final districts = places
         .where((place) => place.name == selectedState)
         .expand((place) => place.districts)
         .toList();
-    final courts = districts
+    final areas = districts
         .where((place) => place.name == selectedDistrict)
-        .expand((place) => place.courts)
+        .expand((place) => place.areas)
         .toList();
+    final districtCourts = districts
+        .where((place) => place.name == selectedDistrict)
+        .expand((place) => place.courts);
+    final courts = areas.isEmpty
+        ? districtCourts.toList()
+        : selectedArea == null
+        ? <String>[]
+        : [
+            ...districtCourts,
+            ...areas
+                .where((place) => place.name == selectedArea)
+                .expand((place) => place.courts),
+          ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -167,6 +195,24 @@ class _NewCasePageState extends State<NewCasePage> {
           if (error != null)
             Text(error!, style: const TextStyle(color: Color(0xFFDC2626))),
           if (step == 1) ...[
+            if (types.isEmpty)
+              TextField(
+                enabled: false,
+                decoration: casebookField('Case type', hint: 'No case types'),
+              )
+            else
+              DropdownButtonFormField<int>(
+                initialValue: types.any((type) => type.id == caseTypeId)
+                    ? caseTypeId
+                    : null,
+                decoration: casebookField('Case type'),
+                items: [
+                  for (final type in types)
+                    DropdownMenuItem(value: type.id, child: Text(type.label)),
+                ],
+                onChanged: (value) => setState(() => caseTypeId = value),
+              ),
+            const SizedBox(height: 12),
             SearchChoice(
               label: 'State',
               value: selectedState,
@@ -176,6 +222,7 @@ class _NewCasePageState extends State<NewCasePage> {
                 setState(() {
                   selectedState = value;
                   selectedDistrict = null;
+                  selectedArea = null;
                   selectedCourt = null;
                   courtOther.clear();
                 });
@@ -191,6 +238,22 @@ class _NewCasePageState extends State<NewCasePage> {
               onChanged: (value) {
                 setState(() {
                   selectedDistrict = value;
+                  selectedArea = null;
+                  selectedCourt = null;
+                  courtOther.clear();
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            SearchChoice(
+              label: 'Area',
+              value: selectedArea,
+              hint: areas.isEmpty ? 'No areas for this city' : 'Search area',
+              enabled: areas.isNotEmpty,
+              options: [for (final place in areas) place.name],
+              onChanged: (value) {
+                setState(() {
+                  selectedArea = value;
                   selectedCourt = null;
                   courtOther.clear();
                 });
@@ -201,7 +264,8 @@ class _NewCasePageState extends State<NewCasePage> {
               label: 'Court',
               value: selectedCourt,
               hint: 'Search court',
-              enabled: selectedDistrict != null,
+              enabled: selectedDistrict != null &&
+                  (areas.isEmpty || selectedArea != null),
               options: courts
                   .where((name) => name.toLowerCase() != 'other')
                   .toList(),
@@ -223,15 +287,38 @@ class _NewCasePageState extends State<NewCasePage> {
                 ),
               ),
             ],
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: const ['district', 'high', 'supreme'].contains(courtType)
+                  ? courtType
+                  : null,
+              decoration: casebookField('Court type'),
+              items: const [
+                DropdownMenuItem(value: 'district', child: Text('District')),
+                DropdownMenuItem(value: 'high', child: Text('High')),
+                DropdownMenuItem(value: 'supreme', child: Text('Supreme')),
+              ],
+              onChanged: (value) => setState(() => courtType = value),
+            ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () {
+                final types = widget.state.workspace?.caseTypes ?? const <CaseKind>[];
                 final courtName = _courtName();
-                if (selectedState == null ||
+                if (courtType == null ||
+                    (types.isNotEmpty && caseTypeId == null) ||
+                    selectedState == null ||
                     selectedDistrict == null ||
+                    (areas.isNotEmpty && selectedArea == null) ||
                     courtName.isEmpty) {
                   setState(
-                    () => error = 'State, district, and court are required.',
+                    () => error = courtType == null
+                        ? 'Court type, state, district, and court are required.'
+                        : types.isNotEmpty && caseTypeId == null
+                        ? 'Case type, state, district, and court are required.'
+                        : areas.isNotEmpty && selectedArea == null
+                        ? 'State, district, area, and court are required.'
+                        : 'State, district, and court are required.',
                   );
                   return;
                 }
@@ -257,12 +344,45 @@ class _NewCasePageState extends State<NewCasePage> {
               },
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: number,
-              decoration: casebookField('Case number'),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: number,
+                    decoration: casebookField('Case number'),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 8, right: 8, bottom: 14),
+                  child: Text(
+                    '/',
+                    style: TextStyle(
+                      color: casebookMuted,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 88,
+                  child: TextField(
+                    controller: year,
+                    keyboardType: TextInputType.number,
+                    decoration: casebookField('Year'),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            TextField(controller: year, decoration: casebookField('Year')),
+            if (widget.caseFile == null) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: hearing,
+                readOnly: true,
+                decoration: casebookField('Next hearing date'),
+                onTap: _pickHearing,
+              ),
+            ],
             const SizedBox(height: 12),
             _dropdown(
               'Side 1 role',
@@ -275,6 +395,7 @@ class _NewCasePageState extends State<NewCasePage> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: TextField(
                   controller: petitioners[index],
+                  onChanged: (_) => setState(() {}),
                   decoration: casebookField('Petitioner ${index + 1}'),
                 ),
               ),
@@ -294,6 +415,7 @@ class _NewCasePageState extends State<NewCasePage> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: TextField(
                   controller: respondents[index],
+                  onChanged: (_) => setState(() {}),
                   decoration: casebookField('Respondent ${index + 1}'),
                 ),
               ),
@@ -303,6 +425,63 @@ class _NewCasePageState extends State<NewCasePage> {
               child: const Text('Add respondent'),
             ),
             const SizedBox(height: 8),
+            const Text(
+              'Counsel',
+              style: TextStyle(
+                color: casebookText,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (_partyNames().isEmpty)
+              const Text(
+                'Enter party names to assign counsel.',
+                style: TextStyle(color: casebookMuted, fontSize: 13),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final name in _partyNames())
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        if (!selectedCounsel.add(name)) {
+                          selectedCounsel.remove(name);
+                        }
+                      }),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selectedCounsel.contains(name)
+                              ? casebookBlue
+                              : const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: selectedCounsel.contains(name)
+                                ? casebookBlue
+                                : const Color(0xFFE5E7EB),
+                          ),
+                        ),
+                        child: Text(
+                          name,
+                          style: TextStyle(
+                            color: selectedCounsel.contains(name)
+                                ? Colors.white
+                                : casebookText,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            const SizedBox(height: 16),
             FilledButton(
               onPressed: busy ? null : create,
               child: Text(
@@ -313,6 +492,33 @@ class _NewCasePageState extends State<NewCasePage> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickHearing() async {
+    final initial = DateTime.tryParse(hearing.text) ?? DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) {
+      return;
+    }
+    final month = picked.month.toString().padLeft(2, '0');
+    final day = picked.day.toString().padLeft(2, '0');
+    setState(() => hearing.text = '${picked.year}-$month-$day');
+  }
+
+  List<String> _partyNames() {
+    final names = <String>[];
+    for (final controller in [...petitioners, ...respondents]) {
+      final name = controller.text.trim();
+      if (name.isNotEmpty && !names.contains(name)) {
+        names.add(name);
+      }
+    }
+    return names;
   }
 
   String _courtName() {

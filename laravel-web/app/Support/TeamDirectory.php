@@ -117,6 +117,24 @@ class TeamDirectory
         return $person;
     }
 
+    /**
+     * @param  list<int>  $userIds
+     */
+    public static function syncCasePeople(User $actor, CourtCase $case, array $userIds): void
+    {
+        if ((int) $actor->id !== (int) $case->user_id) {
+            abort(403);
+        }
+
+        $allowed = User::query()
+            ->where('owner_id', $case->user_id)
+            ->whereIn('id', $userIds)
+            ->pluck('id')
+            ->all();
+
+        $case->viewers()->sync($allowed);
+    }
+
     private static function sendVerification(User $user, bool $send): void
     {
         if (! $send) {

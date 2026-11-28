@@ -40,6 +40,7 @@ Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class, EnsureUserIsEna
     Route::put('/cases/{case}/priority', [CaseController::class, 'updatePriority']);
     Route::put('/cases/{case}/status', [CaseController::class, 'updateStatus']);
     Route::put('/cases/{case}/mode', [CaseController::class, 'updateMode']);
+    Route::put('/cases/{case}/people', [CaseController::class, 'updatePeople']);
     Route::put('/cases/{case}/tasks', [CaseController::class, 'updateTasks']);
     Route::put('/cases/{case}/parties', [CasePartyController::class, 'sync']);
 

@@ -44,6 +44,7 @@ class CasebookData
             'parties_label' => $case->parties_label,
             'state' => $case->state,
             'district' => $case->district,
+            'area' => $case->area,
             'court' => $case->court,
             'case_number' => $case->case_number,
             'case_year' => $case->case_year,
@@ -57,18 +58,35 @@ class CasebookData
             'party1_role' => $case->party1_role,
             'party2_role' => $case->party2_role,
             'mode' => $case->mode ?: 'personal',
+            'counsel' => array_values($case->counsel ?? []),
+            'court_type' => $case->court_type,
         ];
     }
 
     public static function caseDetail(CourtCase $case): array
     {
-        $case->load(['caseParties', 'events', 'documents']);
+        $case->load(['caseParties', 'events', 'documents', 'viewers', 'caseType']);
 
         $user = auth()->user() ?? request()->user();
+        $canAssignPeople = $user && (int) $user->id === (int) $case->user_id;
 
         return [
             ...self::caseSummary($case),
             'tasks' => $case->tasks ?? '',
+            'case_type' => $case->caseType ? [
+                'id' => $case->caseType->id,
+                'code' => $case->caseType->code,
+                'name' => $case->caseType->name,
+                'category' => $case->caseType->category,
+                'label' => $case->caseType->label(),
+            ] : null,
+            'assignees' => $case->viewers
+                ->sortBy('email')
+                ->map(fn (User $person) => self::personBrief($person))
+                ->values(),
+            'team' => $canAssignPeople
+                ? User::query()->where('owner_id', $case->user_id)->orderBy('email')->get()->map(fn (User $person) => self::personBrief($person))->values()
+                : null,
             'parties' => $case->caseParties->map(fn (CaseParty $party) => [
                 'id' => $party->id,
                 'side' => $party->side,
@@ -81,6 +99,15 @@ class CasebookData
             'documents' => $user && ! RoleAccess::allows($user, 'DOCUMENT', 'view')
                 ? []
                 : $case->documents->map(fn (Document $document) => self::document($document))->values(),
+        ];
+    }
+
+    public static function personBrief(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'email' => $user->email,
+            'role_name' => $user->roleName(),
         ];
     }
 

@@ -1,0 +1,114 @@
+[
+  {
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "areas": [
+      {
+        "name": "George Town",
+        "courts": ["City Civil Court, George Town", "Court of Small Causes, Chennai"]
+      },
+      {
+        "name": "Egmore",
+        "courts": ["Chief Metropolitan Magistrate Court, Egmore"]
+      },
+      {
+        "name": "Saidapet",
+        "courts": ["Additional City Civil Court, Saidapet"]
+      }
+    ]
+  },
+  {
+    "state": "Maharashtra",
+    "district": "Mumbai City",
+    "areas": [
+      {
+        "name": "Fort",
+        "courts": ["City Civil and Sessions Court, Fort"]
+      },
+      {
+        "name": "Esplanade",
+        "courts": ["Chief Metropolitan Magistrate Court, Esplanade"]
+      }
+    ]
+  },
+  {
+    "state": "Maharashtra",
+    "district": "Mumbai Suburban",
+    "areas": [
+      {
+        "name": "Bandra",
+        "courts": ["Court of Small Causes, Bandra"]
+      },
+      {
+        "name": "Andheri",
+        "courts": ["Metropolitan Magistrate Court, Andheri"]
+      }
+    ]
+  },
+  {
+    "state": "Karnataka",
+    "district": "Bengaluru (Bangalore) Urban",
+    "areas": [
+      {
+        "name": "Mayo Hall",
+        "courts": ["City Civil Court, Mayo Hall"]
+      },
+      {
+        "name": "CMM Complex",
+        "courts": ["Chief Metropolitan Magistrate Court, Bengaluru"]
+      }
+    ]
+  },
+  {
+    "state": "Delhi",
+    "district": "New Delhi",
+    "areas": [
+      {
+        "name": "Patiala House",
+        "courts": ["Patiala House Courts"]
+      },
+      {
+        "name": "Rouse Avenue",
+        "courts": ["Rouse Avenue Courts"]
+      }
+    ]
+  },
+  {
+    "state": "Delhi",
+    "district": "Central Delhi",
+    "areas": [
+      {
+        "name": "Tis Hazari",
+        "courts": ["Tis Hazari Courts"]
+      }
+    ]
+  },
+  {
+    "state": "Telangana",
+    "district": "Hyderabad",
+    "areas": [
+      {
+        "name": "Nampally",
+        "courts": ["City Civil Court, Nampally"]
+      },
+      {
+        "name": "Kukatpally",
+        "courts": ["Metropolitan Magistrate Court, Kukatpally"]
+      }
+    ]
+  },
+  {
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "areas": [
+      {
+        "name": "Bankshall",
+        "courts": ["City Civil Court, Bankshall"]
+      },
+      {
+        "name": "Sealdah",
+        "courts": ["Sealdah Court"]
+      }
+    ]
+  }
+]
